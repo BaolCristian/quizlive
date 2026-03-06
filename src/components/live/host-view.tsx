@@ -234,14 +234,20 @@ export function HostView({ session }: Props) {
             <span className="text-sm opacity-70">
               {answerCount.count}/{answerCount.total} risposte
             </span>
-            <div className="bg-white/20 rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold">
+            <div
+              className={`rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold ${
+                timeLeft <= 5 && timeLeft > 0
+                  ? "animate-countdown-pulse bg-red-500 text-white"
+                  : "bg-white/20"
+              }`}
+            >
               {timeLeft}
             </div>
           </div>
         </div>
 
         {/* Question text */}
-        <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="flex-1 flex flex-col items-center justify-center animate-slide-up-fade">
           <h2 className="text-4xl font-bold text-center mb-6 max-w-4xl">
             {q.question.text}
           </h2>
@@ -352,7 +358,8 @@ export function HostView({ session }: Props) {
                   {resultData.leaderboard.slice(0, 5).map((entry, i) => (
                     <div
                       key={entry.playerName}
-                      className="flex items-center justify-between bg-white/10 rounded-lg px-4 py-3"
+                      className="flex items-center justify-between bg-white/10 rounded-lg px-4 py-3 animate-slide-up-fade"
+                      style={{ animationDelay: `${i * 100}ms` }}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-xl font-bold opacity-60 w-8">
@@ -416,7 +423,8 @@ export function HostView({ session }: Props) {
             return (
               <div
                 key={player.playerName}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center animate-podium-rise"
+                style={{ animationDelay: `${position * 300}ms` }}
               >
                 <span className="text-5xl mb-2">{medals[position]}</span>
                 <span className="font-bold text-lg mb-1">

@@ -231,7 +231,9 @@ export function PlayerView() {
           </span>
           <span
             className={`rounded-full px-4 py-1 text-lg font-bold ${
-              timeLeft <= 5 ? "bg-red-600 animate-pulse" : "bg-gray-700"
+              timeLeft <= 5 && timeLeft > 0
+                ? "bg-red-600 text-red-100 animate-countdown-pulse"
+                : "bg-gray-700"
             }`}
           >
             {timeLeft}s
@@ -239,7 +241,7 @@ export function PlayerView() {
         </div>
 
         {/* Question text */}
-        <h2 className="mb-6 text-center text-xl font-bold leading-snug">
+        <h2 className="mb-6 text-center text-xl font-bold leading-snug animate-slide-up-fade">
           {questionData.question.text}
         </h2>
 
@@ -273,19 +275,19 @@ export function PlayerView() {
             : "bg-gradient-to-b from-red-500 to-red-700"
         }`}
       >
-        <div className="mb-4 text-7xl">
+        <div className="mb-4 text-7xl animate-score-pop">
           {feedback.isCorrect ? "\u2713" : "\u2717"}
         </div>
-        <h2 className="mb-2 text-3xl font-extrabold text-white">
+        <h2 className="mb-2 text-3xl font-extrabold text-white animate-slide-up-fade">
           {feedback.isCorrect ? "Corretto!" : "Sbagliato!"}
         </h2>
-        <p className="mb-1 text-xl font-semibold text-white/90">
+        <p className="mb-1 text-xl font-semibold text-white/90 animate-score-pop" style={{ animationDelay: "200ms" }}>
           +{feedback.score} punti
         </p>
-        <p className="text-lg text-white/80">
+        <p className="text-lg text-white/80 animate-slide-up-fade" style={{ animationDelay: "300ms" }}>
           Posizione: {feedback.position}
         </p>
-        <p className="mt-1 text-lg text-white/80">
+        <p className="mt-1 text-lg text-white/80 animate-slide-up-fade" style={{ animationDelay: "400ms" }}>
           Punteggio totale: {feedback.totalScore}
         </p>
       </div>
@@ -303,7 +305,8 @@ export function PlayerView() {
           {podium.podium.map((p) => (
             <div
               key={p.position}
-              className="flex items-center gap-3 rounded-xl bg-white/20 px-4 py-3 backdrop-blur"
+              className="flex items-center gap-3 rounded-xl bg-white/20 px-4 py-3 backdrop-blur animate-podium-rise"
+              style={{ animationDelay: `${(p.position - 1) * 300}ms` }}
             >
               <span className="text-3xl">{medals[p.position - 1]}</span>
               <span className="flex-1 text-lg font-bold text-white">
