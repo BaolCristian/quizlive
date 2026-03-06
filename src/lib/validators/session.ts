@@ -7,6 +7,6 @@ export const joinSessionSchema = z.object({
 });
 
 export const submitAnswerSchema = z.object({
-  value: z.record(z.unknown()),
+  value: z.record(z.string(), z.unknown()),
   responseTimeMs: z.number().int().min(0),
 });
