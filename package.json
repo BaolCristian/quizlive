@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "dev:custom": "tsx watch src/server.ts",
+    "start:custom": "NODE_ENV=production tsx src/server.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
