@@ -44,31 +44,39 @@ export default async function QuizListPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {quizzes.map((quiz) => (
-            <Link key={quiz.id} href={`/dashboard/quiz/${quiz.id}/edit`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardHeader>
+            <Card key={quiz.id} className="hover:shadow-md transition-shadow">
+              <Link href={`/dashboard/quiz/${quiz.id}/edit`}>
+                <CardHeader className="cursor-pointer">
                   <CardTitle className="text-lg">{quiz.title}</CardTitle>
                   <CardDescription>
                     {quiz._count.questions} domande &middot; Giocato{" "}
                     {quiz._count.sessions} volte
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex gap-1 flex-wrap">
-                    {quiz.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  {quiz.authorId !== session!.user!.id && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Condiviso da {quiz.author.name}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
+              </Link>
+              <CardContent>
+                <div className="flex gap-1 flex-wrap">
+                  {quiz.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+                {quiz.authorId !== session!.user!.id && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Condiviso da {quiz.author.name}
+                  </p>
+                )}
+                {quiz._count.sessions > 0 && (
+                  <Link
+                    href={`/dashboard/quiz/${quiz.id}/stats`}
+                    className="inline-block mt-2 text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                  >
+                    Vedi statistiche
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
