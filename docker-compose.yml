@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: kahoot
+      POSTGRES_USER: kahoot
+      POSTGRES_PASSWORD: kahoot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
