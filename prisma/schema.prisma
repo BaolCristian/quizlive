@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  TEACHER
+  ADMIN
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  OPEN_ANSWER
+  ORDERING
+  MATCHING
+}
+
+enum SessionStatus {
+  LOBBY
+  IN_PROGRESS
+  FINISHED
+}
+
+enum SharePermission {
+  VIEW
+  DUPLICATE
+  EDIT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      Role     @default(TEACHER)
+  googleId  String?  @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+
+  quizzes        Quiz[]
+  hostedSessions Session[]
+  sharedWithMe   QuizShare[]
+  accounts       Account[]
+  sessions       AuthSession[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model AuthSession {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_session")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_token")
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  authorId    String
+  isPublic    Boolean  @default(false)
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author    User        @relation(fields: [authorId], references: [id])
+  questions Question[]
+  sessions  Session[]
+  shares    QuizShare[]
+}
+
+model Question {
+  id        String       @id @default(cuid())
+  quizId    String
+  type      QuestionType
+  text      String
+  mediaUrl  String?
+  timeLimit Int          @default(20)
+  points    Int          @default(1000)
+  order     Int
+  options   Json
+
+  quiz    Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers Answer[]
+}
+
+model QuizShare {
+  id           String          @id @default(cuid())
+  quizId       String
+  sharedWithId String
+  permission   SharePermission @default(VIEW)
+  createdAt    DateTime        @default(now())
+
+  quiz       Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sharedWith User @relation(fields: [sharedWithId], references: [id])
+
+  @@unique([quizId, sharedWithId])
+}
+
+model Session {
+  id        String        @id @default(cuid())
+  quizId    String
+  hostId    String
+  pin       String        @unique
+  status    SessionStatus @default(LOBBY)
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime      @default(now())
+
+  quiz    Quiz     @relation(fields: [quizId], references: [id])
+  host    User     @relation(fields: [hostId], references: [id])
+  answers Answer[]
+}
+
+model Answer {
+  id             String   @id @default(cuid())
+  sessionId      String
+  questionId     String
+  playerName     String
+  playerEmail    String?
+  value          Json
+  isCorrect      Boolean
+  responseTimeMs Int
+  score          Int
+  createdAt      DateTime @default(now())
+
+  session  Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@unique([sessionId, questionId, playerName])
+}
