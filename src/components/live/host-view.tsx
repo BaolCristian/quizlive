@@ -142,6 +142,13 @@ export function HostView({ session }: Props) {
     return () => clearInterval(interval);
   }, [phase, timeLeft]);
 
+  // Auto-transition to result phase when timer expires
+  useEffect(() => {
+    if (phase === "question" && timeLeft === 0) {
+      setPhase("result");
+    }
+  }, [phase, timeLeft]);
+
   const handleStartGame = useCallback(() => {
     socket?.emit("startGame");
   }, [socket]);
