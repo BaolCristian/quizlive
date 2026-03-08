@@ -126,12 +126,17 @@ export function QuizEditor({ initialData }: Props) {
       });
 
       if (!res.ok) {
-        const body = await res.json();
+        let body: any = null;
+        try {
+          body = await res.json();
+        } catch {
+          // Response body is not JSON (e.g. server crash)
+        }
         throw new Error(
-          body.error?.formErrors?.[0] ??
-            body.error?.fieldErrors
+          body?.error?.formErrors?.[0] ??
+            body?.error?.fieldErrors
               ? "Verifica i campi e riprova."
-              : "Errore durante il salvataggio.",
+              : `Errore durante il salvataggio (${res.status}).`,
         );
       }
 
@@ -354,4 +359,8 @@ const THUMB_TYPES: Record<string, { icon: string; label: string; color: string }
   OPEN_ANSWER: { icon: "✏️", label: "Aperta", color: "bg-amber-50 border border-amber-200" },
   ORDERING: { icon: "🔢", label: "Ordina", color: "bg-purple-50 border border-purple-200" },
   MATCHING: { icon: "🔗", label: "Abbina", color: "bg-rose-50 border border-rose-200" },
+  SPOT_ERROR: { icon: "🔍", label: "Errore", color: "bg-red-50 border border-red-200" },
+  NUMERIC_ESTIMATION: { icon: "🔢", label: "Stima", color: "bg-cyan-50 border border-cyan-200" },
+  IMAGE_HOTSPOT: { icon: "🎯", label: "Hotspot", color: "bg-orange-50 border border-orange-200" },
+  CODE_COMPLETION: { icon: "💻", label: "Codice", color: "bg-indigo-50 border border-indigo-200" },
 };

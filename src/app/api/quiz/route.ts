@@ -34,19 +34,27 @@ export async function POST(req: NextRequest) {
 
   const { questions, ...quizData } = parsed.data;
 
-  const quiz = await prisma.quiz.create({
-    data: {
-      ...quizData,
-      authorId: session.user.id,
-      questions: {
-        create: questions.map((q, i) => {
-          const { order: _order, ...rest } = q;
-          return { ...rest, order: i };
-        }),
+  try {
+    const quiz = await prisma.quiz.create({
+      data: {
+        ...quizData,
+        authorId: session.user.id,
+        questions: {
+          create: questions.map((q, i) => {
+            const { order: _order, ...rest } = q;
+            return { ...rest, order: i };
+          }),
+        },
       },
-    },
-    include: { questions: true },
-  });
+      include: { questions: true },
+    });
 
-  return NextResponse.json(quiz, { status: 201 });
+    return NextResponse.json(quiz, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/quiz error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Database error" },
+      { status: 500 },
+    );
+  }
 }

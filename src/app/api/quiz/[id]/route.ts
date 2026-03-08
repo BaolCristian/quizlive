@@ -45,23 +45,31 @@ export async function PUT(
 
   const { questions, ...quizData } = parsed.data;
 
-  await prisma.question.deleteMany({ where: { quizId: id } });
+  try {
+    await prisma.question.deleteMany({ where: { quizId: id } });
 
-  const updated = await prisma.quiz.update({
-    where: { id },
-    data: {
-      ...quizData,
-      questions: {
-        create: questions.map((q, i) => {
-          const { order: _order, ...rest } = q;
-          return { ...rest, order: i };
-        }),
+    const updated = await prisma.quiz.update({
+      where: { id },
+      data: {
+        ...quizData,
+        questions: {
+          create: questions.map((q, i) => {
+            const { order: _order, ...rest } = q;
+            return { ...rest, order: i };
+          }),
+        },
       },
-    },
-    include: { questions: true },
-  });
+      include: { questions: true },
+    });
 
-  return NextResponse.json(updated);
+    return NextResponse.json(updated);
+  } catch (err) {
+    console.error("PUT /api/quiz error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Database error" },
+      { status: 500 },
+    );
+  }
 }
 
 export async function DELETE(
