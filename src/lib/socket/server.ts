@@ -19,6 +19,7 @@ interface PlayerInfo {
   socketId: string;
   name: string;
   email?: string;
+  avatar?: string;
   totalScore: number;
   /** Score delta earned on the current question (reset each round) */
   lastDelta: number;
@@ -98,6 +99,7 @@ function buildLeaderboard(game: GameState) {
       playerName: p.name,
       score: p.totalScore,
       delta: p.lastDelta,
+      playerAvatar: p.avatar,
     }));
 }
 
@@ -152,7 +154,7 @@ export function setupSocketHandlers(io: TypedIO) {
     // ------------------------------------------------------------------
     // joinSession
     // ------------------------------------------------------------------
-    socket.on("joinSession", async ({ pin, playerName, playerEmail }) => {
+    socket.on("joinSession", async ({ pin, playerName, playerEmail, playerAvatar }) => {
       try {
         const session = await prisma.session.findUnique({
           where: { pin },
@@ -200,6 +202,7 @@ export function setupSocketHandlers(io: TypedIO) {
           socketId: socket.id,
           name: playerName,
           email: playerEmail,
+          avatar: playerAvatar,
           totalScore: game.players.get(playerName)?.totalScore ?? 0,
           lastDelta: 0,
         });
@@ -210,6 +213,7 @@ export function setupSocketHandlers(io: TypedIO) {
         io.to(room(sessionId)).emit("playerJoined", {
           playerName,
           playerCount: game.players.size,
+          playerAvatar: playerAvatar,
         });
 
         // Send current game state to the newly joined player
@@ -411,10 +415,12 @@ export function setupSocketHandlers(io: TypedIO) {
           playerName: l.playerName,
           score: l.score,
           position: i + 1,
+          playerAvatar: l.playerAvatar,
         }));
         const fullResults = leaderboard.map((l) => ({
           playerName: l.playerName,
           score: l.score,
+          playerAvatar: l.playerAvatar,
         }));
 
         io.to(room(game.sessionId)).emit("gameOver", { podium, fullResults });

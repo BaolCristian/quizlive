@@ -45,7 +45,7 @@ export type AnswerValue =
 
 // Socket.io events
 export interface ServerToClientEvents {
-  playerJoined: (data: { playerName: string; playerCount: number }) => void;
+  playerJoined: (data: { playerName: string; playerCount: number; playerAvatar?: string }) => void;
   playerLeft: (data: { playerName: string; playerCount: number }) => void;
   questionStart: (data: {
     questionIndex: number;
@@ -63,7 +63,7 @@ export interface ServerToClientEvents {
   questionResult: (data: {
     correctAnswer: QuestionOptions;
     distribution: Record<string, number>;
-    leaderboard: { playerName: string; score: number; delta: number }[];
+    leaderboard: { playerName: string; score: number; delta: number; playerAvatar?: string }[];
   }) => void;
   answerFeedback: (data: {
     isCorrect: boolean;
@@ -73,15 +73,15 @@ export interface ServerToClientEvents {
     classCorrectPercent: number;
   }) => void;
   gameOver: (data: {
-    podium: { playerName: string; score: number; position: number }[];
-    fullResults: { playerName: string; score: number }[];
+    podium: { playerName: string; score: number; position: number; playerAvatar?: string }[];
+    fullResults: { playerName: string; score: number; playerAvatar?: string }[];
   }) => void;
   sessionError: (data: { message: string }) => void;
   gameState: (data: { status: string; currentQuestion?: number }) => void;
 }
 
 export interface ClientToServerEvents {
-  joinSession: (data: { pin: string; playerName: string; playerEmail?: string }) => void;
+  joinSession: (data: { pin: string; playerName: string; playerEmail?: string; playerAvatar?: string }) => void;
   startGame: () => void;
   nextQuestion: () => void;
   submitAnswer: (data: { value: AnswerValue; responseTimeMs: number }) => void;
