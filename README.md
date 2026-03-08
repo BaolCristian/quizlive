@@ -1,17 +1,23 @@
 # Quiz Live
 
-Piattaforma di quiz live per la scuola. Il docente crea quiz, li proietta sulla LIM e gli studenti rispondono in tempo reale dal telefono.
+**Piattaforma gratuita di quiz interattivi per la scuola.**
 
-## Funzionalita
+Il docente crea quiz, li proietta sulla LIM e gli studenti rispondono in tempo reale dal proprio telefono. Pensata per rendere le lezioni più coinvolgenti e la valutazione formativa più immediata.
 
-- **5 tipi di domanda**: scelta multipla, vero/falso, risposta aperta, ordinamento, abbinamento
+> Quiz Live è e sarà sempre **gratuito per tutte le scuole**. Nuove funzionalità verranno aggiunte progressivamente per offrire un'esperienza sempre migliore a docenti e studenti.
+
+## Funzionalità
+
+- **9 tipi di domanda**: scelta multipla, vero/falso, risposta aperta, ordinamento, abbinamento, trova l'errore, stima numerica, hotspot su immagine, completamento codice
 - **Quiz live in tempo reale**: lobby con PIN a 6 cifre, countdown, classifica animata, podio finale
-- **Dashboard docente**: crea/modifica quiz, storico sessioni, statistiche avanzate
-- **Statistiche**: per sessione, per quiz, per studente, per argomento, con grafici
-- **Condivisione**: condividi quiz tra docenti con permessi (visualizza/duplica/modifica)
-- **Export**: scarica risultati in CSV o PDF
+- **Livello di confidenza**: lo studente indica quanto è sicuro della risposta, con bonus o malus sul punteggio
+- **Dashboard docente**: crea e modifica quiz, storico sessioni, statistiche avanzate
+- **Statistiche**: per sessione, per quiz, per studente, per argomento, con grafici interattivi
+- **Condivisione**: condividi quiz tra colleghi con permessi (visualizza/duplica/modifica)
+- **Export/Import**: formato .qlz per condividere quiz tra scuole diverse, export risultati in CSV/PDF
+- **Upload immagini**: carica immagini nelle domande o usa URL esterni
 - **Autenticazione**: login con Google Workspace scolastico
-- **Responsive**: sidebar mobile, interfaccia ottimizzata per telefono (studenti)
+- **Responsive**: interfaccia ottimizzata per LIM (docente) e telefono (studenti)
 
 ## Stack tecnologico
 
@@ -26,72 +32,48 @@ Piattaforma di quiz live per la scuola. Il docente crea quiz, li proietta sulla 
 | Autenticazione | NextAuth v5 (Google OAuth) |
 | Grafici | Recharts |
 | Test | Vitest + Playwright |
-| Deploy | Docker Compose |
 
-## Avvio rapido (sviluppo locale)
+## Avvio rapido
 
 ### Prerequisiti
 
-- **Node.js 20+** - [download](https://nodejs.org)
-- **Docker Desktop** - [download](https://www.docker.com/products/docker-desktop) - serve per PostgreSQL
-- **Account Google Cloud** per OAuth (vedi sezione dedicata)
+- **Node.js 20+**
+- **PostgreSQL 16** (locale o via Docker)
+- **Account Google Cloud** per OAuth
 
-### 1. Clona e installa
+### Installazione
 
 ```bash
-git clone <url-del-repo>
+git clone https://github.com/tuouser/quizlive.git
 cd quizlive
 npm install
 ```
 
-### 2. Avvia PostgreSQL
-
-```bash
-docker compose -f docker-compose.dev.yml up -d
-```
-
-Verifica che il container sia attivo:
-
-```bash
-docker compose -f docker-compose.dev.yml ps
-```
-
-### 3. Configura le variabili d'ambiente
+### Configurazione
 
 ```bash
 cp .env.example .env
 ```
 
-Modifica `.env` con i tuoi valori. Per lo sviluppo locale il database e gia configurato. Devi solo aggiungere le credenziali Google OAuth (vedi sotto) e generare il secret:
+Modifica `.env` con i tuoi valori. Genera il secret di NextAuth:
 
 ```bash
-# Genera NEXTAUTH_SECRET
 openssl rand -base64 32
 ```
 
-Il file `.env` dovra contenere:
-
-```
-DATABASE_URL=postgresql://quizlive:quizlive@localhost:5432/quizlive
-GOOGLE_CLIENT_ID=il-tuo-client-id
-GOOGLE_CLIENT_SECRET=il-tuo-client-secret
-NEXTAUTH_SECRET=il-secret-generato-sopra
-NEXTAUTH_URL=http://localhost:3000
-```
-
-### 4. Inizializza il database
+### Database
 
 ```bash
 # Crea le tabelle
-npx prisma migrate dev --name init
+npx prisma migrate dev
 
 # (Opzionale) Carica dati demo
 npx prisma db seed
 ```
 
-Il seed crea un docente demo (`docente@scuola.it`) con due quiz di esempio (Geografia e Scienze) che coprono tutti e 5 i tipi di domanda.
+Il seed crea un docente demo (`docente@scuola.it`) con quiz di esempio che coprono tutti i 9 tipi di domanda.
 
-### 5. Avvia il server di sviluppo
+### Avvio
 
 ```bash
 npm run dev:custom
@@ -99,265 +81,90 @@ npm run dev:custom
 
 Il server parte su **http://localhost:3000** con Socket.io integrato.
 
-> **Importante:** usa `dev:custom` e non `dev`, perche il server custom e necessario per far funzionare Socket.io (quiz in tempo reale).
-
-### 6. Apri nel browser
-
-| URL | Cosa vedi |
-|-----|-----------|
-| http://localhost:3000 | Pagina studente - inserisci PIN per entrare in un quiz |
-| http://localhost:3000/login | Login docente con Google |
-| http://localhost:3000/dashboard | Dashboard docente (richiede login) |
-
-## Configurazione Google OAuth
-
-### Per sviluppo locale
-
-1. Vai su [Google Cloud Console](https://console.cloud.google.com)
-2. Crea un nuovo progetto (o usa uno esistente)
-3. Vai su **API e servizi** > **Schermata di consenso OAuth**
-   - Tipo: Esterno (o Interno se hai Google Workspace)
-   - Compila nome app e email di supporto
-4. Vai su **API e servizi** > **Credenziali**
-5. Clicca **Crea credenziali** > **ID client OAuth 2.0**
-   - Tipo applicazione: **Applicazione web**
-   - Nome: Quiz Live
-   - Origini JavaScript autorizzate: `http://localhost:3000`
-   - URI di reindirizzamento autorizzati: `http://localhost:3000/api/auth/callback/google`
-6. Copia **Client ID** e **Client Secret** nel file `.env`
-
-### Per produzione
-
-Stessi passaggi, ma con il dominio reale:
-- Origini: `https://quiz.tuascuola.it`
-- Redirect: `https://quiz.tuascuola.it/api/auth/callback/google`
+> **Nota:** usa sempre `dev:custom` e non `dev`, perché il server custom è necessario per Socket.io.
 
 ## Come funziona
 
-### Flusso del docente
+### Docente
 
 1. Accedi con Google su `/login`
-2. Vai su **I miei Quiz** > **Nuovo Quiz**
-3. Crea le domande (tutti e 5 i tipi disponibili)
-4. Salva il quiz
-5. Dalla lista quiz, clicca **Gioca** per avviare una sessione live
-6. Proietta lo schermo sulla LIM - gli studenti vedono il PIN
-7. Quando tutti sono connessi, clicca **Avvia Quiz**
-8. Dopo ogni domanda: mostra risultati, poi prosegui
-9. A fine quiz: podio con i vincitori
-10. Vai su **Sessioni** per rivedere risultati e statistiche
+2. Crea un quiz con le domande desiderate
+3. Clicca **Gioca** per avviare una sessione live
+4. Proietta lo schermo sulla LIM — gli studenti vedono il PIN
+5. Avvia il quiz e gestisci il flusso delle domande
+6. A fine quiz: podio e statistiche dettagliate
 
-### Flusso dello studente
+### Studente
 
-1. Apri il sito sul telefono (pagina principale)
+1. Apri il sito sul telefono
 2. Inserisci il PIN a 6 cifre mostrato sulla LIM
-3. Inserisci il tuo nome
+3. Scegli un nickname
 4. Rispondi alle domande entro il tempo limite
-5. Dopo ogni risposta: feedback immediato (corretto/sbagliato, punti, posizione)
-6. A fine quiz: classifica finale e podio
+5. Feedback immediato dopo ogni risposta
+6. Classifica finale e podio
 
-## Struttura del progetto
+## Tipi di domanda
 
-```
-quizlive/
-  docker-compose.yml          # Produzione (app + db)
-  docker-compose.dev.yml      # Sviluppo (solo db)
-  Dockerfile                  # Build produzione multi-stage
-  prisma/
-    schema.prisma             # Schema database
-    seed.ts                   # Dati demo
-  src/
-    server.ts                 # Server custom (Next.js + Socket.io)
-    app/
-      page.tsx                # Landing (PIN entry per studenti)
-      (auth)/login/           # Login Google
-      (dashboard)/dashboard/  # Area docente
-        page.tsx              #   Home con statistiche rapide
-        quiz/                 #   CRUD quiz
-        sessions/             #   Storico e dettaglio sessioni
-        stats/                #   Statistiche globali, studenti, argomenti
-        share/                #   Gestione condivisioni
-      (live)/                 # Quiz live
-        live/host/            #   Schermo docente (LIM)
-        play/                 #   Schermo studente (telefono)
-      api/
-        auth/                 #   NextAuth endpoints
-        quiz/                 #   CRUD quiz + condivisione
-        session/              #   Creazione sessioni con PIN
-        stats/export/         #   Export CSV/PDF
-    components/
-      quiz/                   # Editor quiz e domande
-      live/                   # Host view e player view
-      dashboard/              # Sidebar navigazione
-      stats/                  # Grafici (Recharts)
-      ui/                     # Componenti shadcn/ui
-    lib/
-      auth/config.ts          # Configurazione NextAuth
-      db/client.ts            # Prisma client singleton
-      socket/server.ts        # Gestione Socket.io lato server
-      socket/client.ts        # Hook useSocket() lato client
-      scoring.ts              # Calcolo punteggi e verifica risposte
-      validators/             # Schema Zod per validazione
-    types/
-      index.ts                # Tipi condivisi (eventi Socket.io, opzioni domande)
-  tests/
-    unit/                     # Test unitari (Vitest)
-    e2e/                      # Test E2E (Playwright)
-```
+| Tipo | Descrizione |
+|------|-------------|
+| Scelta multipla | 2-6 opzioni, una o più corrette |
+| Vero o falso | Classica domanda binaria |
+| Risposta aperta | Confronto con risposte accettate |
+| Ordinamento | Riordina elementi nella sequenza corretta |
+| Abbinamento | Collega elementi sinistra-destra |
+| Trova l'errore | Individua le righe con errori in un testo o codice |
+| Stima numerica | Inserisci un numero, punteggio basato sulla vicinanza |
+| Hotspot immagine | Tocca il punto corretto su un'immagine |
+| Completamento codice | Completa la riga mancante (scelta multipla o testo libero) |
 
-## Comandi disponibili
+## Comandi principali
 
 | Comando | Descrizione |
 |---------|-------------|
-| `npm run dev:custom` | Avvia server di sviluppo con Socket.io |
+| `npm run dev:custom` | Server di sviluppo con Socket.io |
 | `npm run build` | Build di produzione |
-| `npm run start:custom` | Avvia in produzione con Socket.io |
-| `npm run test:run` | Esegui test unitari |
-| `npm run test` | Test unitari in watch mode |
-| `npm run test:e2e` | Test E2E con Playwright |
-| `npm run lint` | Linting con ESLint |
-| `npx prisma studio` | GUI per esplorare il database |
-| `npx prisma migrate dev` | Crea e applica migrazioni |
+| `npm run start:custom` | Avvia in produzione |
+| `npm run test:run` | Test unitari |
+| `npm run test:e2e` | Test end-to-end |
+| `npx prisma studio` | GUI database |
+| `npx prisma migrate dev` | Migrazioni database |
 | `npx prisma db seed` | Carica dati demo |
 
-## Deploy in produzione (server della scuola)
+## Deploy in produzione
 
-### Requisiti server
-
-- Qualsiasi PC con almeno 4GB RAM e 20GB disco
-- Docker e Docker Compose installati
-- Porta 3000 accessibile dalla rete scolastica (o porta 443 con reverse proxy)
-
-### Procedura
-
-#### 1. Clona il repository sul server
-
-```bash
-git clone <url-del-repo>
-cd quizlive
-```
-
-#### 2. Crea il file `.env`
+### Con Docker Compose
 
 ```bash
 cp .env.example .env
-nano .env
-```
-
-Configura tutti i valori:
-
-```
-DATABASE_URL=postgresql://quizlive:UNA_PASSWORD_SICURA@db:5432/quizlive
-DB_PASSWORD=UNA_PASSWORD_SICURA
-GOOGLE_CLIENT_ID=il-tuo-client-id
-GOOGLE_CLIENT_SECRET=il-tuo-client-secret
-NEXTAUTH_SECRET=genera-con-openssl-rand-base64-32
-NEXTAUTH_URL=https://quiz.tuascuola.it
-```
-
-Per generare `NEXTAUTH_SECRET`:
-
-```bash
-openssl rand -base64 32
-```
-
-#### 3. Avvia con Docker Compose
-
-```bash
-docker compose up -d
-```
-
-Questo comando:
-- Scarica l'immagine PostgreSQL
-- Builda l'applicazione Next.js (multi-stage, circa 2-3 minuti la prima volta)
-- Avvia entrambi i container
-
-#### 4. Inizializza il database (solo la prima volta)
-
-```bash
-# Applica lo schema al database
-docker compose exec app npx prisma migrate deploy
-
-# (Opzionale) Carica quiz di esempio
-docker compose exec app npx prisma db seed
-```
-
-#### 5. Verifica
-
-```bash
-# Controlla che i container siano attivi
-docker compose ps
-
-# Testa la connessione
-curl http://localhost:3000
-```
-
-### HTTPS con Caddy (consigliato)
-
-Per servire il sito su HTTPS con certificato SSL automatico:
-
-```bash
-# Installa Caddy
-sudo apt install -y caddy
-
-# Configura il reverse proxy
-sudo tee /etc/caddy/Caddyfile << 'EOF'
-quiz.tuascuola.it {
-    reverse_proxy localhost:3000
-}
-EOF
-
-# Riavvia Caddy
-sudo systemctl restart caddy
-```
-
-Caddy ottiene e rinnova automaticamente i certificati SSL tramite Let's Encrypt. Assicurati che il dominio punti all'IP del server e che le porte 80 e 443 siano aperte.
-
-### Aggiornamenti
-
-```bash
-cd quizlive
-git pull
-docker compose build
+# Configura .env con i valori di produzione
 docker compose up -d
 docker compose exec app npx prisma migrate deploy
 ```
 
-### Backup del database
+### HTTPS
 
-```bash
-# Crea backup
-docker compose exec db pg_dump -U quizlive quizlive > backup_$(date +%Y%m%d).sql
+Si consiglia Caddy come reverse proxy per certificati SSL automatici tramite Let's Encrypt.
 
-# Ripristina da backup
-cat backup.sql | docker compose exec -T db psql -U quizlive quizlive
-```
+## Configurazione Google OAuth
 
-## Sistema di punteggio
+1. Vai su [Google Cloud Console](https://console.cloud.google.com)
+2. Crea un progetto e configura la schermata di consenso OAuth
+3. Crea credenziali **ID client OAuth 2.0**
+   - Origini autorizzate: `http://localhost:3000` (dev) o `https://tuodominio.it` (prod)
+   - URI di reindirizzamento: `http://localhost:3000/api/auth/callback/google`
+4. Copia Client ID e Client Secret nel file `.env`
 
-Il punteggio di ogni risposta corretta dipende dalla velocita:
+## Roadmap
 
-```
-punteggio = punti_base x (1.0 - tempo_impiegato / tempo_limite x 0.5)
-```
+Quiz Live è in sviluppo attivo. Tra le funzionalità in arrivo:
 
-| Velocita | Punti (su 1000) |
-|----------|----------------|
-| Istantanea | 1000 |
-| Meta del tempo | 750 |
-| Al limite | 500 |
-| Sbagliata | 0 |
-
-## Risoluzione problemi
-
-| Problema | Soluzione |
-|----------|----------|
-| "Cannot connect to database" | Verifica che il container db sia attivo: `docker compose ps` |
-| Google login non funziona | Controlla che l'URL di callback in Google Console corrisponda a `NEXTAUTH_URL/api/auth/callback/google` |
-| Studenti non riescono a connettersi | Verifica che la porta 3000 sia raggiungibile dalla rete WiFi della scuola |
-| Socket.io non funziona | Assicurati di usare `npm run dev:custom` e non `npm run dev` |
-| Errori dopo un aggiornamento | Esegui `npx prisma migrate deploy` per applicare nuove migrazioni |
+- Modalità squadre
+- Timer personalizzabili per domanda
+- Temi e personalizzazione grafica
+- Report PDF avanzati per classe
+- Integrazione con Google Classroom
+- App mobile dedicata
 
 ## Licenza
 
-Uso interno scolastico.
+Quiz Live è gratuito per uso scolastico ed educativo.
