@@ -82,6 +82,7 @@ export async function GET(
       ...(imagePath ? { image: imagePath } : {}),
       timeLimit: q.timeLimit,
       points: q.points,
+      confidenceEnabled: q.confidenceEnabled,
       options: q.options as QlzManifest["quiz"]["questions"][number]["options"],
     });
   }

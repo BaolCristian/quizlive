@@ -18,6 +18,7 @@ function createDefaultQuestion(order: number): QuestionInput {
     text: "",
     timeLimit: 20,
     points: 1000,
+    confidenceEnabled: false,
     mediaUrl: null,
     order,
     options: {

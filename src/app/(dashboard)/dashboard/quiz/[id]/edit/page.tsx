@@ -32,10 +32,11 @@ export default async function EditQuizPage({
     questions: quiz.questions.map((q) => ({
       type: q.type,
       text: q.text,
-      mediaUrl: q.mediaUrl,
+      mediaUrl: q.mediaUrl ?? undefined,
       timeLimit: q.timeLimit,
       points: q.points,
       order: q.order,
+      confidenceEnabled: q.confidenceEnabled,
       options: q.options as QuestionInput["options"],
     })),
   };
