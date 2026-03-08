@@ -138,17 +138,66 @@ export function QuestionEditor({ question, index, onChange, onRemove }: Props) {
           </div>
         </div>
 
-        {/* Media URL */}
+        {/* Media: URL or Upload */}
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">URL media (opzionale)</label>
-          <Input
-            type="url"
-            value={question.mediaUrl ?? ""}
-            onChange={(e) =>
-              handleFieldChange("mediaUrl", e.target.value || null)
-            }
-            placeholder="https://..."
-          />
+          <label className="text-sm font-medium">Immagine (opzionale)</label>
+          {question.mediaUrl && (
+            <div className="flex items-center gap-3 p-2 border rounded-lg bg-muted/50">
+              <img
+                src={question.mediaUrl}
+                alt="Anteprima"
+                className="h-16 w-16 object-cover rounded"
+              />
+              <span className="text-xs text-muted-foreground flex-1 truncate">
+                {question.mediaUrl}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleFieldChange("mediaUrl", null)}
+              >
+                <Trash2 className="size-3.5 text-destructive" />
+              </Button>
+            </div>
+          )}
+          {!question.mediaUrl && (
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="Incolla URL immagine..."
+                onBlur={(e) => {
+                  if (e.target.value) handleFieldChange("mediaUrl", e.target.value);
+                }}
+                className="flex-1"
+              />
+              <label className="cursor-pointer inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted transition-colors">
+                Carica
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/gif,image/webp"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const form = new FormData();
+                    form.append("file", file);
+                    try {
+                      const res = await fetch("/api/upload", {
+                        method: "POST",
+                        body: form,
+                      });
+                      if (!res.ok) throw new Error();
+                      const { url } = await res.json();
+                      handleFieldChange("mediaUrl", url);
+                    } catch {
+                      alert("Errore nel caricamento dell'immagine");
+                    }
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Options editor per type */}
