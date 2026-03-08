@@ -356,6 +356,67 @@ export function HostView({ session }: Props) {
           </div>
         )}
 
+        {/* SPOT_ERROR display */}
+        {q.question.type === "SPOT_ERROR" && (
+          <div className="px-6 lg:px-10 pb-6 max-w-3xl mx-auto w-full">
+            <div className="bg-slate-800 rounded-2xl p-4 lg:p-6 font-mono text-sm lg:text-base space-y-1">
+              {((q.question.options as any).lines as string[]).map((line, i) => (
+                <div key={i} className="flex gap-3 px-3 py-1.5 rounded-lg hover:bg-slate-700/50">
+                  <span className="text-slate-500 w-6 text-right shrink-0">{i + 1}</span>
+                  <span className="text-green-300">{line}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* NUMERIC_ESTIMATION display */}
+        {q.question.type === "NUMERIC_ESTIMATION" && (
+          <div className="px-6 lg:px-10 pb-6 flex justify-center">
+            <div className="bg-slate-800 rounded-2xl px-8 py-6 flex items-center gap-3 border border-slate-700">
+              <span className="text-4xl lg:text-5xl">🔢</span>
+              <span className="text-xl lg:text-2xl font-semibold text-slate-300">
+                Inserisci un valore numerico
+                {(q.question.options as any).unit && (
+                  <span className="text-slate-400 ml-2">({(q.question.options as any).unit})</span>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* IMAGE_HOTSPOT display */}
+        {q.question.type === "IMAGE_HOTSPOT" && (
+          <div className="px-6 lg:px-10 pb-6 flex justify-center">
+            <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+              <img
+                src={(q.question.options as any).imageUrl}
+                alt="Hotspot"
+                className="max-h-64 lg:max-h-96 rounded-xl"
+              />
+              <p className="text-center text-sm text-slate-400 mt-2">Tocca il punto corretto</p>
+            </div>
+          </div>
+        )}
+
+        {/* CODE_COMPLETION display */}
+        {q.question.type === "CODE_COMPLETION" && (
+          <div className="px-6 lg:px-10 pb-6 max-w-3xl mx-auto w-full">
+            <div className="bg-slate-800 rounded-2xl p-4 lg:p-6 font-mono text-sm lg:text-base space-y-1">
+              {((q.question.options as any).codeLines as string[]).map((line, i) => (
+                <div key={i} className="flex gap-3 px-3 py-1.5 rounded-lg">
+                  <span className="text-slate-500 w-6 text-right shrink-0">{i + 1}</span>
+                  {i === (q.question.options as any).blankLineIndex ? (
+                    <span className="text-amber-400 font-bold animate-pulse">{"??? ←"}</span>
+                  ) : (
+                    <span className="text-green-300">{line}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Progress bar */}
         <div className="px-6 lg:px-10 pb-4">
           <div className="bg-slate-800 rounded-full h-3 lg:h-4 overflow-hidden border border-slate-700">
