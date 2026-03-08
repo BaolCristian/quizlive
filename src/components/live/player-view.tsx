@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSocket } from "@/lib/socket/client";
+import { EMOJI_CATEGORIES, randomEmoji } from "@/lib/emoji-avatars";
 import type {
   AnswerValue,
   MatchingOptions,
@@ -40,8 +41,39 @@ interface FeedbackData {
 }
 
 interface PodiumData {
-  podium: { playerName: string; score: number; position: number }[];
-  fullResults: { playerName: string; score: number }[];
+  podium: { playerName: string; score: number; position: number; playerAvatar?: string }[];
+  fullResults: { playerName: string; score: number; playerAvatar?: string }[];
+}
+
+/* ------------------------------------------------------------------ */
+/*  Confetti                                                           */
+/* ------------------------------------------------------------------ */
+
+function Confetti() {
+  const colors = ["#FF6B6B", "#FFE66D", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8"];
+  const pieces = Array.from({ length: 30 }, (_, i) => ({
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 0.5}s`,
+    color: colors[i % colors.length],
+    size: 6 + Math.random() * 8,
+  }));
+  return (
+    <div className="confetti-container">
+      {pieces.map((p, i) => (
+        <div
+          key={i}
+          className="confetti-piece"
+          style={{
+            left: p.left,
+            animationDelay: p.delay,
+            backgroundColor: p.color,
+            width: p.size,
+            height: p.size,
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -60,6 +92,9 @@ export function PlayerView() {
   const [podium, setPodium] = useState<PodiumData | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+
+  const [avatar, setAvatar] = useState(() => randomEmoji());
+  const [avatarCategory, setAvatarCategory] = useState(0);
 
   const questionStartTime = useRef<number>(0);
 
@@ -131,6 +166,14 @@ export function PlayerView() {
     return () => clearInterval(id);
   }, [phase, questionData, timeLeft]);
 
+  /* ---------- vibrate on wrong answer ---------- */
+
+  useEffect(() => {
+    if (phase === "feedback" && feedback && !feedback.isCorrect) {
+      navigator.vibrate?.(200);
+    }
+  }, [phase, feedback]);
+
   /* ---------- submit handler ---------- */
 
   const handleSubmit = useCallback(
@@ -156,15 +199,16 @@ export function PlayerView() {
       return;
     }
     setError(null);
-    socket.emit("joinSession", { pin, playerName: name.trim() });
+    socket.emit("joinSession", { pin, playerName: name.trim(), playerAvatar: avatar });
   };
 
   /* ---------- render phases ---------- */
 
   if (phase === "join") {
+    const currentEmojis = EMOJI_CATEGORIES[avatarCategory]?.emojis ?? [];
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-b from-blue-600 to-blue-800 p-6">
-        <h1 className="mb-8 text-4xl font-extrabold text-white">Kahoot!</h1>
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 p-6">
+        <h1 className="mb-8 text-5xl font-extrabold text-white drop-shadow-lg">Quiz Live</h1>
 
         <div className="w-full max-w-sm space-y-4">
           <input
@@ -175,7 +219,7 @@ export function PlayerView() {
             placeholder="PIN del gioco"
             value={pin}
             onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            className="h-14 w-full rounded-lg bg-white px-4 text-center text-2xl font-bold tracking-widest text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-white/40"
+            className="h-14 w-full bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder:text-white/50 rounded-2xl text-center text-2xl font-bold tracking-widest px-4 focus:outline-none focus:ring-4 focus:ring-white/40"
           />
           <input
             type="text"
@@ -183,8 +227,45 @@ export function PlayerView() {
             placeholder="Il tuo nome"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="h-14 w-full rounded-lg bg-white px-4 text-center text-xl font-semibold text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-white/40"
+            className="h-14 w-full bg-white/20 backdrop-blur-md border border-white/30 text-white placeholder:text-white/50 rounded-2xl text-center text-xl font-semibold px-4 focus:outline-none focus:ring-4 focus:ring-white/40"
           />
+
+          {/* Emoji picker */}
+          <div className="flex flex-col items-center">
+            <div className="text-6xl mb-3">{avatar}</div>
+
+            {/* Category tabs */}
+            <div className="flex gap-2 mb-3">
+              {EMOJI_CATEGORIES.map((cat, i) => (
+                <button
+                  key={cat.name}
+                  onClick={() => setAvatarCategory(i)}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
+                    avatarCategory === i
+                      ? "bg-white text-purple-700"
+                      : "bg-white/20 text-white"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Emoji grid */}
+            <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto p-2">
+              {currentEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => setAvatar(emoji)}
+                  className={`text-3xl p-1 rounded-xl cursor-pointer hover:bg-white/20 transition-all ${
+                    avatar === emoji ? "ring-2 ring-white bg-white/30 scale-110" : ""
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {error && (
             <p className="rounded-lg bg-red-500/90 px-4 py-2 text-center text-sm font-medium text-white">
@@ -195,7 +276,7 @@ export function PlayerView() {
           <button
             onClick={handleJoin}
             disabled={!connected}
-            className="h-14 w-full rounded-lg bg-white text-xl font-bold text-blue-700 transition active:scale-95 disabled:opacity-50"
+            className="w-full bg-white text-purple-700 font-bold text-lg rounded-2xl py-4 shadow-lg shadow-purple-900/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
           >
             Entra
           </button>
@@ -210,10 +291,9 @@ export function PlayerView() {
 
   if (phase === "waiting") {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-b from-blue-600 to-blue-800 p-6 text-center">
-        <div className="mb-6 text-6xl">&#10004;</div>
-        <h2 className="mb-2 text-3xl font-extrabold text-white">Sei dentro!</h2>
-        <p className="mb-4 text-xl font-semibold text-white/90">{name}</p>
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 p-6 text-center">
+        <div className="text-8xl mb-6 animate-float-bounce">{avatar}</div>
+        <h2 className="text-2xl font-bold text-white mb-2">{name}</h2>
         <p className="text-lg text-white/70">
           In attesa che il prof avvii il quiz...
         </p>
@@ -223,17 +303,17 @@ export function PlayerView() {
 
   if (phase === "question" && questionData) {
     return (
-      <div className="flex min-h-dvh flex-col bg-gray-900 p-4 text-white">
+      <div className="flex min-h-dvh flex-col bg-gray-950 p-4 text-white">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <span className="text-sm font-medium text-gray-400">
             Domanda {questionData.questionIndex + 1}/{questionData.totalQuestions}
           </span>
           <span
-            className={`rounded-full px-4 py-1 text-lg font-bold ${
+            className={`rounded-full px-4 py-1.5 text-lg font-bold ${
               timeLeft <= 5 && timeLeft > 0
-                ? "bg-red-600 text-red-100 animate-countdown-pulse"
-                : "bg-gray-700"
+                ? "bg-red-500 text-white animate-countdown-pulse"
+                : "bg-gray-800 text-white"
             }`}
           >
             {timeLeft}s
@@ -241,13 +321,14 @@ export function PlayerView() {
         </div>
 
         {/* Question text */}
-        <h2 className="mb-6 text-center text-xl font-bold leading-snug animate-slide-up-fade">
+        <h2 className="mb-6 text-xl md:text-2xl font-bold text-white text-center animate-slide-up-fade">
           {questionData.question.text}
         </h2>
 
         {/* Answer area */}
         {submitted ? (
           <div className="flex flex-1 flex-col items-center justify-center">
+            <div className="text-5xl mb-4">{avatar}</div>
             <p className="text-2xl font-bold text-green-400">
               Risposta inviata!
             </p>
@@ -267,21 +348,18 @@ export function PlayerView() {
   }
 
   if (phase === "feedback" && feedback) {
-    return (
-      <div
-        className={`flex min-h-dvh flex-col items-center justify-center p-6 text-center ${
-          feedback.isCorrect
-            ? "bg-gradient-to-b from-green-500 to-green-700"
-            : "bg-gradient-to-b from-red-500 to-red-700"
-        }`}
-      >
-        <div className="mb-4 text-7xl animate-score-pop">
-          {feedback.isCorrect ? "\u2713" : "\u2717"}
+    const isCorrect = feedback.isCorrect;
+    const content = (
+      <div className="flex flex-col items-center">
+        {isCorrect && <Confetti />}
+        <div className="text-8xl mb-4 animate-score-pop">
+          {isCorrect ? "\u2713" : "\u2717"}
         </div>
-        <h2 className="mb-2 text-3xl font-extrabold text-white animate-slide-up-fade">
-          {feedback.isCorrect ? "Corretto!" : "Sbagliato!"}
+        <div className="text-5xl mb-4">{avatar}</div>
+        <h2 className="mb-2 text-3xl font-extrabold text-white">
+          {isCorrect ? "Corretto!" : "Sbagliato!"}
         </h2>
-        <p className="mb-1 text-xl font-semibold text-white/90 animate-score-pop" style={{ animationDelay: "200ms" }}>
+        <p className="mb-1 text-xl font-semibold text-white/90 animate-count-up-pop" style={{ animationDelay: "200ms" }}>
           +{feedback.score} punti
         </p>
         <p className="text-lg text-white/80 animate-slide-up-fade" style={{ animationDelay: "300ms" }}>
@@ -290,6 +368,21 @@ export function PlayerView() {
         <p className="mt-1 text-lg text-white/80 animate-slide-up-fade" style={{ animationDelay: "400ms" }}>
           Punteggio totale: {feedback.totalScore}
         </p>
+        <p className="mt-1 text-sm text-white/60 animate-slide-up-fade" style={{ animationDelay: "500ms" }}>
+          Classe: {feedback.classCorrectPercent}% corretto
+        </p>
+      </div>
+    );
+
+    return (
+      <div
+        className={`flex min-h-dvh flex-col items-center justify-center p-6 text-center ${
+          isCorrect
+            ? "bg-gradient-to-b from-emerald-400 to-green-600"
+            : "bg-gradient-to-b from-red-400 to-rose-600"
+        }`}
+      >
+        {isCorrect ? content : <div className="animate-shake">{content}</div>}
       </div>
     );
   }
@@ -297,21 +390,24 @@ export function PlayerView() {
   if (phase === "podium" && podium) {
     const medals = ["\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49"];
     return (
-      <div className="flex min-h-dvh flex-col items-center bg-gradient-to-b from-yellow-500 to-orange-600 p-6 pt-12">
+      <div className="flex min-h-dvh flex-col items-center bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 p-6 pt-12">
         <h2 className="mb-8 text-3xl font-extrabold text-white">Classifica</h2>
 
         {/* Top 3 */}
         <div className="mb-8 w-full max-w-sm space-y-3">
-          {podium.podium.map((p) => (
+          {podium.podium.map((p, i) => (
             <div
               key={p.position}
-              className="flex items-center gap-3 rounded-xl bg-white/20 px-4 py-3 backdrop-blur animate-podium-rise"
-              style={{ animationDelay: `${(p.position - 1) * 300}ms` }}
+              className="flex items-center gap-3 bg-white/15 backdrop-blur-md rounded-2xl p-4 animate-podium-rise"
+              style={{ animationDelay: `${i * 300}ms` }}
             >
               <span className="text-3xl">{medals[p.position - 1]}</span>
-              <span className="flex-1 text-lg font-bold text-white">
-                {p.playerName}
-              </span>
+              <span className="text-5xl">{p.playerAvatar ?? avatar}</span>
+              <div className="flex-1">
+                <span className="text-lg font-bold text-white block">
+                  {p.playerName}
+                </span>
+              </div>
               <span className="text-lg font-semibold text-white/90">
                 {p.score} pt
               </span>
@@ -319,17 +415,18 @@ export function PlayerView() {
           ))}
         </div>
 
-        {/* Full list */}
+        {/* Full list (4+) */}
         {podium.fullResults.length > 3 && (
           <div className="w-full max-w-sm space-y-2">
             {podium.fullResults.slice(3).map((p, i) => (
               <div
                 key={p.playerName}
-                className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-2"
+                className="flex items-center gap-3 bg-white/10 rounded-xl p-3"
               >
                 <span className="w-8 text-center font-bold text-white/70">
                   {i + 4}
                 </span>
+                <span className="text-2xl">{p.playerAvatar ?? avatar}</span>
                 <span className="flex-1 font-medium text-white/90">
                   {p.playerName}
                 </span>
@@ -391,11 +488,11 @@ function AnswerInput({
 
 /* ---------- MULTIPLE_CHOICE ---------- */
 
-const MC_COLORS = [
-  "bg-red-600 active:bg-red-700",
-  "bg-blue-600 active:bg-blue-700",
-  "bg-yellow-500 active:bg-yellow-600",
-  "bg-green-600 active:bg-green-700",
+const MC_GRADIENTS = [
+  "bg-gradient-to-br from-red-500 to-red-600",
+  "bg-gradient-to-br from-blue-500 to-blue-600",
+  "bg-gradient-to-br from-yellow-500 to-yellow-600",
+  "bg-gradient-to-br from-green-500 to-green-600",
 ];
 
 function MultipleChoiceInput({
@@ -420,9 +517,9 @@ function MultipleChoiceInput({
           <button
             key={i}
             onClick={() => toggle(i)}
-            className={`flex min-h-[5rem] items-center justify-center rounded-xl p-3 text-lg font-bold text-white transition ${
-              MC_COLORS[i % MC_COLORS.length]
-            } ${selected.includes(i) ? "ring-4 ring-white" : "opacity-80"}`}
+            className={`flex items-center justify-center rounded-2xl min-h-20 p-3 text-white font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-all ${
+              MC_GRADIENTS[i % MC_GRADIENTS.length]
+            } ${selected.includes(i) ? "ring-4 ring-white" : ""}`}
           >
             {c.text}
           </button>
@@ -431,7 +528,7 @@ function MultipleChoiceInput({
       <button
         onClick={() => onSubmit({ selected })}
         disabled={selected.length === 0}
-        className="mt-4 h-14 w-full rounded-lg bg-white text-xl font-bold text-gray-900 transition active:scale-95 disabled:opacity-40"
+        className="mt-4 h-14 w-full rounded-2xl bg-white text-xl font-bold text-gray-900 transition active:scale-95 disabled:opacity-40"
       >
         Conferma
       </button>
@@ -447,16 +544,16 @@ function TrueFalseInput({
   onSubmit: (value: AnswerValue) => void;
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-4">
+    <div className="flex flex-1 gap-4">
       <button
         onClick={() => onSubmit({ selected: true })}
-        className="flex flex-1 items-center justify-center rounded-xl bg-green-600 text-3xl font-extrabold text-white transition active:scale-95 active:bg-green-700"
+        className="flex flex-1 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 py-8 text-3xl font-extrabold text-white shadow-lg hover:scale-105 active:scale-95 transition-all"
       >
         Vero
       </button>
       <button
         onClick={() => onSubmit({ selected: false })}
-        className="flex flex-1 items-center justify-center rounded-xl bg-red-600 text-3xl font-extrabold text-white transition active:scale-95 active:bg-red-700"
+        className="flex flex-1 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 py-8 text-3xl font-extrabold text-white shadow-lg hover:scale-105 active:scale-95 transition-all"
       >
         Falso
       </button>
@@ -480,12 +577,12 @@ function OpenAnswerInput({
         placeholder="La tua risposta..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="h-14 w-full rounded-lg bg-gray-800 px-4 text-lg text-white placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/50"
+        className="h-14 w-full bg-white/10 backdrop-blur text-white border border-white/20 rounded-2xl px-4 text-lg placeholder:text-gray-500 focus:outline-none focus:ring-4 focus:ring-purple-500/50"
       />
       <button
         onClick={() => onSubmit({ text })}
         disabled={!text.trim()}
-        className="h-14 w-full rounded-lg bg-blue-600 text-xl font-bold text-white transition active:scale-95 disabled:opacity-40"
+        className="h-14 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-purple-700 text-xl font-bold text-white transition active:scale-95 disabled:opacity-40"
       >
         Invia
       </button>
@@ -521,7 +618,7 @@ function OrderingInput({
         {order.map((itemIdx, pos) => (
           <div
             key={itemIdx}
-            className="flex items-center gap-2 rounded-lg bg-gray-800 px-4 py-3"
+            className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-xl px-4 py-3"
           >
             <span className="flex-1 text-lg font-medium">
               {options.items[itemIdx]}
@@ -529,7 +626,7 @@ function OrderingInput({
             <button
               onClick={() => swap(pos, pos - 1)}
               disabled={pos === 0}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-xl font-bold disabled:opacity-30"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-xl font-bold disabled:opacity-30"
               aria-label="Sposta su"
             >
               &#9650;
@@ -537,7 +634,7 @@ function OrderingInput({
             <button
               onClick={() => swap(pos, pos + 1)}
               disabled={pos === order.length - 1}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-700 text-xl font-bold disabled:opacity-30"
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-xl font-bold disabled:opacity-30"
               aria-label="Sposta giu"
             >
               &#9660;
@@ -547,7 +644,7 @@ function OrderingInput({
       </div>
       <button
         onClick={() => onSubmit({ order })}
-        className="mt-4 h-14 w-full rounded-lg bg-white text-xl font-bold text-gray-900 transition active:scale-95"
+        className="mt-4 h-14 w-full rounded-2xl bg-white text-xl font-bold text-gray-900 transition active:scale-95"
       >
         Conferma
       </button>
@@ -609,12 +706,12 @@ function MatchingInput({
             <button
               key={i}
               onClick={() => handleLeftTap(i)}
-              className={`rounded-lg px-3 py-3 text-left text-base font-medium transition ${
+              className={`rounded-xl px-3 py-3 text-left text-base font-medium transition backdrop-blur-md ${
                 selectedLeft === i
                   ? "bg-blue-600 text-white ring-2 ring-white"
                   : usedLeft.has(i)
                     ? "bg-green-700 text-white"
-                    : "bg-gray-800 text-white"
+                    : "bg-white/10 text-white"
               }`}
             >
               {item}
@@ -628,10 +725,10 @@ function MatchingInput({
             <button
               key={origIdx}
               onClick={() => handleRightTap(origIdx)}
-              className={`rounded-lg px-3 py-3 text-left text-base font-medium transition ${
+              className={`rounded-xl px-3 py-3 text-left text-base font-medium transition backdrop-blur-md ${
                 usedRight.has(origIdx)
                   ? "bg-green-700 text-white"
-                  : "bg-gray-800 text-white"
+                  : "bg-white/10 text-white"
               }`}
             >
               {rightItems[origIdx]}
@@ -657,7 +754,7 @@ function MatchingInput({
       <button
         onClick={() => onSubmit({ matches })}
         disabled={matches.length === 0}
-        className="mt-4 h-14 w-full rounded-lg bg-white text-xl font-bold text-gray-900 transition active:scale-95 disabled:opacity-40"
+        className="mt-4 h-14 w-full rounded-2xl bg-white text-xl font-bold text-gray-900 transition active:scale-95 disabled:opacity-40"
       >
         Conferma
       </button>
