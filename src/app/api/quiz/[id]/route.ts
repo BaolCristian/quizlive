@@ -46,6 +46,10 @@ export async function PUT(
   const { questions, ...quizData } = parsed.data;
 
   try {
+    // Delete answers first to avoid FK constraint violation
+    await prisma.answer.deleteMany({
+      where: { question: { quizId: id } },
+    });
     await prisma.question.deleteMany({ where: { quizId: id } });
 
     const updated = await prisma.quiz.update({
