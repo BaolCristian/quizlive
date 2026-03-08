@@ -203,60 +203,104 @@ export function PlayerView() {
 
   const handleJoin = () => {
     if (!socket || !connected) return;
-    if (pin.length !== 6) {
-      setError("Il PIN deve essere di 6 cifre");
+    if (!pin || !/^\d{5,8}$/.test(pin)) {
+      setError("Inserisci il PIN del gioco (5-8 cifre)");
       return;
     }
-    if (!name.trim()) {
-      setError("Inserisci il tuo nome");
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2) {
+      setError("Il nome deve avere almeno 2 caratteri");
       return;
     }
     setError(null);
-    socket.emit("joinSession", { pin, playerName: name.trim(), playerAvatar: avatar });
+    socket.emit("joinSession", { pin, playerName: trimmedName, playerAvatar: avatar });
   };
 
   /* ---------- render phases ---------- */
 
   if (phase === "join") {
     const currentEmojis = EMOJI_CATEGORIES[avatarCategory]?.emojis ?? [];
+    const isFormValid = pin.length >= 5 && name.trim().length >= 2;
+
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-emerald-100 p-4 sm:p-6" style={{ backgroundImage: "url('/pattern-school.svg')", backgroundSize: "200px 200px" }}>
-        <h1 className="mb-4 sm:mb-8 text-3xl sm:text-5xl lg:text-6xl font-extrabold text-emerald-800 drop-shadow-sm">Quiz Live</h1>
+      <div className="flex min-h-dvh flex-col bg-gradient-to-br from-emerald-50 via-white to-teal-50 px-5 sm:px-8 py-6 sm:py-10 overflow-y-auto">
+        <div className="w-full max-w-md mx-auto flex flex-col gap-6 sm:gap-8 flex-1">
+          {/* Header */}
+          <div className="text-center">
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-emerald-700 mb-2">Quiz Live</h1>
+            <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
+              Inserisci il PIN condiviso dal docente e scegli come apparirai nel gioco.
+            </p>
+          </div>
 
-        <div className="w-full max-w-sm md:max-w-md space-y-3 sm:space-y-4 lg:space-y-5">
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={6}
-            placeholder="PIN del gioco"
-            value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            className="h-12 sm:h-14 lg:h-16 w-full bg-white border border-emerald-200 text-emerald-900 placeholder:text-emerald-400 rounded-2xl text-center text-xl sm:text-2xl lg:text-3xl font-bold tracking-widest px-4 focus:outline-none focus:ring-4 focus:ring-emerald-300"
-          />
-          <input
-            type="text"
-            maxLength={30}
-            placeholder="Il tuo nome"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="h-12 sm:h-14 lg:h-16 w-full bg-white border border-emerald-200 text-emerald-900 placeholder:text-emerald-400 rounded-2xl text-center text-lg sm:text-xl lg:text-2xl font-semibold px-4 focus:outline-none focus:ring-4 focus:ring-emerald-300"
-          />
+          {/* Game PIN */}
+          <div>
+            <label htmlFor="pin-input" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              PIN del gioco
+            </label>
+            <input
+              id="pin-input"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={8}
+              autoFocus
+              placeholder="Es: 482731"
+              value={pin}
+              onChange={(e) => { setPin(e.target.value.replace(/\D/g, "").slice(0, 8)); setError(null); }}
+              className="h-14 sm:h-16 w-full bg-white border-2 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl text-center text-2xl sm:text-3xl font-bold tracking-[0.25em] px-4 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all"
+            />
+          </div>
 
-          {/* Emoji picker */}
-          <div className="flex flex-col items-center">
-            <div className="text-4xl sm:text-6xl lg:text-7xl mb-2 sm:mb-3">{avatar}</div>
+          {/* Nickname */}
+          <div>
+            <label htmlFor="name-input" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Il tuo nome
+            </label>
+            <input
+              id="name-input"
+              type="text"
+              maxLength={24}
+              placeholder="Es: Alex"
+              value={name}
+              onChange={(e) => { setName(e.target.value); setError(null); }}
+              className="h-12 sm:h-14 w-full bg-white border-2 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl text-center text-lg sm:text-xl font-semibold px-4 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all"
+            />
+          </div>
+
+          {/* Avatar selector */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-slate-700">
+                Scegli un avatar <span className="text-slate-400 font-normal">(opzionale)</span>
+              </p>
+              <button
+                type="button"
+                onClick={() => setAvatar(randomEmoji())}
+                className="flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors"
+                title="Avatar casuale"
+              >
+                <span className="text-sm">🎲</span> Random
+              </button>
+            </div>
+
+            {/* Selected avatar preview */}
+            <div className="flex justify-center mb-3">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center text-4xl sm:text-5xl">
+                {avatar}
+              </div>
+            </div>
 
             {/* Category tabs */}
-            <div className="flex gap-1.5 sm:gap-2 lg:gap-3 mb-2 sm:mb-3">
+            <div className="flex gap-1.5 mb-2.5">
               {EMOJI_CATEGORIES.map((cat, i) => (
                 <button
                   key={cat.name}
                   onClick={() => setAvatarCategory(i)}
-                  className={`px-2 sm:px-3 lg:px-4 py-1 lg:py-1.5 rounded-lg text-xs sm:text-sm lg:text-base font-medium transition ${
+                  className={`flex-1 px-1 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                     avatarCategory === i
-                      ? "bg-emerald-600 text-white"
-                      : "bg-white text-emerald-700"
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
                   }`}
                 >
                   {cat.name}
@@ -265,13 +309,16 @@ export function PlayerView() {
             </div>
 
             {/* Emoji grid */}
-            <div className="grid grid-cols-5 gap-1.5 sm:gap-2 lg:gap-3 max-h-36 sm:max-h-48 lg:max-h-56 overflow-y-auto p-1.5 sm:p-2">
+            <div className="grid grid-cols-5 gap-2 max-h-40 sm:max-h-48 overflow-y-auto p-2 bg-white rounded-xl border border-slate-200">
               {currentEmojis.map((emoji) => (
                 <button
                   key={emoji}
                   onClick={() => setAvatar(emoji)}
-                  className={`text-2xl sm:text-3xl lg:text-4xl p-1 lg:p-2 rounded-xl cursor-pointer hover:bg-emerald-200 transition-all ${
-                    avatar === emoji ? "ring-2 ring-emerald-500 bg-emerald-200 scale-110" : ""
+                  aria-label={`Avatar ${emoji}`}
+                  className={`text-2xl sm:text-3xl p-2 rounded-xl cursor-pointer transition-all ${
+                    avatar === emoji
+                      ? "bg-emerald-100 ring-2 ring-emerald-500 scale-110 shadow-sm"
+                      : "hover:bg-slate-50 hover:shadow-sm"
                   }`}
                 >
                   {emoji}
@@ -280,24 +327,35 @@ export function PlayerView() {
             </div>
           </div>
 
+          {/* Spacer to push button down */}
+          <div className="flex-1" />
+
+          {/* Error message */}
           {error && (
-            <p className="rounded-lg bg-red-500/90 px-4 py-2 text-center text-sm lg:text-base font-medium text-white">
-              {error}
-            </p>
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+              <span className="text-red-500 text-lg shrink-0">!</span>
+              <p className="text-sm font-medium text-red-700">{error}</p>
+            </div>
           )}
 
+          {/* Join button */}
           <button
             onClick={handleJoin}
-            disabled={!connected}
-            className="w-full bg-emerald-600 text-white font-bold text-base sm:text-lg lg:text-xl rounded-2xl py-3 sm:py-4 lg:py-5 shadow-lg shadow-emerald-300 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+            disabled={!connected || !isFormValid}
+            className={`w-full font-bold text-lg sm:text-xl rounded-xl py-4 sm:py-5 transition-all ${
+              !connected || !isFormValid
+                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                : "bg-emerald-600 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:shadow-xl active:scale-[0.98]"
+            }`}
           >
-            Entra
+            Entra nel quiz
           </button>
-        </div>
 
-        {!connected && (
-          <p className="mt-4 text-sm text-emerald-500">Connessione in corso...</p>
-        )}
+          {/* Connection status */}
+          {!connected && (
+            <p className="text-center text-sm text-slate-400 animate-pulse pb-2">Connessione in corso...</p>
+          )}
+        </div>
       </div>
     );
   }
@@ -634,6 +692,11 @@ function OrderingInput({
   const [order, setOrder] = useState<number[]>(() =>
     options.items.map((_, i) => i),
   );
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef(0);
+  const draggedEl = useRef<HTMLElement | null>(null);
 
   const swap = (a: number, b: number) => {
     if (b < 0 || b >= order.length) return;
@@ -644,33 +707,104 @@ function OrderingInput({
     });
   };
 
+  // Find which item index the Y coordinate is over
+  const getIndexAtY = (clientY: number): number | null => {
+    if (!listRef.current) return null;
+    const children = listRef.current.children;
+    for (let i = 0; i < children.length; i++) {
+      const rect = children[i].getBoundingClientRect();
+      if (clientY >= rect.top && clientY <= rect.bottom) return i;
+    }
+    return null;
+  };
+
+  const handleTouchStart = (pos: number, e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+    draggedEl.current = e.currentTarget as HTMLElement;
+    setDragIdx(pos);
+    setOverIdx(pos);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (dragIdx === null) return;
+    e.preventDefault();
+    const clientY = e.touches[0].clientY;
+    const idx = getIndexAtY(clientY);
+    if (idx !== null && idx !== overIdx) {
+      setOverIdx(idx);
+    }
+    // Visual feedback: translate the dragged element
+    if (draggedEl.current) {
+      const delta = clientY - touchStartY.current;
+      draggedEl.current.style.transform = `translateY(${delta}px)`;
+      draggedEl.current.style.zIndex = "50";
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      setOrder((prev) => {
+        const next = [...prev];
+        const [removed] = next.splice(dragIdx, 1);
+        next.splice(overIdx, 0, removed);
+        return next;
+      });
+    }
+    // Reset visual
+    if (draggedEl.current) {
+      draggedEl.current.style.transform = "";
+      draggedEl.current.style.zIndex = "";
+    }
+    setDragIdx(null);
+    setOverIdx(null);
+    draggedEl.current = null;
+  };
+
   return (
     <>
-      <div className="flex-1 space-y-2 overflow-y-auto">
+      <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto" onTouchMove={(e) => e.preventDefault()}>
         {order.map((itemIdx, pos) => (
           <div
             key={itemIdx}
-            className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-xl px-4 py-3"
+            onTouchStart={(e) => handleTouchStart(pos, e)}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`flex items-center gap-2 rounded-xl px-4 py-3 transition-all touch-none select-none ${
+              dragIdx === pos
+                ? "bg-indigo-500/30 backdrop-blur-md ring-2 ring-indigo-400 scale-[1.02]"
+                : overIdx === pos && dragIdx !== null && dragIdx !== pos
+                  ? "bg-white/20 backdrop-blur-md border-t-2 border-indigo-400"
+                  : "bg-white/10 backdrop-blur-md"
+            }`}
           >
+            {/* Drag handle */}
+            <span className="text-white/40 text-lg shrink-0 cursor-grab active:cursor-grabbing">☰</span>
+            {/* Position number */}
+            <span className="w-7 h-7 rounded-full bg-white/15 text-sm font-bold flex items-center justify-center shrink-0">
+              {pos + 1}
+            </span>
             <span className="flex-1 text-lg font-medium">
               {options.items[itemIdx]}
             </span>
-            <button
-              onClick={() => swap(pos, pos - 1)}
-              disabled={pos === 0}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-xl font-bold disabled:opacity-30"
-              aria-label="Sposta su"
-            >
-              &#9650;
-            </button>
-            <button
-              onClick={() => swap(pos, pos + 1)}
-              disabled={pos === order.length - 1}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-xl font-bold disabled:opacity-30"
-              aria-label="Sposta giu"
-            >
-              &#9660;
-            </button>
+            {/* Fallback arrow buttons */}
+            <div className="flex gap-1">
+              <button
+                onClick={() => swap(pos, pos - 1)}
+                disabled={pos === 0}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-base font-bold disabled:opacity-20 active:bg-white/20"
+                aria-label="Sposta su"
+              >
+                &#9650;
+              </button>
+              <button
+                onClick={() => swap(pos, pos + 1)}
+                disabled={pos === order.length - 1}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-base font-bold disabled:opacity-20 active:bg-white/20"
+                aria-label="Sposta giu"
+              >
+                &#9660;
+              </button>
+            </div>
           </div>
         ))}
       </div>

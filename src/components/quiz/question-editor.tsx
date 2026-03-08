@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { type QuestionInput } from "@/lib/validators/quiz";
-import { Trash2, Plus, Clock, Star, Image, Upload, Search } from "lucide-react";
+import { Trash2, Plus, Clock, Star, Image, Upload, Search, HelpCircle } from "lucide-react";
 import { ImageSearchDialog } from "@/components/quiz/image-search";
+import { QuestionHelpDialog } from "@/components/quiz/question-help-dialog";
 import { SpotErrorEditor } from "@/components/quiz/spot-error-editor";
 import { NumericEstimationEditor } from "@/components/quiz/numeric-estimation-editor";
 import { ImageHotspotEditor } from "@/components/quiz/image-hotspot-editor";
@@ -57,6 +58,7 @@ function defaultOptionsForType(type: QuestionType): QuestionInput["options"] {
 
 export function QuestionEditor({ question, index, total, onChange, onRemove }: Props) {
   const [showImageSearch, setShowImageSearch] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const handleFieldChange = (field: keyof QuestionInput, value: unknown) => {
     onChange(index, { ...question, [field]: value });
@@ -69,116 +71,174 @@ export function QuestionEditor({ question, index, total, onChange, onRemove }: P
   const currentType = QUESTION_TYPES.find((t) => t.value === question.type);
 
   return (
-    <div className="px-6 py-5 lg:px-10 lg:py-6 space-y-5">
-      {/* Header + Type dropdown */}
-      <div className="flex items-center gap-4">
-        <h2 className="text-2xl lg:text-3xl font-bold text-slate-800 dark:text-white shrink-0">
-          Domanda {index + 1}<span className="text-slate-400 font-normal text-xl lg:text-2xl">/{total}</span>
+    <div className="px-6 py-5 lg:px-10 lg:py-6 space-y-6">
+      {/* ── Header: question number + delete ── */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl lg:text-3xl font-bold text-slate-800 dark:text-white">
+          Domanda {index + 1}
+          <span className="text-slate-400 font-normal text-lg lg:text-xl ml-1">
+            / {total}
+          </span>
         </h2>
-        <select
-          value={question.type}
-          onChange={(e) => handleTypeChange(e.target.value as QuestionType)}
-          className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2 text-lg lg:text-xl font-semibold text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer"
-        >
-          {QUESTION_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.icon} {t.label}
-            </option>
-          ))}
-        </select>
-        <div className="flex-1" />
         <button
           onClick={() => onRemove(index)}
           disabled={total <= 1}
-          className="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 p-2 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+          className="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 p-2 rounded-lg transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           title="Elimina domanda"
         >
           <Trash2 className="size-5" />
         </button>
       </div>
 
-      {/* Image — centered, large preview */}
-      <div>
-        {question.mediaUrl ? (
-          <div className="flex flex-col items-center gap-2">
-            {/^https?:\/\//.test(question.mediaUrl) && (
-              <img src={question.mediaUrl} alt="Anteprima" className="max-h-64 max-w-full object-contain rounded-2xl shadow-sm" />
-            )}
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-slate-400 truncate max-w-[250px]">
-                {question.mediaUrl.replace(/^https?:\/\//, "").split("/")[0]}
-              </span>
+      {/* ── Type selector — prominent row ── */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+          Tipo di domanda
+        </label>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-1.5">
+            {QUESTION_TYPES.map((t) => (
               <button
+                key={t.value}
                 type="button"
-                onClick={() => { handleFieldChange("mediaUrl", null); setShowImageSearch(true); }}
-                className="text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 px-3 py-1 rounded-lg text-base font-medium transition-colors"
+                onClick={() => handleTypeChange(t.value as QuestionType)}
+                className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg text-center transition-all ${
+                  question.type === t.value
+                    ? "bg-indigo-100 dark:bg-indigo-900 ring-2 ring-indigo-500 text-indigo-700 dark:text-indigo-300"
+                    : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400"
+                }`}
               >
-                Cambia
+                <span className="text-lg">{t.icon}</span>
+                <span className="text-[10px] font-semibold leading-tight">{t.label}</span>
               </button>
-              <button onClick={() => handleFieldChange("mediaUrl", null)} className="text-red-400 hover:text-red-600 p-1 transition-colors">
-                <Trash2 className="size-4" />
-              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowHelp(true)}
+            className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 transition-colors shrink-0 self-start"
+            title="Aiuto su questo tipo di domanda"
+          >
+            <HelpCircle className="size-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Question text — prominent ── */}
+      <div>
+        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+          Testo della domanda
+        </label>
+        <textarea
+          value={question.text}
+          onChange={(e) => handleFieldChange("text", e.target.value)}
+          placeholder="Scrivi qui la domanda..."
+          rows={3}
+          className="w-full rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-5 py-4 text-xl lg:text-2xl font-medium text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 resize-none"
+        />
+      </div>
+
+      {/* ── Media block — clear actions ── */}
+      <div>
+        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">
+          Immagine (opzionale)
+        </label>
+        {question.mediaUrl ? (
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+            <div className="flex flex-col items-center gap-3">
+              {(/^https?:\/\//.test(question.mediaUrl) || question.mediaUrl.startsWith("/uploads/")) && (
+                <img
+                  src={question.mediaUrl}
+                  alt="Anteprima"
+                  className="max-h-48 max-w-full object-contain rounded-xl"
+                />
+              )}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleFieldChange("mediaUrl", null);
+                    setShowImageSearch(true);
+                  }}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <Search className="size-3.5" />
+                  Cambia
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFieldChange("mediaUrl", null)}
+                  className="flex items-center gap-1.5 text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <Trash2 className="size-3.5" />
+                  Rimuovi
+                </button>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3">
-            <Image className="size-5 text-slate-400 shrink-0" />
-            <input
-              type="url"
-              placeholder="URL immagine..."
-              onBlur={(e) => { if (e.target.value && /^https?:\/\//.test(e.target.value)) handleFieldChange("mediaUrl", e.target.value); }}
-              className="flex-1 bg-transparent text-lg text-slate-700 dark:text-slate-300 placeholder:text-slate-400 outline-none min-w-0"
-            />
-            <button
-              type="button"
-              onClick={() => setShowImageSearch(true)}
-              className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold px-4 py-2 rounded-xl text-base border border-indigo-200 dark:border-indigo-700 transition-colors shrink-0"
-            >
-              <Search className="size-4" />
-              Cerca
-            </button>
-            <label className="flex items-center gap-2 cursor-pointer bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-semibold px-4 py-2 rounded-xl text-base transition-colors shrink-0">
-              <Upload className="size-4" />
-              Carica
+          <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-4">
+            <div className="flex flex-col sm:flex-row items-center gap-3 justify-center">
+              <Image className="size-6 text-slate-400" />
               <input
-                type="file"
-                accept="image/png,image/jpeg,image/gif,image/webp"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const form = new FormData();
-                  form.append("file", file);
-                  try {
-                    const res = await fetch("/api/upload", { method: "POST", body: form });
-                    if (!res.ok) throw new Error();
-                    const { url } = await res.json();
-                    handleFieldChange("mediaUrl", url);
-                  } catch {
-                    alert("Errore nel caricamento dell'immagine");
-                  }
-                  e.target.value = "";
+                type="url"
+                placeholder="Incolla URL immagine..."
+                onBlur={(e) => {
+                  if (e.target.value && /^https?:\/\//.test(e.target.value))
+                    handleFieldChange("mediaUrl", e.target.value);
                 }}
+                className="flex-1 bg-transparent text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 outline-none min-w-0 text-center sm:text-left"
               />
-            </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowImageSearch(true)}
+                  className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-semibold px-3 py-2 rounded-lg text-sm border border-indigo-200 dark:border-indigo-700 transition-colors"
+                >
+                  <Search className="size-3.5" />
+                  Cerca
+                </button>
+                <label className="flex items-center gap-1.5 cursor-pointer bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-semibold px-3 py-2 rounded-lg text-sm border border-slate-200 dark:border-slate-600 transition-colors">
+                  <Upload className="size-3.5" />
+                  Carica
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/gif,image/webp"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const form = new FormData();
+                      form.append("file", file);
+                      try {
+                        const res = await fetch("/api/upload", {
+                          method: "POST",
+                          body: form,
+                        });
+                        if (!res.ok) throw new Error();
+                        const { url } = await res.json();
+                        handleFieldChange("mediaUrl", url);
+                      } catch {
+                        alert("Errore nel caricamento dell'immagine");
+                      }
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Question text */}
-      <textarea
-        value={question.text}
-        onChange={(e) => handleFieldChange("text", e.target.value)}
-        placeholder="Scrivi la domanda..."
-        rows={2}
-        className="w-full rounded-2xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-5 py-4 text-xl lg:text-2xl text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 resize-none"
-      />
-
-      {/* Options / Answers */}
+      {/* ── Answers section ── */}
       <div>
-        <p className="text-base font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
-          {currentType?.icon} Risposte
-        </p>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">{currentType?.icon}</span>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            Risposte
+          </p>
+        </div>
         {question.type === "MULTIPLE_CHOICE" && (
           <MultipleChoiceEditor
             options={question.options as { choices: { text: string; isCorrect: boolean }[] }}
@@ -235,22 +295,22 @@ export function QuestionEditor({ question, index, total, onChange, onRemove }: P
         )}
       </div>
 
-      {/* Settings — footer row */}
-      <div className="flex items-center gap-8 pt-3 border-t border-slate-100 dark:border-slate-700">
-        <div className="flex items-center gap-2">
-          <Clock className="size-5 text-amber-500" />
+      {/* ── Settings — footer ── */}
+      <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2">
+          <Clock className="size-4 text-amber-500" />
           <input
             type="number"
             min={5}
             max={120}
             value={question.timeLimit}
             onChange={(e) => handleFieldChange("timeLimit", Number(e.target.value))}
-            className="w-16 bg-transparent text-xl font-semibold text-slate-700 dark:text-slate-300 outline-none"
+            className="w-12 bg-transparent text-base font-semibold text-slate-700 dark:text-slate-300 outline-none text-center"
           />
-          <span className="text-base text-slate-400">secondi</span>
+          <span className="text-sm text-slate-400">sec</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Star className="size-5 text-amber-500" />
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2">
+          <Star className="size-4 text-amber-500" />
           <input
             type="number"
             min={100}
@@ -258,15 +318,20 @@ export function QuestionEditor({ question, index, total, onChange, onRemove }: P
             step={100}
             value={question.points}
             onChange={(e) => handleFieldChange("points", Number(e.target.value))}
-            className="w-20 bg-transparent text-xl font-semibold text-slate-700 dark:text-slate-300 outline-none"
+            className="w-16 bg-transparent text-base font-semibold text-slate-700 dark:text-slate-300 outline-none text-center"
           />
-          <span className="text-base text-slate-400">punti</span>
+          <span className="text-sm text-slate-400">pt</span>
         </div>
         <ConfidenceToggle
           enabled={(question as any).confidenceEnabled ?? false}
           onChange={(enabled) => handleFieldChange("confidenceEnabled" as any, enabled)}
         />
       </div>
+
+      {/* Help dialog */}
+      {showHelp && (
+        <QuestionHelpDialog type={question.type} onClose={() => setShowHelp(false)} />
+      )}
 
       {/* Image search dialog */}
       {showImageSearch && (

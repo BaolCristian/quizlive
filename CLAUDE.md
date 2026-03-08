@@ -49,7 +49,15 @@ src/app/api/quiz/             # API CRUD quiz + condivisione
 src/app/api/quiz/[id]/export/ # API export quiz come .qlz (GET)
 src/app/api/quiz/import/      # API import quiz da .qlz (POST multipart)
 src/app/api/upload/           # API upload immagini (POST multipart, max 5MB)
+src/lib/__tests__/scoring.test.ts # Test punteggi (76+ test)
 src/components/quiz/          # Editor quiz, play-button, import-button
+  question-editor.tsx         # Editor singola domanda (tutti i 9 tipi + help button)
+  question-help-dialog.tsx    # Dialog modale con aiuto/esempio per ogni tipo di domanda
+  spot-error-editor.tsx       # Sub-editor per SPOT_ERROR
+  numeric-estimation-editor.tsx # Sub-editor per NUMERIC_ESTIMATION
+  image-hotspot-editor.tsx    # Sub-editor per IMAGE_HOTSPOT (click-to-place)
+  code-completion-editor.tsx  # Sub-editor per CODE_COMPLETION
+  confidence-toggle.tsx       # Toggle livello di confidenza
 src/components/live/          # Host view, player view
 src/components/dashboard/     # Sidebar navigazione
 src/components/stats/         # Grafici Recharts
@@ -71,11 +79,26 @@ src/components/ui/            # shadcn/ui (base-ui)
 5. Fine quiz → podio e statistiche
 
 ## Tipi di domanda
-MULTIPLE_CHOICE, TRUE_FALSE, OPEN_ANSWER, ORDERING, MATCHING
+- **MULTIPLE_CHOICE** — scelta multipla (2-6 opzioni, una o più corrette)
+- **TRUE_FALSE** — vero o falso
+- **OPEN_ANSWER** — risposta aperta (confronto case-insensitive con risposte accettate)
+- **ORDERING** — riordina elementi nella sequenza corretta
+- **MATCHING** — abbina elementi sinistra ↔ destra
+- **SPOT_ERROR** — trova le righe con errori in un testo/codice (punteggio parziale)
+- **NUMERIC_ESTIMATION** — inserisci un numero, punteggio basato sulla vicinanza al valore corretto (tolleranza + range massimo)
+- **IMAGE_HOTSPOT** — tocca il punto corretto su un'immagine (coordinate normalizzate 0-1, raggio + tolleranza)
+- **CODE_COMPLETION** — completa una riga mancante di codice (modalità scelta multipla o testo libero)
+
+Ogni domanda ha un toggle opzionale **confidenceEnabled** che attiva il livello di confidenza: lo studente indica quanto è sicuro della risposta e il punteggio viene modulato (corretto+alta=1.2x, corretto+bassa=0.8x, errato+alta=−200 malus).
+
+Nell'editor, accanto al selettore del tipo di domanda c'è un pulsante **?** che apre un dialog modale con descrizione, suggerimenti per la creazione, vista studente, valutazione ed esempio per quel tipo.
 
 ## Punteggio
-`punteggio = punti_base × (1.0 - tempo_impiegato / tempo_limite × 0.5)`
-Range: 500 (al limite) → 1000 (istantanea), 0 se sbagliata.
+- **Standard**: `punti_base × (1.0 - tempo_impiegato / tempo_limite × 0.5)` — Range: 500→1000, 0 se sbagliata
+- **SPOT_ERROR**: punteggio parziale (ogni errore trovato = +punti, ogni selezione sbagliata = −punti, minimo 0)
+- **NUMERIC_ESTIMATION**: pieno punteggio entro tolleranza, decrescente lineare fino a range massimo, zero oltre
+- **IMAGE_HOTSPOT**: pieno entro raggio, parziale nella zona di tolleranza, zero fuori
+- **Confidenza**: moltiplicatore applicato al punteggio finale (vedi sopra)
 
 ## Formato .qlz (Quiz Live Zip)
 - File ZIP rinominato con estensione `.qlz`, contiene `manifest.json` + `assets/` (immagini)
