@@ -32,12 +32,12 @@ interface QuestionData {
 interface ResultData {
   correctAnswer: QuestionOptions;
   distribution: Record<string, number>;
-  leaderboard: { playerName: string; score: number; delta: number }[];
+  leaderboard: { playerName: string; playerAvatar?: string; score: number; delta: number }[];
 }
 
 interface GameOverData {
-  podium: { playerName: string; score: number; position: number }[];
-  fullResults: { playerName: string; score: number }[];
+  podium: { playerName: string; playerAvatar?: string; score: number; position: number }[];
+  fullResults: { playerName: string; playerAvatar?: string; score: number }[];
 }
 
 const ANSWER_COLORS = [
@@ -52,7 +52,7 @@ const ANSWER_SHAPES = ["triangle", "diamond", "circle", "square"];
 export function HostView({ session }: Props) {
   const { socket, connected } = useSocket();
   const [phase, setPhase] = useState<Phase>("lobby");
-  const [players, setPlayers] = useState<string[]>([]);
+  const [players, setPlayers] = useState<{ name: string; avatar?: string }[]>([]);
   const [playerCount, setPlayerCount] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<QuestionData | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -75,15 +75,16 @@ export function HostView({ session }: Props) {
   useEffect(() => {
     if (!socket) return;
 
-    const handlePlayerJoined = (data: { playerName: string; playerCount: number }) => {
-      setPlayers((prev) =>
-        prev.includes(data.playerName) ? prev : [...prev, data.playerName]
-      );
+    const handlePlayerJoined = (data: { playerName: string; playerAvatar?: string; playerCount: number }) => {
+      setPlayers((prev) => [
+        ...prev.filter((p) => p.name !== data.playerName),
+        { name: data.playerName, avatar: data.playerAvatar },
+      ]);
       setPlayerCount(data.playerCount);
     };
 
     const handlePlayerLeft = (data: { playerName: string; playerCount: number }) => {
-      setPlayers((prev) => prev.filter((p) => p !== data.playerName));
+      setPlayers((prev) => prev.filter((p) => p.name !== data.playerName));
       setPlayerCount(data.playerCount);
     };
 
@@ -186,12 +187,13 @@ export function HostView({ session }: Props) {
             <p className="text-sm opacity-60">In attesa di giocatori...</p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {players.map((name) => (
+              {players.map((player) => (
                 <span
-                  key={name}
-                  className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium"
+                  key={player.name}
+                  className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1"
                 >
-                  {name}
+                  <span className="text-lg">{player.avatar || "\uD83D\uDC64"}</span>
+                  {player.name}
                 </span>
               ))}
             </div>
@@ -365,6 +367,7 @@ export function HostView({ session }: Props) {
                         <span className="text-xl font-bold opacity-60 w-8">
                           {i + 1}.
                         </span>
+                        <span className="text-xl">{entry.playerAvatar || "\uD83D\uDC64"}</span>
                         <span className="font-semibold">{entry.playerName}</span>
                       </div>
                       <div className="flex items-center gap-3">
@@ -426,7 +429,8 @@ export function HostView({ session }: Props) {
                 className="flex flex-col items-center animate-podium-rise"
                 style={{ animationDelay: `${position * 300}ms` }}
               >
-                <span className="text-5xl mb-2">{medals[position]}</span>
+                <span className="text-5xl mb-2">{player.playerAvatar || medals[position]}</span>
+                <span className="text-3xl mb-1">{medals[position]}</span>
                 <span className="font-bold text-lg mb-1">
                   {player.playerName}
                 </span>
@@ -454,6 +458,7 @@ export function HostView({ session }: Props) {
               >
                 <div className="flex items-center gap-3">
                   <span className="font-bold opacity-60 w-8">{i + 1}.</span>
+                  <span className="text-xl">{entry.playerAvatar || "\uD83D\uDC64"}</span>
                   <span className="font-medium">{entry.playerName}</span>
                 </div>
                 <span className="font-bold">{entry.score}</span>
