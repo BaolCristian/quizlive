@@ -30,7 +30,10 @@ const matchingOptionsSchema = z.object({
 export const questionSchema = z.object({
   type: z.enum(["MULTIPLE_CHOICE", "TRUE_FALSE", "OPEN_ANSWER", "ORDERING", "MATCHING"]),
   text: z.string().min(1).max(500),
-  mediaUrl: z.string().url().nullable().optional(),
+  mediaUrl: z.string().refine(
+    (val) => val.startsWith("/uploads/") || val.startsWith("http://") || val.startsWith("https://"),
+    { message: "Must be a URL or a local upload path" }
+  ).nullable().optional(),
   timeLimit: z.number().int().min(5).max(120).default(20),
   points: z.number().int().min(100).max(2000).default(1000),
   order: z.number().int().min(0),
