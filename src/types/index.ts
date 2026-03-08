@@ -22,12 +22,43 @@ export type MatchingOptions = {
   pairs: { left: string; right: string }[];
 };
 
+export type SpotErrorOptions = {
+  lines: string[];
+  errorIndices: number[];
+  explanation?: string;
+};
+
+export type NumericEstimationOptions = {
+  correctValue: number;
+  tolerance: number;
+  maxRange: number;
+  unit?: string;
+};
+
+export type ImageHotspotOptions = {
+  imageUrl: string;
+  hotspot: { x: number; y: number; radius: number };
+  tolerance: number;
+};
+
+export type CodeCompletionOptions = {
+  codeLines: string[];
+  blankLineIndex: number;
+  correctAnswer: string;
+  mode: "choice" | "text";
+  choices?: string[];
+};
+
 export type QuestionOptions =
   | MultipleChoiceOptions
   | TrueFalseOptions
   | OpenAnswerOptions
   | OrderingOptions
-  | MatchingOptions;
+  | MatchingOptions
+  | SpotErrorOptions
+  | NumericEstimationOptions
+  | ImageHotspotOptions
+  | CodeCompletionOptions;
 
 // Answer value schemas per type
 export type MultipleChoiceValue = { selected: number[] };
@@ -35,13 +66,21 @@ export type TrueFalseValue = { selected: boolean };
 export type OpenAnswerValue = { text: string };
 export type OrderingValue = { order: number[] };
 export type MatchingValue = { matches: [number, number][] };
+export type SpotErrorValue = { selected: number[] };
+export type NumericEstimationValue = { value: number };
+export type ImageHotspotValue = { x: number; y: number };
+export type CodeCompletionValue = { text: string } | { selected: number };
 
 export type AnswerValue =
   | MultipleChoiceValue
   | TrueFalseValue
   | OpenAnswerValue
   | OrderingValue
-  | MatchingValue;
+  | MatchingValue
+  | SpotErrorValue
+  | NumericEstimationValue
+  | ImageHotspotValue
+  | CodeCompletionValue;
 
 // Socket.io events
 export interface ServerToClientEvents {
@@ -71,6 +110,7 @@ export interface ServerToClientEvents {
     totalScore: number;
     position: number;
     classCorrectPercent: number;
+    confidenceEnabled?: boolean;
   }) => void;
   gameOver: (data: {
     podium: { playerName: string; score: number; position: number; playerAvatar?: string }[];
@@ -87,4 +127,5 @@ export interface ClientToServerEvents {
   submitAnswer: (data: { value: AnswerValue; responseTimeMs: number }) => void;
   showResults: () => void;
   endGame: () => void;
+  submitConfidence: (data: { confidenceLevel: number }) => void;
 }
