@@ -19,7 +19,7 @@ app.prepare().then(() => {
     httpServer,
     {
       cors: { origin: "*" },
-      path: "/api/socketio",
+      path: "/savint/api/socketio",
     }
   );
 

@@ -12,7 +12,7 @@ export function useSocket() {
 
   useEffect(() => {
     const socket: TypedSocket = io({
-      path: "/api/socketio",
+      path: "/savint/api/socketio",
       transports: ["websocket", "polling"],
     });
 
