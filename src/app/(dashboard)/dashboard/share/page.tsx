@@ -57,8 +57,8 @@ export default async function SharePage() {
   );
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Condivisioni</h1>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">Condivisioni</h1>
 
       {/* Shared by me */}
       <section>

@@ -35,8 +35,8 @@ export default async function SessionsListPage() {
   });
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Le mie sessioni</h1>
+    <div className="max-w-6xl mx-auto">
+      <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-6">Le mie sessioni</h1>
 
       {sessions.length === 0 ? (
         <p className="text-muted-foreground">

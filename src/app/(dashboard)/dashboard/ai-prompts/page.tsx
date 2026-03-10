@@ -86,9 +86,9 @@ export default function AiPromptsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
           Crea quiz con l&apos;AI
         </h1>
         <p className="mt-2 text-slate-600 dark:text-slate-400">
