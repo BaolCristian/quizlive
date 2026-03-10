@@ -12,8 +12,8 @@ const providers: Provider[] = [
   }),
 ];
 
-// Dev-only: login with email, no password needed
-if (process.env.NODE_ENV === "development") {
+// Dev/demo: login with email, no password needed
+if (process.env.NODE_ENV === "development" || process.env.DEMO_MODE === "true") {
   providers.push(
     Credentials({
       name: "Dev Login",
@@ -34,7 +34,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers,
   session: {
-    strategy: process.env.NODE_ENV === "development" ? "jwt" : "database",
+    strategy: (process.env.NODE_ENV === "development" || process.env.DEMO_MODE === "true") ? "jwt" : "database",
   },
   callbacks: {
     async session({ session, user, token }) {

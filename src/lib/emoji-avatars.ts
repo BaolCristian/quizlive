@@ -11,7 +11,8 @@ export function isCustomAvatar(avatar: string): boolean {
 /** Fetch custom emoticons from the server (auto-discovers files in public/emoticons/) */
 export async function fetchCustomEmoticons(): Promise<string[]> {
   try {
-    const res = await fetch("/api/emoticons");
+    const { withBasePath } = await import("@/lib/base-path");
+    const res = await fetch(withBasePath("/api/emoticons"));
     if (!res.ok) return [];
     return await res.json();
   } catch {

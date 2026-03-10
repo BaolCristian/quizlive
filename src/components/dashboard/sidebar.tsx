@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { Menu, Home, BookOpen, Play, BarChart3, Share2, Sparkles, LogOut, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/dashboard/theme-provider";
+import { withBasePath } from "@/lib/base-path";
 import {
   Sheet,
   SheetTrigger,
@@ -30,7 +31,7 @@ function SidebarContent({ user, onNavigate }: { user: any; onNavigate?: () => vo
     <>
       {/* Logo */}
       <div className="flex items-center gap-3 mb-8 px-2">
-        <img src="/logo_savint.png" alt="SAVINT" className="w-10 h-10 object-contain" />
+        <img src={withBasePath("/logo_savint.png")} alt="SAVINT" className="w-10 h-10 object-contain" />
         <span className="text-xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
           SAVINT
         </span>
@@ -114,7 +115,7 @@ export function DashboardSidebar({ user }: { user: any }) {
           </SheetContent>
         </Sheet>
         <div className="flex items-center gap-2">
-          <img src="/logo_savint.png" alt="SAVINT" className="w-8 h-8 object-contain" />
+          <img src={withBasePath("/logo_savint.png")} alt="SAVINT" className="w-8 h-8 object-contain" />
           <span className="text-lg font-extrabold">SAVINT</span>
         </div>
       </div>

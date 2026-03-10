@@ -6,11 +6,12 @@ import Link from "next/link";
 import type { QuestionOptions, MultipleChoiceOptions } from "@/types";
 import type { QuestionType } from "@prisma/client";
 import { isCustomAvatar } from "@/lib/emoji-avatars";
+import { withBasePath } from "@/lib/base-path";
 
 function HostAvatar({ avatar, className }: { avatar?: string; className?: string }) {
   const av = avatar || "👤";
   if (isCustomAvatar(av)) {
-    return <img src={av} alt="avatar" className={`object-contain inline-block ${className ?? ""}`} />;
+    return <img src={withBasePath(av)} alt="avatar" className={`object-contain inline-block ${className ?? ""}`} />;
   }
   return <span className={className}>{av}</span>;
 }

@@ -2,14 +2,16 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { withBasePath } from "@/lib/base-path";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("docente@scuola.it");
+  const showDevLogin = process.env.NEXT_PUBLIC_DEMO_MODE === "true" || process.env.NODE_ENV === "development";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-blue-600 to-blue-800">
       <div className="text-center space-y-6">
-        <img src="/logo_savint.png" alt="SAVINT" className="w-32 h-32 mx-auto object-contain" />
+        <img src={withBasePath("/logo_savint.png")} alt="SAVINT" className="w-32 h-32 mx-auto object-contain" />
         <p className="text-blue-200">Accedi con il tuo account scolastico</p>
         <button
           onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
@@ -18,9 +20,9 @@ export default function LoginPage() {
           Accedi con Google
         </button>
 
-        {process.env.NODE_ENV === "development" && (
+        {showDevLogin && (
           <div className="border-t border-blue-400 pt-4 space-y-3">
-            <p className="text-blue-300 text-sm">Dev Login</p>
+            <p className="text-blue-300 text-sm">Demo Login</p>
             <input
               type="email"
               value={email}

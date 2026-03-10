@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSocket } from "@/lib/socket/client";
 import { fetchCustomEmoticons, buildCategories, randomEmoji, isCustomAvatar } from "@/lib/emoji-avatars";
+import { withBasePath } from "@/lib/base-path";
 import type {
   AnswerValue,
   MatchingOptions,
@@ -86,7 +87,7 @@ function Confetti() {
 
 function AvatarDisplay({ avatar, className }: { avatar: string; className?: string }) {
   if (isCustomAvatar(avatar)) {
-    return <img src={avatar} alt="avatar" className={`object-contain inline-block ${className ?? ""}`} />;
+    return <img src={withBasePath(avatar)} alt="avatar" className={`object-contain inline-block ${className ?? ""}`} />;
   }
   return <span className={className}>{avatar}</span>;
 }
@@ -244,7 +245,7 @@ export function PlayerView() {
         <div className="w-full max-w-md mx-auto flex flex-col gap-6 sm:gap-8 flex-1">
           {/* Header */}
           <div className="text-center">
-            <img src="/logo_savint.png" alt="SAVINT" className="w-24 h-24 sm:w-32 sm:h-32 mx-auto object-contain mb-2" />
+            <img src={withBasePath("/logo_savint.png")} alt="SAVINT" className="w-24 h-24 sm:w-32 sm:h-32 mx-auto object-contain mb-2" />
             <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
               Inserisci il PIN condiviso dal docente e scegli come apparirai nel gioco.
             </p>
@@ -341,7 +342,7 @@ export function PlayerView() {
                   }`}
                 >
                   {isCustomAvatar(emoji) ? (
-                    <img src={emoji} alt="avatar" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+                    <img src={withBasePath(emoji)} alt="avatar" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
                   ) : (
                     emoji
                   )}
