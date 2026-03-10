@@ -463,20 +463,20 @@ function QuizCard({
         {/* Edit */}
         <Link
           href={`/dashboard/quiz/${quiz.id}/edit`}
-          className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          title="Modifica"
         >
-          <Pencil className="size-3.5" />
-          Modifica
+          <Pencil className="size-4" />
         </Link>
 
         {/* Stats */}
         {quiz._count.sessions > 0 && (
           <Link
             href={`/dashboard/quiz/${quiz.id}/stats`}
-            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400 px-3 py-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400 p-2 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors"
+            title="Statistiche"
           >
-            <BarChart3 className="size-3.5" />
-            Stats
+            <BarChart3 className="size-4" />
           </Link>
         )}
 
