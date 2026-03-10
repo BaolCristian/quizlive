@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
+import { withBasePath } from "@/lib/base-path";
 
 export function ExcelTemplateButton() {
   const [loading, setLoading] = useState(false);
@@ -10,7 +11,7 @@ export function ExcelTemplateButton() {
   async function handleDownload() {
     setLoading(true);
     try {
-      const res = await fetch("/api/quiz/excel-template");
+      const res = await fetch(withBasePath("/api/quiz/excel-template"));
       if (!res.ok) throw new Error("Errore nel download");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);

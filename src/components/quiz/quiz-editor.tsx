@@ -7,6 +7,7 @@ import type { QuizInput, QuestionInput } from "@/lib/validators/quiz";
 import { QuestionEditor } from "@/components/quiz/question-editor";
 import { ShareDialog } from "@/components/quiz/share-dialog";
 import { ExcelImportButton } from "@/components/quiz/excel-import-button";
+import { withBasePath } from "@/lib/base-path";
 import {
   Save,
   Loader2,
@@ -161,7 +162,7 @@ export function QuizEditor({ initialData }: Props) {
     };
 
     try {
-      const url = isEdit ? `/api/quiz/${initialData!.id}` : "/api/quiz";
+      const url = withBasePath(isEdit ? `/api/quiz/${initialData!.id}` : "/api/quiz");
       const method = isEdit ? "PUT" : "POST";
 
       const res = await fetch(url, {

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { withBasePath } from "@/lib/base-path";
 
 export function PlayQuizButton({ quizId }: { quizId: string }) {
   const router = useRouter();
@@ -10,7 +11,7 @@ export function PlayQuizButton({ quizId }: { quizId: string }) {
   async function handlePlay() {
     setLoading(true);
     try {
-      const res = await fetch("/api/session", {
+      const res = await fetch(withBasePath("/api/session"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quizId }),

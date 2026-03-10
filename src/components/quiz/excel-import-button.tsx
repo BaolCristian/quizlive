@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, Loader2 } from "lucide-react";
+import { withBasePath } from "@/lib/base-path";
 
 interface Props {
   quizId?: string;
@@ -22,7 +23,7 @@ export function ExcelImportButton({ quizId, onImported }: Props) {
       form.append("file", file);
       if (quizId) form.append("quizId", quizId);
 
-      const res = await fetch("/api/quiz/excel-import", {
+      const res = await fetch(withBasePath("/api/quiz/excel-import"), {
         method: "POST",
         body: form,
       });

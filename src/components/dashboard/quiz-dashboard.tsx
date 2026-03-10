@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { withBasePath } from "@/lib/base-path";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -359,7 +360,7 @@ function QuizCard({
     if (!confirm(`Eliminare "${quiz.title}"?`)) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/quiz/${quiz.id}`, { method: "DELETE" });
+      const res = await fetch(withBasePath(`/api/quiz/${quiz.id}`), { method: "DELETE" });
       if (!res.ok) throw new Error();
       router.refresh();
     } catch {
@@ -371,7 +372,7 @@ function QuizCard({
   const handleDuplicate = async () => {
     setMenuOpen(false);
     try {
-      const res = await fetch(`/api/quiz/${quiz.id}`);
+      const res = await fetch(withBasePath(`/api/quiz/${quiz.id}`));
       if (!res.ok) throw new Error();
       const data = await res.json();
       const payload = {
@@ -390,7 +391,7 @@ function QuizCard({
           options: q.options,
         })),
       };
-      const createRes = await fetch("/api/quiz", {
+      const createRes = await fetch(withBasePath("/api/quiz"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

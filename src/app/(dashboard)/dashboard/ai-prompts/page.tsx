@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Copy, Check, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { withBasePath } from "@/lib/base-path";
 
 const PROMPT = `Sei un assistente per la creazione di quiz didattici. Devi generare un file Excel (.xlsx) compatibile con la piattaforma SAVINT.
 
@@ -69,7 +70,7 @@ export default function AiPromptsPage() {
   async function handleDownloadTemplate() {
     setDownloading(true);
     try {
-      const res = await fetch("/api/quiz/excel-template");
+      const res = await fetch(withBasePath("/api/quiz/excel-template"));
       if (!res.ok) throw new Error("Errore nel download");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);

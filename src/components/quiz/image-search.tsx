@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Search, X, Loader2 } from "lucide-react";
+import { withBasePath } from "@/lib/base-path";
 
 interface ImageHit {
   id: number;
@@ -35,7 +36,7 @@ export function ImageSearchDialog({
     setSearched(true);
 
     try {
-      const res = await fetch(`/api/image-search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(withBasePath(`/api/image-search?q=${encodeURIComponent(q)}`));
       const data = await res.json();
       console.log("[image-search] response:", res.status, data);
 

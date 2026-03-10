@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Loader2 } from "lucide-react";
+import { withBasePath } from "@/lib/base-path";
 
 export function ImportQuizButton() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export function ImportQuizButton() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch("/api/quiz/import", {
+      const res = await fetch(withBasePath("/api/quiz/import"), {
         method: "POST",
         body: form,
       });

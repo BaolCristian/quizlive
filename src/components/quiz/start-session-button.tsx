@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { withBasePath } from "@/lib/base-path";
 
 export function StartSessionButton({ quizId }: { quizId: string }) {
   const router = useRouter();
@@ -10,7 +11,7 @@ export function StartSessionButton({ quizId }: { quizId: string }) {
 
   async function handleStart() {
     setLoading(true);
-    const res = await fetch("/api/session", {
+    const res = await fetch(withBasePath("/api/session"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quizId }),

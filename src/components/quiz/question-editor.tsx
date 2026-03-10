@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { type QuestionInput } from "@/lib/validators/quiz";
 import { Trash2, Plus, Clock, Star, Image, Upload, Search, HelpCircle } from "lucide-react";
+import { withBasePath } from "@/lib/base-path";
 import { ImageSearchDialog } from "@/components/quiz/image-search";
 import { QuestionHelpDialog } from "@/components/quiz/question-help-dialog";
 import { SpotErrorEditor } from "@/components/quiz/spot-error-editor";
@@ -211,7 +212,7 @@ export function QuestionEditor({ question, index, total, onChange, onRemove }: P
                       const form = new FormData();
                       form.append("file", file);
                       try {
-                        const res = await fetch("/api/upload", {
+                        const res = await fetch(withBasePath("/api/upload"), {
                           method: "POST",
                           body: form,
                         });

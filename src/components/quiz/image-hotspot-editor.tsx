@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search, Upload } from "lucide-react";
+import { withBasePath } from "@/lib/base-path";
 import { ImageSearchDialog } from "@/components/quiz/image-search";
 
 interface Props {
@@ -32,7 +33,7 @@ export function ImageHotspotEditor({ options, onChange }: Props) {
     const form = new FormData();
     form.append("file", file);
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const res = await fetch(withBasePath("/api/upload"), { method: "POST", body: form });
       if (!res.ok) throw new Error();
       const { url } = await res.json();
       update({ imageUrl: url });

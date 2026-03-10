@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Share2Icon, Trash2Icon } from "lucide-react";
+import { withBasePath } from "@/lib/base-path";
 
 type Permission = "VIEW" | "DUPLICATE" | "EDIT";
 
@@ -42,7 +43,7 @@ export function ShareDialog({ quizId }: { quizId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchShares = useCallback(async () => {
-    const res = await fetch(`/api/quiz/${quizId}/share`);
+    const res = await fetch(withBasePath(`/api/quiz/${quizId}/share`));
     if (res.ok) {
       setShares(await res.json());
     }
@@ -59,7 +60,7 @@ export function ShareDialog({ quizId }: { quizId: string }) {
     if (!email.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/quiz/${quizId}/share`, {
+      const res = await fetch(withBasePath(`/api/quiz/${quizId}/share`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), permission }),
@@ -78,7 +79,7 @@ export function ShareDialog({ quizId }: { quizId: string }) {
   };
 
   const handleRemove = async (shareId: string) => {
-    await fetch(`/api/quiz/${quizId}/share`, {
+    await fetch(withBasePath(`/api/quiz/${quizId}/share`), {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ shareId }),
