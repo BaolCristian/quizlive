@@ -18,7 +18,7 @@ export function PlayQuizButton({ quizId }: { quizId: string }) {
       });
       if (!res.ok) throw new Error("Errore nella creazione della sessione");
       const session = await res.json();
-      window.open(`/live/host/${session.id}`, "_blank");
+      window.open(withBasePath(`/live/host/${session.id}`), "_blank");
       setLoading(false);
     } catch {
       setLoading(false);
