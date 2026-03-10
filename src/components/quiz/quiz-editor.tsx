@@ -30,6 +30,60 @@ interface Props {
   initialData?: QuizInput & { id?: string };
 }
 
+interface ValidationError {
+  questionIndex: number;
+  message: string;
+}
+
+function validateQuestions(title: string, questions: QuestionInput[]): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  if (!title.trim()) {
+    errors.push({ questionIndex: -1, message: "Il titolo del quiz è obbligatorio" });
+  }
+
+  questions.forEach((q, i) => {
+    if (!q.text.trim()) {
+      errors.push({ questionIndex: i, message: `Domanda ${i + 1}: manca il testo della domanda` });
+    }
+
+    if (q.type === "MULTIPLE_CHOICE") {
+      const opts = (q.options as { choices: { text: string; isCorrect: boolean }[] }).choices;
+      const filled = opts.filter((o) => o.text.trim());
+      if (filled.length < 2) {
+        errors.push({ questionIndex: i, message: `Domanda ${i + 1}: servono almeno 2 opzioni compilate` });
+      }
+      if (!opts.some((o) => o.isCorrect && o.text.trim())) {
+        errors.push({ questionIndex: i, message: `Domanda ${i + 1}: nessuna risposta corretta selezionata` });
+      }
+    }
+
+    if (q.type === "OPEN_ANSWER") {
+      const opts = q.options as { acceptedAnswers: string[] };
+      if (!opts.acceptedAnswers?.some((a) => a.trim())) {
+        errors.push({ questionIndex: i, message: `Domanda ${i + 1}: serve almeno una risposta accettata` });
+      }
+    }
+
+    if (q.type === "ORDERING") {
+      const opts = q.options as { items: string[] };
+      const filled = opts.items?.filter((item) => item.trim()) ?? [];
+      if (filled.length < 2) {
+        errors.push({ questionIndex: i, message: `Domanda ${i + 1}: servono almeno 2 elementi` });
+      }
+    }
+
+    if (q.type === "NUMERIC_ESTIMATION") {
+      const opts = q.options as { correctValue?: number; tolerance?: number; maxRange?: number };
+      if (opts.correctValue === undefined || opts.correctValue === null) {
+        errors.push({ questionIndex: i, message: `Domanda ${i + 1}: manca il valore corretto` });
+      }
+    }
+  });
+
+  return errors;
+}
+
 function createDefaultQuestion(order: number): QuestionInput {
   return {
     type: "MULTIPLE_CHOICE",
@@ -71,6 +125,7 @@ export function QuizEditor({ initialData }: Props) {
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
 
   /* ---------- autosave ---------- */
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -79,8 +134,18 @@ export function QuizEditor({ initialData }: Props) {
   const doSave = useCallback(async () => {
     if (saving) return;
     setError(null);
+    setValidationErrors([]);
     setSaving(true);
     setSaveStatus("saving");
+
+    // Client-side validation
+    const vErrors = validateQuestions(title, questions);
+    if (vErrors.length > 0) {
+      setValidationErrors(vErrors);
+      setSaving(false);
+      setSaveStatus("error");
+      return;
+    }
 
     const tags = tagsText
       .split(",")
@@ -416,6 +481,44 @@ export function QuizEditor({ initialData }: Props) {
             <div className="mx-6 lg:mx-10 mb-6 rounded-xl border border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800 px-5 py-3 text-sm text-red-700 dark:text-red-400 font-medium flex items-center gap-2">
               <AlertCircle className="size-4 shrink-0" />
               {error}
+            </div>
+          )}
+
+          {/* Validation errors dialog */}
+          {validationErrors.length > 0 && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full max-h-[70vh] flex flex-col">
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                  <AlertCircle className="size-5 text-red-500 shrink-0" />
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Correggi prima di salvare
+                  </h2>
+                </div>
+                <div className="overflow-y-auto p-4 space-y-2">
+                  {validationErrors.map((ve, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (ve.questionIndex >= 0) {
+                          setActiveQuestion(ve.questionIndex);
+                        }
+                        setValidationErrors([]);
+                      }}
+                      className="w-full text-left px-4 py-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+                    >
+                      {ve.message}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+                  <button
+                    onClick={() => setValidationErrors([])}
+                    className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    Chiudi
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </main>
