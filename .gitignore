@@ -48,3 +48,14 @@ public/uploads/
 
 # claude
 CLAUDE.md
+
+# scripts e file di deploy
+avvio.sh
+
+# docker (non necessario per deploy)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# docs interni / piani di sviluppo
+docs/plans/
