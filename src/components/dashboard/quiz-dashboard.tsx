@@ -456,7 +456,7 @@ function QuizCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1.5 px-4 py-3 border-t border-slate-100 dark:border-slate-800">
+      <div className="flex items-center gap-1.5 px-4 py-3 border-t border-slate-100 dark:border-slate-800 overflow-visible">
         {/* Play — primary */}
         <PlayQuizButton quizId={quiz.id} />
 
@@ -481,7 +481,7 @@ function QuizCard({
         )}
 
         {/* More menu */}
-        <div className="relative ml-auto">
+        <div className="relative ml-auto shrink-0">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
