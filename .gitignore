@@ -49,6 +49,9 @@ public/uploads/
 # claude
 CLAUDE.md
 
+# guida deploy privata
+DEPLOY-GUIDA.md
+
 # scripts e file di deploy
 avvio.sh
 
