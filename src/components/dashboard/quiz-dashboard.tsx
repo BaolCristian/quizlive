@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { PlayQuizButton } from "@/components/quiz/play-button";
 import { ImportQuizButton } from "@/components/quiz/import-button";
+import { ExcelImportButton } from "@/components/quiz/excel-import-button";
+import { ExcelTemplateButton } from "@/components/quiz/excel-template-button";
 import {
   Search,
   Plus,
@@ -132,6 +134,8 @@ export function QuizDashboard({
           </p>
         </div>
         <div className="flex gap-3">
+          <ExcelTemplateButton />
+          <ExcelImportButton />
           <ImportQuizButton />
           <Link href="/dashboard/quiz/new">
             <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full transition-all shadow-md shadow-indigo-200 dark:shadow-none hover:shadow-lg active:scale-[0.97]">
@@ -323,6 +327,8 @@ function EmptyLibrary() {
         Crea il tuo primo quiz interattivo o importa un file .qlz da un collega
       </p>
       <div className="flex justify-center gap-3">
+        <ExcelTemplateButton />
+        <ExcelImportButton />
         <ImportQuizButton />
         <Link href="/dashboard/quiz/new">
           <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-full transition-colors shadow-md shadow-indigo-200">
