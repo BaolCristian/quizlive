@@ -113,6 +113,7 @@ export function QuizEditor({ initialData }: Props) {
   const [tagsText, setTagsText] = useState(
     initialData?.tags?.join(", ") ?? "",
   );
+  const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? false);
   const [questions, setQuestions] = useState<QuestionInput[]>(
     initialData?.questions?.length
       ? initialData.questions
@@ -156,7 +157,7 @@ export function QuizEditor({ initialData }: Props) {
     const payload: QuizInput = {
       title,
       description: description || undefined,
-      isPublic: initialData?.isPublic ?? false,
+      isPublic,
       tags,
       questions: questions.map((q, i) => ({ ...q, order: i })),
     };
@@ -461,6 +462,29 @@ export function QuizEditor({ initialData }: Props) {
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   />
                 </div>
+                <label className="flex items-center gap-3 cursor-pointer select-none pt-1">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={isPublic}
+                      onChange={(e) => setIsPublic(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-11 h-6 rounded-full transition-colors ${
+                        isPublic ? "bg-indigo-600" : "bg-slate-300 dark:bg-slate-600"
+                      }`}
+                    />
+                    <div
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                        isPublic ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+                    Rendi pubblico nella libreria
+                  </span>
+                </label>
               </div>
             )}
           </div>

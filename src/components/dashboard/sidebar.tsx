@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
-import { Menu, Home, BookOpen, Play, BarChart3, Share2, Sparkles, LogOut, Moon, Sun, ShieldCheck } from "lucide-react";
+import { Menu, Home, BookOpen, Play, BarChart3, Share2, Sparkles, Library, LogOut, Moon, Sun, ShieldCheck } from "lucide-react";
 import { useTheme } from "@/components/dashboard/theme-provider";
 import { withBasePath } from "@/lib/base-path";
 import {
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/dashboard/sessions", label: "Sessioni", icon: Play },
   { href: "/dashboard/stats", label: "Statistiche", icon: BarChart3 },
   { href: "/dashboard/share", label: "Condivisioni", icon: Share2 },
+  { href: "/dashboard/library", label: "Libreria", icon: Library },
   { href: "/dashboard/ai-prompts", label: "Crea con AI", icon: Sparkles },
 ];
 
