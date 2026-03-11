@@ -42,7 +42,7 @@ const numericEstimationOptionsSchema = z.object({
 
 const imageHotspotOptionsSchema = z.object({
   imageUrl: z.string().refine(
-    (val) => val.startsWith("/uploads/") || val.startsWith("http://") || val.startsWith("https://"),
+    (val) => val.startsWith("/uploads/") || val.startsWith("/api/uploads/") || val.startsWith("http://") || val.startsWith("https://"),
     { message: "Must be a URL or a local upload path" }
   ),
   hotspot: z.object({
@@ -68,7 +68,7 @@ export const questionSchema = z.object({
   ]),
   text: z.string().min(1).max(500),
   mediaUrl: z.string().refine(
-    (val) => val.startsWith("/uploads/") || val.startsWith("http://") || val.startsWith("https://"),
+    (val) => val.startsWith("/uploads/") || val.startsWith("/api/uploads/") || val.startsWith("http://") || val.startsWith("https://"),
     { message: "Must be a URL or a local upload path" }
   ).nullable().optional(),
   timeLimit: z.number().int().min(5).max(120).default(20),
