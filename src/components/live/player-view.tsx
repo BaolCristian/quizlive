@@ -531,7 +531,7 @@ export function PlayerView() {
               style={{ animationDelay: `${i * 300}ms` }}
             >
               <span className="text-2xl sm:text-3xl lg:text-4xl">{medals[p.position - 1]}</span>
-              <span className="text-3xl sm:text-5xl lg:text-6xl">{p.playerAvatar ?? avatar}</span>
+              <AvatarDisplay avatar={p.playerAvatar ?? avatar} className={isCustomAvatar(p.playerAvatar ?? avatar) ? "w-10 h-10 sm:w-14 sm:h-14 lg:w-16 lg:h-16" : "text-3xl sm:text-5xl lg:text-6xl"} />
               <div className="flex-1 min-w-0">
                 <span className="text-base sm:text-lg lg:text-xl font-bold text-white block truncate">
                   {p.playerName}
@@ -555,7 +555,7 @@ export function PlayerView() {
                 <span className="w-7 sm:w-8 text-center text-sm sm:text-base lg:text-lg font-bold text-white/70">
                   {i + 4}
                 </span>
-                <span className="text-xl sm:text-2xl lg:text-3xl">{p.playerAvatar ?? avatar}</span>
+                <AvatarDisplay avatar={p.playerAvatar ?? avatar} className={isCustomAvatar(p.playerAvatar ?? avatar) ? "w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10" : "text-xl sm:text-2xl lg:text-3xl"} />
                 <span className="flex-1 text-sm sm:text-base lg:text-lg font-medium text-white/90 truncate">
                   {p.playerName}
                 </span>
