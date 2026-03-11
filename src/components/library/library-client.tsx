@@ -40,7 +40,10 @@ export function LibraryClient({ quizzes }: { quizzes: QuizItem[] }) {
       });
       if (!res.ok) throw new Error();
       const session = await res.json();
-      window.open(withBasePath(`/live/host/${session.id}`), "_blank");
+      const win = window.open(withBasePath(`/live/host/${session.id}`), "_blank");
+      if (!win) {
+        router.push(`/live/host/${session.id}`);
+      }
     } catch {
       alert("Errore nell'avvio della sessione");
     } finally {
