@@ -1,75 +1,73 @@
 # SAVINT
 
-**Piattaforma gratuita di quiz interattivi per la scuola.**
-
 **Free interactive quiz platform for schools.**
 
-> **[Italiano](README.md)** | **[English](README.en.md)**
+> **[English](README.md)** | **[Italiano](README.it.md)**
 
 ---
 
-## Indice
+## Table of Contents
 
-- [Descrizione](#descrizione)
-- [Funzionalita'](#funzionalita)
-- [Stack tecnologico](#stack-tecnologico)
-- [Avvio rapido](#avvio-rapido)
-- [Come funziona](#come-funziona)
-- [Tipi di domanda](#tipi-di-domanda)
-- [Comandi principali](#comandi-principali)
-- [Deploy in produzione](#deploy-in-produzione)
-- [Utente Admin](#utente-admin)
-- [Configurazione Google OAuth](#configurazione-google-oauth)
-- [Licenza](#licenza)
+- [Description](#description)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Quick Start](#quick-start)
+- [How it Works](#how-it-works)
+- [Question Types](#question-types)
+- [Main Commands](#main-commands)
+- [Production Deploy](#production-deploy)
+- [Admin User](#admin-user)
+- [Google OAuth Setup](#google-oauth-setup)
+- [License](#license)
 
 ---
 
-## Descrizione
+## Description
 
-Il docente crea quiz, li proietta sulla LIM e gli studenti rispondono in tempo reale dal proprio telefono. Pensata per rendere le lezioni piu' coinvolgenti e la valutazione formativa piu' immediata.
+Teachers create quizzes, project them on the interactive whiteboard and students answer in real-time from their phones. Designed to make lessons more engaging and formative assessment more immediate.
 
-> SAVINT e' e sara' sempre **gratuito per tutte le scuole**. Nuove funzionalita' verranno aggiunte progressivamente per offrire un'esperienza sempre migliore a docenti e studenti.
+> SAVINT is and will always be **free for all schools**. New features will be added progressively to provide an ever-better experience for teachers and students.
 
-## Funzionalita'
+## Features
 
-- **9 tipi di domanda**: scelta multipla, vero/falso, risposta aperta, ordinamento, abbinamento, trova l'errore, stima numerica, hotspot su immagine, completamento codice
-- **Quiz live in tempo reale**: lobby con PIN a 6 cifre, countdown, classifica animata, podio finale
-- **Livello di confidenza**: lo studente indica quanto e' sicuro della risposta, con bonus o malus sul punteggio
-- **Import da Excel**: crea quiz da file Excel, con template scaricabile e supporto AI
-- **Dashboard docente**: crea e modifica quiz, storico sessioni, statistiche avanzate
-- **Statistiche**: per sessione, per quiz, per studente, per argomento, con grafici interattivi
-- **Condivisione**: condividi quiz tra colleghi con permessi (visualizza/duplica/modifica)
-- **Export/Import**: formato .qlz per condividere quiz tra scuole diverse, export risultati in CSV/PDF
-- **Upload immagini**: carica immagini nelle domande o usa URL esterni
-- **Emoticon personalizzate**: avatar custom per gli studenti (basta aggiungere PNG nella cartella `public/emoticons/`)
-- **Autenticazione**: login con Google Workspace scolastico
-- **Responsive**: interfaccia ottimizzata per LIM (docente) e telefono (studenti)
+- **9 question types**: multiple choice, true/false, open answer, ordering, matching, find the error, numeric estimation, image hotspot, code completion
+- **Real-time live quizzes**: lobby with 6-digit PIN, countdown, animated leaderboard, final podium
+- **Confidence level**: students indicate how confident they are in their answer, with score bonus or penalty
+- **Excel import**: create quizzes from Excel files, with downloadable template and AI support
+- **Teacher dashboard**: create and edit quizzes, session history, advanced statistics
+- **Statistics**: by session, quiz, student, topic, with interactive charts
+- **Sharing**: share quizzes with colleagues with permissions (view/duplicate/edit)
+- **Export/Import**: .qlz format to share quizzes across schools, export results as CSV/PDF
+- **Image upload**: upload images in questions or use external URLs
+- **Custom emoticons**: custom avatars for students (just add PNGs to the `public/emoticons/` folder)
+- **Authentication**: login with school Google Workspace
+- **Responsive**: optimized for interactive whiteboards (teacher) and phones (students)
 
-## Stack tecnologico
+## Tech Stack
 
-| Componente | Tecnologia |
-|------------|-----------|
+| Component | Technology |
+|-----------|-----------|
 | Framework | Next.js 16 (App Router) |
-| Linguaggio | TypeScript |
+| Language | TypeScript |
 | UI | React 19, Tailwind CSS 4, shadcn/ui |
 | Real-time | Socket.io 4 |
 | Database | PostgreSQL 16 |
 | ORM | Prisma 6 |
-| Autenticazione | NextAuth v5 (Google OAuth) |
-| Grafici | Recharts |
+| Auth | NextAuth v5 (Google OAuth) |
+| Charts | Recharts |
 | Test | Vitest + Playwright |
 
 ---
 
-## Avvio rapido
+## Quick Start
 
-### Prerequisiti
+### Prerequisites
 
 - **Node.js 20+**
-- **PostgreSQL 16** (locale o via Docker)
-- **Account Google Cloud** per OAuth
+- **PostgreSQL 16** (local or via Docker)
+- **Google Cloud account** for OAuth
 
-### Installazione
+### Installation
 
 ```bash
 git clone https://github.com/BaolCristian/savint.git
@@ -77,13 +75,13 @@ cd savint
 npm install
 ```
 
-### Configurazione
+### Configuration
 
 ```bash
 cp .env.example .env
 ```
 
-Modifica `.env` con i tuoi valori. Genera il secret di NextAuth:
+Edit `.env` with your values. Generate the NextAuth secret:
 
 ```bash
 openssl rand -base64 32
@@ -92,89 +90,89 @@ openssl rand -base64 32
 ### Database
 
 ```bash
-# Crea le tabelle
+# Create tables
 npx prisma migrate dev
 
-# (Opzionale) Carica dati demo
+# (Optional) Load demo data
 npx prisma db seed
 ```
 
-Il seed crea un docente demo (`docente@scuola.it`) e un admin demo (`admin@scuola.it`) con quiz di esempio che coprono tutti i 9 tipi di domanda.
+The seed creates a demo teacher (`docente@scuola.it`) and a demo admin (`admin@scuola.it`) with sample quizzes covering all 9 question types.
 
-### Avvio
+### Start
 
 ```bash
 npm run dev:custom
 ```
 
-Il server parte su **http://localhost:3000** con Socket.io integrato.
+The server starts at **http://localhost:3000** with built-in Socket.io.
 
-> **Nota:** usa sempre `dev:custom` e non `dev`, perche' il server custom e' necessario per Socket.io.
-
----
-
-## Come funziona
-
-### Docente
-
-1. Accedi con Google su `/login`
-2. Crea un quiz con le domande desiderate
-3. Clicca **Gioca** per avviare una sessione live
-4. Proietta lo schermo sulla LIM — gli studenti vedono il PIN
-5. Avvia il quiz e gestisci il flusso delle domande
-6. A fine quiz: podio e statistiche dettagliate
-
-### Studente
-
-1. Apri il sito sul telefono
-2. Inserisci il PIN a 6 cifre mostrato sulla LIM
-3. Scegli un nickname e un avatar
-4. Rispondi alle domande entro il tempo limite
-5. Feedback immediato dopo ogni risposta
-6. Classifica finale e podio
+> **Note:** always use `dev:custom` instead of `dev`, because the custom server is required for Socket.io.
 
 ---
 
-## Tipi di domanda
+## How it Works
 
-| Tipo | Descrizione |
+### Teacher
+
+1. Log in with Google at `/login`
+2. Create a quiz with the desired questions
+3. Click **Play** to start a live session
+4. Project the screen on the whiteboard — students see the PIN
+5. Start the quiz and manage the question flow
+6. At the end: podium and detailed statistics
+
+### Student
+
+1. Open the site on your phone
+2. Enter the 6-digit PIN shown on the whiteboard
+3. Choose a nickname and an avatar
+4. Answer questions before time runs out
+5. Immediate feedback after each answer
+6. Final leaderboard and podium
+
+---
+
+## Question Types
+
+| Type | Description |
 |------|-------------|
-| Scelta multipla | 2-6 opzioni, una o piu' corrette |
-| Vero o falso | Classica domanda binaria |
-| Risposta aperta | Confronto con risposte accettate |
-| Ordinamento | Riordina elementi nella sequenza corretta |
-| Abbinamento | Collega elementi sinistra-destra |
-| Trova l'errore | Individua le righe con errori in un testo o codice |
-| Stima numerica | Inserisci un numero, punteggio basato sulla vicinanza |
-| Hotspot immagine | Tocca il punto corretto su un'immagine |
-| Completamento codice | Completa la riga mancante (scelta multipla o testo libero) |
+| Multiple choice | 2-6 options, one or more correct |
+| True or false | Classic binary question |
+| Open answer | Matched against accepted answers |
+| Ordering | Reorder elements in the correct sequence |
+| Matching | Connect left-right elements |
+| Find the error | Find rows with errors in text or code |
+| Numeric estimation | Enter a number, score based on proximity |
+| Image hotspot | Tap the correct point on an image |
+| Code completion | Complete the missing line (multiple choice or free text) |
 
 ---
 
-## Comandi principali
+## Main Commands
 
-| Comando | Descrizione |
+| Command | Description |
 |---------|-------------|
-| `npm run dev:custom` | Server di sviluppo con Socket.io |
-| `npm run build` | Build di produzione |
-| `npm run start:custom` | Avvia in produzione |
-| `npm run test:run` | Test unitari |
-| `npm run test:e2e` | Test end-to-end |
-| `npx prisma studio` | GUI database |
-| `npx prisma migrate dev` | Migrazioni database |
-| `npx prisma db seed` | Carica dati demo |
+| `npm run dev:custom` | Dev server with Socket.io |
+| `npm run build` | Production build |
+| `npm run start:custom` | Start in production |
+| `npm run test:run` | Unit tests |
+| `npm run test:e2e` | E2E tests |
+| `npx prisma studio` | Database GUI |
+| `npx prisma migrate dev` | Database migrations |
+| `npx prisma db seed` | Load demo data |
 
 ---
 
-## Deploy in produzione
+## Production Deploy
 
-### Con Nginx (consigliato)
+### With Nginx (recommended)
 
-SAVINT supporta il deploy sotto un subpath (es. `https://tuodominio.it/savint`) tramite Nginx come reverse proxy.
+SAVINT supports deployment under a subpath (e.g. `https://yourdomain.com/savint`) using Nginx as a reverse proxy.
 
 ```bash
 cp .env.example .env
-# Configura .env con i valori di produzione
+# Set .env with production values
 npm install
 npx prisma generate
 npx prisma migrate deploy
@@ -182,44 +180,44 @@ npm run build
 pm2 start npm --name savint -- run start:custom
 ```
 
-Configura Nginx con un blocco `location /savint` che fa proxy_pass al server Node.js. Sono necessari gli header `Upgrade` e `Connection "upgrade"` per Socket.io.
+Configure Nginx with a `location /savint` block that proxies to the Node.js server. The `Upgrade` and `Connection "upgrade"` headers are required for Socket.io.
 
 ---
 
-## Utente Admin
+## Admin User
 
-Il seed crea un utente admin demo con email `admin@scuola.it`. L'admin ha accesso al pannello **Admin** nella sidebar, dove puo' vedere tutti gli utenti registrati, il numero di quiz e sessioni di ciascuno.
+The seed creates a demo admin user with email `admin@scuola.it`. The admin has access to the **Admin** panel in the sidebar, where they can see all registered users, and each user's quiz and session counts.
 
-Per promuovere un utente esistente ad admin in produzione:
+To promote an existing user to admin in production:
 
 ```sql
-UPDATE "User" SET role = 'ADMIN' WHERE email = 'tua-email@esempio.com';
+UPDATE "User" SET role = 'ADMIN' WHERE email = 'your-email@example.com';
 ```
 
-Oppure tramite Prisma Studio:
+Or via Prisma Studio:
 
 ```bash
 npx prisma studio
 ```
 
-| Ruolo | Descrizione |
-|-------|-------------|
-| `TEACHER` | Ruolo predefinito. Crea quiz, avvia sessioni, vede le proprie statistiche |
-| `ADMIN` | Tutto cio' che puo' fare un docente + pannello admin con lista utenti e statistiche globali |
+| Role | Description |
+|------|-------------|
+| `TEACHER` | Default role. Creates quizzes, starts sessions, views own statistics |
+| `ADMIN` | Everything a teacher can do + admin panel with user list and global statistics |
 
 ---
 
-## Configurazione Google OAuth
+## Google OAuth Setup
 
-1. Vai su [Google Cloud Console](https://console.cloud.google.com)
-2. Crea un progetto e configura la schermata di consenso OAuth
-3. Crea credenziali **ID client OAuth 2.0**
-   - URI di reindirizzamento (dev): `http://localhost:3000/api/auth/callback/google`
-   - URI di reindirizzamento (prod con subpath): `https://tuodominio.it/savint/api/auth/callback/google`
-4. Copia Client ID e Client Secret nel file `.env`
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a project and configure the OAuth consent screen
+3. Create **OAuth 2.0 Client ID** credentials
+   - Redirect URI (dev): `http://localhost:3000/api/auth/callback/google`
+   - Redirect URI (prod with subpath): `https://yourdomain.com/savint/api/auth/callback/google`
+4. Copy Client ID and Client Secret to your `.env` file
 
 ---
 
-## Licenza
+## License
 
-SAVINT e' rilasciato sotto licenza **AGPL-3.0**. Gratuito per uso scolastico ed educativo.
+SAVINT is released under the **AGPL-3.0** license. Free for school and educational use.
