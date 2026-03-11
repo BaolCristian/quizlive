@@ -8,9 +8,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { ExportButtons } from "@/components/session/export-buttons";
 import {
   Table,
   TableBody,
@@ -27,9 +26,10 @@ export default async function SessionDetailPage({
 }) {
   const { id } = await params;
   const authSession = await auth();
+  if (!authSession?.user?.id) redirect("/api/auth/signin");
 
   const session = await prisma.session.findUnique({
-    where: { id, hostId: authSession!.user!.id },
+    where: { id, hostId: authSession.user.id },
     include: {
       quiz: {
         include: {
@@ -129,23 +129,7 @@ export default async function SessionDetailPage({
             })}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link
-            href={`/api/stats/export?sessionId=${id}&format=csv`}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Esporta CSV
-          </Link>
-          <Link
-            href={`/api/stats/export?sessionId=${id}&format=pdf`}
-            target="_blank"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Esporta PDF
-          </Link>
-        </div>
+        <ExportButtons sessionId={id} />
       </div>
 
       {/* Summary cards */}
