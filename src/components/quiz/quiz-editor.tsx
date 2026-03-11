@@ -208,6 +208,7 @@ export function QuizEditor({ initialData }: Props) {
     title,
     description,
     tagsText,
+    isPublic,
     questions,
     initialData,
     isEdit,
@@ -226,12 +227,12 @@ export function QuizEditor({ initialData }: Props) {
   // Track changes for autosave
   const prevDataRef = useRef<string>("");
   useEffect(() => {
-    const snapshot = JSON.stringify({ title, description, tagsText, questions });
+    const snapshot = JSON.stringify({ title, description, tagsText, isPublic, questions });
     if (prevDataRef.current && prevDataRef.current !== snapshot) {
       scheduleAutosave();
     }
     prevDataRef.current = snapshot;
-  }, [title, description, tagsText, questions, scheduleAutosave]);
+  }, [title, description, tagsText, isPublic, questions, scheduleAutosave]);
 
   // Cleanup timer
   useEffect(() => {
