@@ -413,8 +413,47 @@ export function QuizEditor({ initialData }: Props) {
       <div className="flex-1 flex overflow-hidden">
         {/* ── Left: active question editor ── */}
         <main className="flex-1 overflow-y-auto">
+          {/* Public toggle — always visible */}
+          <div className={`mx-4 lg:mx-8 mt-4 mb-2 rounded-xl border px-4 py-3 flex items-center gap-3 ${
+            isPublic
+              ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30"
+              : "border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30"
+          }`}>
+            <label className="flex items-center gap-3 cursor-pointer select-none flex-1">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                  className="sr-only"
+                />
+                <div
+                  className={`w-11 h-6 rounded-full transition-colors ${
+                    isPublic ? "bg-green-500" : "bg-slate-300 dark:bg-slate-600"
+                  }`}
+                />
+                <div
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                    isPublic ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </div>
+              <span className={`text-sm font-bold ${isPublic ? "text-green-700 dark:text-green-300" : "text-slate-600 dark:text-slate-400"}`}>
+                {isPublic ? "Quiz pubblico nella libreria" : "Quiz privato"}
+              </span>
+            </label>
+            <span className="relative group">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-600 text-[11px] font-bold text-slate-500 dark:text-slate-300 cursor-help">
+                ?
+              </span>
+              <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-72 rounded-lg bg-slate-800 px-3 py-2.5 text-xs leading-relaxed text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-50">
+                Condividi il tuo quiz con tutti i docenti! I quiz pubblici appaiono nella Libreria: altri docenti possono giocarli direttamente o duplicarli e adattarli alle proprie classi. Insieme creiamo una raccolta di risorse didattiche libere e gratuite.
+              </span>
+            </span>
+          </div>
+
           {/* Quiz settings */}
-          <div className="mx-4 lg:mx-8 mt-4 mb-2 rounded-xl border border-indigo-100 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/30">
+          <div className="mx-4 lg:mx-8 mt-2 mb-2 rounded-xl border border-indigo-100 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/30">
             <button
               type="button"
               onClick={() => setSettingsOpen(!settingsOpen)}
@@ -425,11 +464,6 @@ export function QuizEditor({ initialData }: Props) {
                 <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
                   Impostazioni quiz
                 </span>
-                {isPublic && (
-                  <span className="text-xs font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-2 py-0.5 rounded-full">
-                    Pubblico
-                  </span>
-                )}
                 {!settingsOpen && (description || tagsText) && (
                   <span className="text-xs text-slate-400 truncate max-w-48">
                     {[description, tagsText].filter(Boolean).join(" · ")}
@@ -470,29 +504,6 @@ export function QuizEditor({ initialData }: Props) {
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   />
                 </div>
-                <label className="flex items-center gap-3 cursor-pointer select-none pt-1">
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={isPublic}
-                      onChange={(e) => setIsPublic(e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div
-                      className={`w-11 h-6 rounded-full transition-colors ${
-                        isPublic ? "bg-green-500" : "bg-slate-300 dark:bg-slate-600"
-                      }`}
-                    />
-                    <div
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                        isPublic ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">
-                    Rendi pubblico nella libreria
-                  </span>
-                </label>
               </div>
             )}
           </div>
