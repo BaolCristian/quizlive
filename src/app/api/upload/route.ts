@@ -58,7 +58,9 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(join(absoluteDir, filename), buffer);
 
-  const url = `/${relativeDir}/${filename}`;
+  // Return API-served URL so it works after build (Next.js doesn't serve
+  // files added to public/ at runtime) and with basePath.
+  const url = `/api/uploads/quiz/${folder}/${filename}`;
 
   return NextResponse.json({ url }, { status: 201 });
 }

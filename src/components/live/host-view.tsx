@@ -444,7 +444,7 @@ export function HostView({ session }: Props) {
 
           {q.question.mediaUrl && (
             <img
-              src={q.question.mediaUrl}
+              src={q.question.mediaUrl.startsWith("/") ? withBasePath(q.question.mediaUrl) : q.question.mediaUrl}
               alt="Immagine della domanda"
               className="max-h-48 lg:max-h-72 rounded-2xl mb-8 object-contain shadow-lg"
             />

@@ -147,9 +147,9 @@ export function QuestionEditor({ question, index, total, onChange, onRemove }: P
         {question.mediaUrl ? (
           <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
             <div className="flex flex-col items-center gap-3">
-              {(/^https?:\/\//.test(question.mediaUrl) || question.mediaUrl.startsWith("/uploads/")) && (
+              {(/^https?:\/\//.test(question.mediaUrl) || question.mediaUrl.startsWith("/uploads/") || question.mediaUrl.startsWith("/api/uploads/")) && (
                 <img
-                  src={question.mediaUrl}
+                  src={question.mediaUrl.startsWith("/") ? withBasePath(question.mediaUrl) : question.mediaUrl}
                   alt="Anteprima"
                   className="max-h-48 max-w-full object-contain rounded-xl"
                 />
