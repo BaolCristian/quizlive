@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Play, Copy } from "lucide-react";
+import { Search, Play, Copy, Flag } from "lucide-react";
 import { withBasePath } from "@/lib/base-path";
 import { PublishDeclarationModal } from "@/components/legal/publish-declaration-modal";
+import { ReportModal } from "@/components/legal/report-modal";
 
 interface QuizItem {
   id: string;
@@ -23,6 +24,7 @@ export function LibraryClient({ quizzes }: { quizzes: QuizItem[] }) {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState<string | null>(null);
   const [pendingDuplicate, setPendingDuplicate] = useState<string | null>(null);
+  const [reportingQuiz, setReportingQuiz] = useState<string | null>(null);
 
   const filtered = quizzes.filter((q) => {
     const term = search.toLowerCase();
@@ -146,6 +148,13 @@ export function LibraryClient({ quizzes }: { quizzes: QuizItem[] }) {
                     <Copy className="h-3.5 w-3.5" />
                     Duplica
                   </button>
+                  <button
+                    onClick={() => setReportingQuiz(quiz.id)}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-red-600 hover:border-red-300 dark:hover:text-red-400 transition-colors"
+                    title="Segnala contenuto"
+                  >
+                    <Flag className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </CardContent>
             </Card>
@@ -156,6 +165,12 @@ export function LibraryClient({ quizzes }: { quizzes: QuizItem[] }) {
         <PublishDeclarationModal
           onConfirm={confirmDuplicate}
           onCancel={() => setPendingDuplicate(null)}
+        />
+      )}
+      {reportingQuiz && (
+        <ReportModal
+          quizId={reportingQuiz}
+          onClose={() => setReportingQuiz(null)}
         />
       )}
     </>
