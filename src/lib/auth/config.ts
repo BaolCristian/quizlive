@@ -15,6 +15,9 @@ const providers: Provider[] = [
     // behind the reverse proxy with basePath. Disabled until nginx cookie
     // forwarding is fixed. TODO: re-enable once proxy is configured.
     checks: [],
+    // Allow linking Google account to existing user with same email.
+    // Safe because Google is the only OAuth provider.
+    allowDangerousEmailAccountLinking: true,
   }),
 ];
 
