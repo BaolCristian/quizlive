@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { redirect } from "next/navigation";
 import { ExportButtons } from "@/components/session/export-buttons";
 import Link from "next/link";
+import { TerminateButton } from "@/components/session/terminate-button";
 import {
   Table,
   TableBody,
@@ -132,13 +133,16 @@ export default async function SessionDetailPage({
         </div>
         <div className="flex gap-3 items-center">
           {(session.status === "LOBBY" || session.status === "IN_PROGRESS") && (
-            <Link
-              href={`/live/host/${session.id}`}
-              target="_blank"
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full transition-all shadow-md"
-            >
-              Rientra nella sessione
-            </Link>
+            <>
+              <Link
+                href={`/live/host/${session.id}`}
+                target="_blank"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full transition-all shadow-md"
+              >
+                Rientra nella sessione
+              </Link>
+              <TerminateButton sessionId={session.id} />
+            </>
           )}
           <ExportButtons sessionId={id} />
         </div>
