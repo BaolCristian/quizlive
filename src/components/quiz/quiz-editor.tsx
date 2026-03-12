@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { QuizInput, QuestionInput } from "@/lib/validators/quiz";
@@ -8,6 +8,7 @@ import { QuestionEditor } from "@/components/quiz/question-editor";
 import { ShareDialog } from "@/components/quiz/share-dialog";
 import { ExcelImportButton } from "@/components/quiz/excel-import-button";
 import { withBasePath } from "@/lib/base-path";
+import { PublishDeclarationModal } from "@/components/legal/publish-declaration-modal";
 import {
   Save,
   Loader2,
@@ -128,38 +129,44 @@ export function QuizEditor({ initialData }: Props) {
   >("idle");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [showDeclaration, setShowDeclaration] = useState(false);
 
-  /* ---------- autosave ---------- */
-  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isEdit = !!initialData?.id;
 
-  const doSave = useCallback(async () => {
+  const requestSave = useCallback(() => {
     if (saving) return;
     setError(null);
     setValidationErrors([]);
-    setSaving(true);
-    setSaveStatus("saving");
 
-    // Client-side validation
     const vErrors = validateQuestions(title, questions);
     if (vErrors.length > 0) {
       setValidationErrors(vErrors);
-      setSaving(false);
       setSaveStatus("error");
       return;
     }
+
+    setShowDeclaration(true);
+  }, [saving, title, questions]);
+
+  const doSave = useCallback(async (license: "CC_BY" | "CC_BY_SA") => {
+    if (saving) return;
+    setSaving(true);
+    setSaveStatus("saving");
+    setShowDeclaration(false);
 
     const tags = tagsText
       .split(",")
       .map((t) => t.trim())
       .filter(Boolean);
 
-    const payload: QuizInput = {
+    const payload = {
       title,
       description: description || undefined,
       isPublic,
       tags,
       questions: questions.map((q, i) => ({ ...q, order: i })),
+      consentAccepted: true,
+      license,
     };
 
     try {
@@ -203,43 +210,7 @@ export function QuizEditor({ initialData }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [
-    saving,
-    title,
-    description,
-    tagsText,
-    isPublic,
-    questions,
-    initialData,
-    isEdit,
-    router,
-  ]);
-
-  // Trigger autosave on changes (only for existing quizzes)
-  const scheduleAutosave = useCallback(() => {
-    if (!isEdit) return;
-    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
-    autosaveTimer.current = setTimeout(() => {
-      doSave();
-    }, 2000);
-  }, [isEdit, doSave]);
-
-  // Track changes for autosave
-  const prevDataRef = useRef<string>("");
-  useEffect(() => {
-    const snapshot = JSON.stringify({ title, description, tagsText, isPublic, questions });
-    if (prevDataRef.current && prevDataRef.current !== snapshot) {
-      scheduleAutosave();
-    }
-    prevDataRef.current = snapshot;
-  }, [title, description, tagsText, isPublic, questions, scheduleAutosave]);
-
-  // Cleanup timer
-  useEffect(() => {
-    return () => {
-      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
-    };
-  }, []);
+  }, [saving, title, description, tagsText, isPublic, questions, initialData, isEdit, router]);
 
   /* ---------- question handlers ---------- */
 
@@ -393,7 +364,7 @@ export function QuizEditor({ initialData }: Props) {
           </button>
 
           <button
-            onClick={doSave}
+            onClick={requestSave}
             disabled={saving}
             className={`flex items-center gap-2 text-white font-semibold px-5 py-2 rounded-full transition-all shadow-sm hover:shadow-md active:scale-[0.97] disabled:bg-slate-400 ${
               saveStatus === "error"
@@ -570,6 +541,14 @@ export function QuizEditor({ initialData }: Props) {
                 </div>
               </div>
             </div>
+          )}
+
+          {showDeclaration && (
+            <PublishDeclarationModal
+              onConfirm={(license) => doSave(license)}
+              onCancel={() => setShowDeclaration(false)}
+              loading={saving}
+            />
           )}
         </main>
 

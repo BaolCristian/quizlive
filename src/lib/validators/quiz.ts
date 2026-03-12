@@ -94,6 +94,8 @@ export const quizSchema = z.object({
   isPublic: z.boolean().default(false),
   tags: z.array(z.string()).default([]),
   questions: z.array(questionSchema).min(1),
+  consentAccepted: z.boolean().optional(),
+  license: z.enum(["CC_BY", "CC_BY_SA"]).optional(),
 });
 
 export const updateQuizSchema = quizSchema.partial();

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/client";
 import { quizSchema } from "@/lib/validators/quiz";
+import { CURRENT_DECLARATION_VERSION } from "@/lib/config/legal";
 
 export async function GET(
   _req: NextRequest,
@@ -43,27 +44,43 @@ export async function PUT(
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-  const { questions, ...quizData } = parsed.data;
+  const { questions, consentAccepted, license, ...quizData } = parsed.data;
+
+  if (!consentAccepted)
+    return NextResponse.json({ error: "Consent is required" }, { status: 400 });
 
   try {
-    // Delete answers first to avoid FK constraint violation
-    await prisma.answer.deleteMany({
-      where: { question: { quizId: id } },
-    });
-    await prisma.question.deleteMany({ where: { quizId: id } });
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.answer.deleteMany({
+        where: { question: { quizId: id } },
+      });
+      await tx.question.deleteMany({ where: { quizId: id } });
 
-    const updated = await prisma.quiz.update({
-      where: { id },
-      data: {
-        ...quizData,
-        questions: {
-          create: questions.map((q, i) => {
-            const { order: _order, ...rest } = q;
-            return { ...rest, order: i };
-          }),
+      const result = await tx.quiz.update({
+        where: { id },
+        data: {
+          ...quizData,
+          license: license ?? "CC_BY",
+          questions: {
+            create: questions.map((q, i) => {
+              const { order: _order, ...rest } = q;
+              return { ...rest, order: i };
+            }),
+          },
         },
-      },
-      include: { questions: true },
+        include: { questions: true },
+      });
+
+      await tx.consent.create({
+        data: {
+          userId: session.user!.id!,
+          type: "QUIZ_PUBLISH_DECLARATION",
+          version: CURRENT_DECLARATION_VERSION,
+          metadata: { quizId: id },
+        },
+      });
+
+      return result;
     });
 
     return NextResponse.json(updated);
@@ -90,7 +107,6 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Delete sessions and their answers first (no cascade on Session → Quiz)
   await prisma.answer.deleteMany({
     where: { session: { quizId: id } },
   });
