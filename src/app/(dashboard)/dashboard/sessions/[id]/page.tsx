@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { redirect } from "next/navigation";
 import { ExportButtons } from "@/components/session/export-buttons";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -129,7 +130,18 @@ export default async function SessionDetailPage({
             })}
           </p>
         </div>
-        <ExportButtons sessionId={id} />
+        <div className="flex gap-3 items-center">
+          {(session.status === "LOBBY" || session.status === "IN_PROGRESS") && (
+            <Link
+              href={`/live/host/${session.id}`}
+              target="_blank"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full transition-all shadow-md"
+            >
+              Rientra nella sessione
+            </Link>
+          )}
+          <ExportButtons sessionId={id} />
+        </div>
       </div>
 
       {/* Summary cards */}

@@ -274,6 +274,27 @@ export function setupSocketHandlers(io: TypedIO) {
           playerAvatar: playerAvatar,
         });
 
+        // If host is rejoining an in-progress game, update hostSocketId
+        // and re-emit the current question so the host view recovers
+        if (playerName === "__host__" && game.currentQuestionIndex >= 0) {
+          game.hostSocketId = socket.id;
+          const q = game.questions[game.currentQuestionIndex];
+          if (q) {
+            socket.emit("questionStart", {
+              questionIndex: game.currentQuestionIndex,
+              totalQuestions: game.questions.length,
+              question: {
+                text: q.text,
+                type: q.type,
+                options: q.options, // host sees full options (not sanitized)
+                timeLimit: q.timeLimit,
+                points: q.points,
+                mediaUrl: q.mediaUrl,
+              },
+            });
+          }
+        }
+
         // Send current game state to the newly joined player
         socket.emit("gameState", {
           sessionId,

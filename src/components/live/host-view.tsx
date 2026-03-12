@@ -153,6 +153,15 @@ export function HostView({ session }: Props) {
       setPlayerCount(data.playerCount);
     };
 
+    const handleGameState = (data: { status: string; currentQuestion?: number }) => {
+      if (data.status === "IN_PROGRESS" && data.currentQuestion !== undefined) {
+        // Host is rejoining a game in progress — set phase to question
+        // The actual question data will arrive via questionStart if host emits nextQuestion
+        // For now, show a "rejoin" state so host can advance
+        setPhase("question");
+      }
+    };
+
     const handlePlayerLeft = (data: { playerName: string; playerCount: number }) => {
       setPlayers((prev) => prev.filter((p) => p.name !== data.playerName));
       setPlayerCount(data.playerCount);
@@ -186,6 +195,7 @@ export function HostView({ session }: Props) {
     };
 
     socket.on("playerJoined", handlePlayerJoined);
+    socket.on("gameState", handleGameState);
     socket.on("playerLeft", handlePlayerLeft);
     socket.on("playerReconnected", handlePlayerReconnected);
     socket.on("questionStart", handleQuestionStart);
@@ -195,6 +205,7 @@ export function HostView({ session }: Props) {
 
     return () => {
       socket.off("playerJoined", handlePlayerJoined);
+      socket.off("gameState", handleGameState);
       socket.off("playerLeft", handlePlayerLeft);
       socket.off("playerReconnected", handlePlayerReconnected);
       socket.off("questionStart", handleQuestionStart);
