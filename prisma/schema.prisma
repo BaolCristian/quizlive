@@ -36,6 +36,30 @@ enum SharePermission {
   EDIT
 }
 
+enum ConsentType {
+  TERMS_ACCEPTANCE
+  QUIZ_PUBLISH_DECLARATION
+}
+
+enum QuizLicense {
+  CC_BY
+  CC_BY_SA
+}
+
+enum ReportReason {
+  COPYRIGHT
+  PERSONAL_DATA
+  OFFENSIVE
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -47,11 +71,14 @@ model User {
   avatarUrl     String?
   createdAt     DateTime  @default(now())
 
-  quizzes        Quiz[]
-  hostedSessions Session[]
-  sharedWithMe   QuizShare[]
-  accounts       Account[]
-  sessions       AuthSession[]
+  quizzes         Quiz[]
+  hostedSessions  Session[]
+  sharedWithMe    QuizShare[]
+  accounts        Account[]
+  sessions        AuthSession[]
+  consents        Consent[]
+  reportsMade     Report[]  @relation("reportsMade")
+  reportsResolved Report[]  @relation("reportsResolved")
 }
 
 model Account {
@@ -84,6 +111,36 @@ model AuthSession {
   @@map("auth_session")
 }
 
+model Consent {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      ConsentType
+  version   String
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  @@index([userId, type, version])
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  quizId      String
+  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  reporterId  String
+  reporter    User         @relation("reportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reason      ReportReason
+  description String?
+  status      ReportStatus @default(PENDING)
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  resolver    User?        @relation("reportsResolved", fields: [resolvedBy], references: [id], onDelete: SetNull)
+  createdAt   DateTime     @default(now())
+
+  @@unique([quizId, reporterId])
+  @@index([status])
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -98,15 +155,18 @@ model Quiz {
   title       String
   description String?
   authorId    String
-  isPublic    Boolean  @default(false)
-  tags        String[] @default([])
-  createdAt   DateTime @default(now())
+  isPublic    Boolean     @default(false)
+  tags        String[]    @default([])
+  license     QuizLicense @default(CC_BY)
+  suspended   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
   updatedAt   DateTime @updatedAt
 
   author    User        @relation(fields: [authorId], references: [id])
   questions Question[]
   sessions  Session[]
   shares    QuizShare[]
+  reports   Report[]
 }
 
 model Question {
