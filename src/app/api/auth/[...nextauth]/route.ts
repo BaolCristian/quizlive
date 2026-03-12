@@ -14,5 +14,16 @@ function rewriteRequest(req: NextRequest) {
   return new NextRequest(url, req);
 }
 
-export const GET = async (req: NextRequest) => handlers.GET(rewriteRequest(req));
-export const POST = async (req: NextRequest) => handlers.POST(rewriteRequest(req));
+export const GET = async (req: NextRequest) => {
+  const cookieNames = req.cookies.getAll().map(c => c.name);
+  console.log("[AUTH DEBUG] GET", req.nextUrl.pathname, "cookies:", cookieNames);
+  const rewritten = rewriteRequest(req);
+  const rewrittenCookieNames = rewritten.cookies.getAll().map(c => c.name);
+  console.log("[AUTH DEBUG] rewritten cookies:", rewrittenCookieNames, "url:", rewritten.url);
+  return handlers.GET(rewritten);
+};
+export const POST = async (req: NextRequest) => {
+  const cookieNames = req.cookies.getAll().map(c => c.name);
+  console.log("[AUTH DEBUG] POST", req.nextUrl.pathname, "cookies:", cookieNames);
+  return handlers.POST(rewriteRequest(req));
+};
