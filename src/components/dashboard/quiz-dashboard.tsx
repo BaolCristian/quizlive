@@ -17,6 +17,7 @@ import {
   Trash2,
   MoreHorizontal,
   X,
+  Play,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { withBasePath } from "@/lib/base-path";
@@ -35,6 +36,7 @@ export interface QuizItem {
   author: { name: string | null };
   updatedAt: string;
   createdAt: string;
+  suspended?: boolean;
 }
 
 type SortKey = "newest" | "oldest" | "most_played" | "alphabetical";
@@ -426,6 +428,11 @@ function QuizCard({
             {quiz.title || "Quiz senza titolo"}
           </h3>
         </Link>
+        {quiz.suspended && (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-md">
+            Sospeso
+          </span>
+        )}
 
         {/* Author (shared) */}
         {!isOwner && quiz.author.name && (
@@ -468,7 +475,13 @@ function QuizCard({
       {/* Actions */}
       <div className="flex items-center gap-1.5 px-4 py-3 border-t border-slate-100 dark:border-slate-800 overflow-visible">
         {/* Play — primary */}
-        <PlayQuizButton quizId={quiz.id} />
+        {quiz.suspended ? (
+          <span className="flex items-center gap-1.5 text-sm font-medium text-slate-400 p-2" title="Quiz sospeso">
+            <Play className="size-4" /> Sospeso
+          </span>
+        ) : (
+          <PlayQuizButton quizId={quiz.id} />
+        )}
 
         {/* Edit */}
         <Link

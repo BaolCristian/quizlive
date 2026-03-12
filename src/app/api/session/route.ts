@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
   const quiz = await prisma.quiz.findUnique({ where: { id: quizId } });
   if (!quiz) return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
 
+  if (quiz.suspended)
+    return NextResponse.json({ error: "Quiz is suspended" }, { status: 403 });
+
   // Only allow playing own quizzes or public quizzes
   if (quiz.authorId !== session.user.id && !quiz.isPublic) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });

@@ -10,6 +10,7 @@ export default async function LibraryPage() {
   const quizzes = await prisma.quiz.findMany({
     where: {
       isPublic: true,
+      suspended: false,
       authorId: { not: session.user.id },
     },
     include: {
