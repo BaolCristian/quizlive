@@ -61,10 +61,14 @@ function getAllTags(xml: string, tag: string): string[] {
   return results;
 }
 
-/** Extract the first image URL from HTML content */
+/** Extract the first absolute image URL from HTML content */
 function extractImageUrl(html: string): string | null {
   const match = html.match(/<img[^>]+src\s*=\s*"([^"]+)"/i);
-  return match ? match[1] : null;
+  if (!match) return null;
+  const url = match[1];
+  // Only keep absolute http(s) URLs — skip Moodle placeholders like @@PLUGINFILE@@
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return null;
 }
 
 /** Extract question text and optional image from Moodle XML question block */
