@@ -61,12 +61,22 @@ function getAllTags(xml: string, tag: string): string[] {
   return results;
 }
 
-/** Extract question text from Moodle XML question block */
-function getQuestionText(questionXml: string): string {
+/** Extract the first image URL from HTML content */
+function extractImageUrl(html: string): string | null {
+  const match = html.match(/<img[^>]+src\s*=\s*"([^"]+)"/i);
+  return match ? match[1] : null;
+}
+
+/** Extract question text and optional image from Moodle XML question block */
+function getQuestionTextAndImage(questionXml: string): { text: string; mediaUrl: string | null } {
   const questiontext = getTagContent(questionXml, "questiontext");
-  if (!questiontext) return "";
-  const text = getTagContent(questiontext, "text");
-  return text ? stripHtml(text) : "";
+  if (!questiontext) return { text: "", mediaUrl: null };
+  const rawText = getTagContent(questiontext, "text");
+  if (!rawText) return { text: "", mediaUrl: null };
+
+  const mediaUrl = extractImageUrl(rawText);
+  const text = stripHtml(rawText);
+  return { text, mediaUrl };
 }
 
 /** Parse a multichoice question */
@@ -75,7 +85,7 @@ function parseMultichoice(
   index: number,
   errors: MoodleParseError[]
 ): Omit<QuestionInput, "order"> | null {
-  const text = getQuestionText(xml);
+  const { text, mediaUrl } = getQuestionTextAndImage(xml);
   if (!text) {
     errors.push({ question: index, message: "Missing question text" });
     return null;
@@ -104,6 +114,7 @@ function parseMultichoice(
   return {
     type: "MULTIPLE_CHOICE",
     text,
+    mediaUrl,
     timeLimit: 30,
     points: 1000,
     confidenceEnabled: false,
@@ -117,7 +128,7 @@ function parseTrueFalse(
   index: number,
   errors: MoodleParseError[]
 ): Omit<QuestionInput, "order"> | null {
-  const text = getQuestionText(xml);
+  const { text, mediaUrl } = getQuestionTextAndImage(xml);
   if (!text) {
     errors.push({ question: index, message: "Missing question text" });
     return null;
@@ -137,6 +148,7 @@ function parseTrueFalse(
   return {
     type: "TRUE_FALSE",
     text,
+    mediaUrl,
     timeLimit: 20,
     points: 1000,
     confidenceEnabled: false,
@@ -150,7 +162,7 @@ function parseShortAnswer(
   index: number,
   errors: MoodleParseError[]
 ): Omit<QuestionInput, "order"> | null {
-  const text = getQuestionText(xml);
+  const { text, mediaUrl } = getQuestionTextAndImage(xml);
   if (!text) {
     errors.push({ question: index, message: "Missing question text" });
     return null;
@@ -175,6 +187,7 @@ function parseShortAnswer(
   return {
     type: "OPEN_ANSWER",
     text,
+    mediaUrl,
     timeLimit: 30,
     points: 1000,
     confidenceEnabled: false,
@@ -188,7 +201,7 @@ function parseMatching(
   index: number,
   errors: MoodleParseError[]
 ): Omit<QuestionInput, "order"> | null {
-  const text = getQuestionText(xml);
+  const { text, mediaUrl } = getQuestionTextAndImage(xml);
   if (!text) {
     errors.push({ question: index, message: "Missing question text" });
     return null;
@@ -219,6 +232,7 @@ function parseMatching(
   return {
     type: "MATCHING",
     text,
+    mediaUrl,
     timeLimit: 45,
     points: 1000,
     confidenceEnabled: false,
@@ -232,7 +246,7 @@ function parseNumerical(
   index: number,
   errors: MoodleParseError[]
 ): Omit<QuestionInput, "order"> | null {
-  const text = getQuestionText(xml);
+  const { text, mediaUrl } = getQuestionTextAndImage(xml);
   if (!text) {
     errors.push({ question: index, message: "Missing question text" });
     return null;
@@ -260,6 +274,7 @@ function parseNumerical(
   return {
     type: "NUMERIC_ESTIMATION",
     text,
+    mediaUrl,
     timeLimit: 30,
     points: 1000,
     confidenceEnabled: false,

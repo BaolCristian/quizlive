@@ -8,6 +8,7 @@ import type { QuizInput, QuestionInput } from "@/lib/validators/quiz";
 import { QuestionEditor } from "@/components/quiz/question-editor";
 import { ShareDialog } from "@/components/quiz/share-dialog";
 import { ExcelImportButton } from "@/components/quiz/excel-import-button";
+import { MoodleImportButton } from "@/components/quiz/moodle-import-button";
 import { withBasePath } from "@/lib/base-path";
 import { PublishDeclarationModal } from "@/components/legal/publish-declaration-modal";
 import {
@@ -357,6 +358,13 @@ export function QuizEditor({ initialData, hasConsent = false }: Props) {
             quizId={initialData?.id}
             onImported={() => router.refresh()}
           />
+
+          {initialData?.id && (
+            <MoodleImportButton
+              quizId={initialData.id}
+              onImported={() => router.refresh()}
+            />
+          )}
 
           {initialData?.id && <ShareDialog quizId={initialData.id} />}
 

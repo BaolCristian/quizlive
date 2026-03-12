@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
         quizId,
         type: q.type,
         text: q.text,
+        mediaUrl: q.mediaUrl,
         timeLimit: q.timeLimit,
         points: q.points,
         order: startOrder + i,
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
         create: result.questions.map((q, i) => ({
           type: q.type,
           text: q.text,
+          mediaUrl: q.mediaUrl,
           timeLimit: q.timeLimit,
           points: q.points,
           order: i,
