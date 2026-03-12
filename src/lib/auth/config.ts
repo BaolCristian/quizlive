@@ -43,22 +43,6 @@ if (process.env.NODE_ENV === "development" || process.env.DEMO_MODE === "true") 
 const baseAdapter = PrismaAdapter(prisma) as Adapter;
 const adapter: Adapter = {
   ...baseAdapter,
-  async createUser(user) {
-    console.log("[auth] createUser called:", user.email, user.name);
-    const created = await baseAdapter.createUser!(user);
-    console.log("[auth] createUser result:", created.id, created.email);
-    return created;
-  },
-  async getUserByAccount(account) {
-    console.log("[auth] getUserByAccount:", account.provider, account.providerAccountId);
-    const user = await baseAdapter.getUserByAccount!(account);
-    console.log("[auth] getUserByAccount result:", user?.id, user?.email ?? "NOT FOUND");
-    return user;
-  },
-  async linkAccount(account) {
-    console.log("[auth] linkAccount:", account.provider, "userId:", account.userId);
-    await baseAdapter.linkAccount!(account);
-  },
   async createSession(session) {
     const created = await prisma.authSession.create({ data: session });
     return created;
@@ -85,7 +69,6 @@ const adapter: Adapter = {
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  debug: true,
   adapter,
   providers,
   basePath: "/savint/api/auth",
