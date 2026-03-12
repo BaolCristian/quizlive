@@ -61,13 +61,37 @@ function getAllTags(xml: string, tag: string): string[] {
   return results;
 }
 
-/** Extract the first absolute image URL from HTML content */
+/** Build a map of filename → data URI from <file> tags in a questiontext block */
+function buildFileMap(questiontextBlock: string): Map<string, string> {
+  const map = new Map<string, string>();
+  const re = /<file\s+name="([^"]+)"[^>]*encoding="base64"[^>]*>([^<]+)<\/file>/gi;
+  let m;
+  while ((m = re.exec(questiontextBlock)) !== null) {
+    const name = m[1];
+    const base64 = m[2].trim();
+    const ext = name.split(".").pop()?.toLowerCase() ?? "png";
+    const mime = ext === "jpg" || ext === "jpeg" ? "image/jpeg"
+      : ext === "gif" ? "image/gif"
+      : ext === "svg" ? "image/svg+xml"
+      : "image/png";
+    map.set(name, `data:${mime};base64,${base64}`);
+  }
+  return map;
+}
+
+/** Replace @@PLUGINFILE@@/filename references with data URIs */
+function resolvePluginFiles(html: string, fileMap: Map<string, string>): string {
+  return html.replace(/@@PLUGINFILE@@\/([^"'\s]+)/g, (_, filename) => {
+    return fileMap.get(decodeURIComponent(filename)) ?? `@@PLUGINFILE@@/${filename}`;
+  });
+}
+
+/** Extract the first valid image URL from HTML content */
 function extractImageUrl(html: string): string | null {
   const match = html.match(/<img[^>]+src\s*=\s*"([^"]+)"/i);
   if (!match) return null;
   const url = match[1];
-  // Only keep absolute http(s) URLs — skip Moodle placeholders like @@PLUGINFILE@@
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
   return null;
 }
 
@@ -78,8 +102,12 @@ function getQuestionTextAndImage(questionXml: string): { text: string; mediaUrl:
   const rawText = getTagContent(questiontext, "text");
   if (!rawText) return { text: "", mediaUrl: null };
 
-  const mediaUrl = extractImageUrl(rawText);
-  const text = stripHtml(rawText);
+  // Resolve @@PLUGINFILE@@ references to data URIs
+  const fileMap = buildFileMap(questiontext);
+  const resolvedHtml = fileMap.size > 0 ? resolvePluginFiles(rawText, fileMap) : rawText;
+
+  const mediaUrl = extractImageUrl(resolvedHtml);
+  const text = stripHtml(resolvedHtml);
   return { text, mediaUrl };
 }
 
