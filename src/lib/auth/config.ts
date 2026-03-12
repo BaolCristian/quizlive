@@ -33,13 +33,15 @@ if (process.env.NODE_ENV === "development" || process.env.DEMO_MODE === "true") 
 
 // PrismaAdapter expects prisma.session for auth sessions, but our Session
 // model is for live quiz sessions (has required pin/quizId/hostId).
-// Auth sessions live in AuthSession (@@map("auth_session")), accessible
-// via prisma.authSession. We proxy the prisma client so the adapter
-// uses the correct model.
-const prismaForAuth = {
-  ...prisma,
-  session: prisma.authSession,
-} as unknown as typeof prisma;
+// Auth sessions live in AuthSession (@@map("auth_session")).
+// We use a Proxy so model delegate access (prisma.user, prisma.account, etc.)
+// works correctly — plain object spread doesn't copy Prisma's proxy-based getters.
+const prismaForAuth = new Proxy(prisma, {
+  get(target, prop, receiver) {
+    if (prop === "session") return target.authSession;
+    return Reflect.get(target, prop, receiver);
+  },
+}) as typeof prisma;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prismaForAuth),
