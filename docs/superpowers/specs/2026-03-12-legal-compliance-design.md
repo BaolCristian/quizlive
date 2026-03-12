@@ -45,6 +45,8 @@ model Consent {
   version   String      // e.g. "1.0" — allows invalidating old consents when texts update
   metadata  Json?       // e.g. { quizId: "xxx" } for quiz publish declarations
   createdAt DateTime    @default(now())
+
+  @@index([userId, type, version])
 }
 
 model Report {
@@ -62,6 +64,7 @@ model Report {
   createdAt   DateTime     @default(now())
 
   @@unique([quizId, reporterId])
+  @@index([status])
 }
 ```
 
@@ -87,7 +90,7 @@ model User {
 
 ### Behavior
 
-1. After Google OAuth login, the `(editor)/layout.tsx` checks if the user has a `Consent` record of type `TERMS_ACCEPTANCE` with the current version (e.g. `"1.0"`)
+1. After Google OAuth login, **all authenticated layouts** (`(editor)/layout.tsx` and `(dashboard)/layout.tsx`) check if the user has a `Consent` record of type `TERMS_ACCEPTANCE` with the current version (e.g. `"1.0"`). The check logic lives in a shared component `TermsGuard` used by both layouts.
 2. If missing → blocking modal appears over dashboard content
 3. User cannot close the modal or navigate until they accept
 4. On "Accetto" click → `POST /api/consent` saves the record → modal closes → dashboard accessible
@@ -113,7 +116,7 @@ model User {
 
 ### Version Management
 
-The current terms version is defined as a constant (e.g. `CURRENT_TERMS_VERSION = "1.0"`) in a shared config file. Changing this value forces re-acceptance.
+The current terms version is defined as a constant (e.g. `CURRENT_TERMS_VERSION = "1.0"`) in `src/lib/config/legal.ts`. Changing this value forces re-acceptance. The same file exports `CURRENT_DECLARATION_VERSION = "1.0"` for quiz publish declarations.
 
 ## Feature 2: Quiz Publish Declaration (Every Save)
 
@@ -139,7 +142,7 @@ The current terms version is defined as a constant (e.g. `CURRENT_TERMS_VERSION 
 - **License selector:** dropdown with CC_BY (default) and CC_BY_SA
   - Explanatory text: "I quiz pubblicati su questa piattaforma sono condivisi per scopi didattici. Selezionando una licenza autorizzi altri utenti a utilizzare il quiz secondo le condizioni indicate."
 - **Checkbox (required):** "Dichiaro che il quiz è originale o che possiedo i diritti per pubblicarlo."
-- **Button:** "Pubblica" — disabled until checkbox is checked
+- **Button:** "Salva e dichiara" — disabled until checkbox is checked
 
 ### API Changes
 
@@ -147,6 +150,8 @@ The current terms version is defined as a constant (e.g. `CURRENT_TERMS_VERSION 
   - `consentAccepted: boolean` (required, must be `true`)
   - `license: "CC_BY" | "CC_BY_SA"` (required)
 - Both save quiz + consent in a Prisma `$transaction`
+- `POST /api/quiz/duplicate` and Excel import also require `consentAccepted: true` and `license`, since duplicated/imported content also needs a rights declaration
+- Note: the existing `PUT /api/quiz/[id]` uses a delete-and-recreate pattern for questions without a transaction. The implementation must wrap the entire flow (delete questions + update quiz + create consent) in a single `prisma.$transaction()`
 
 ## Feature 3: Content Reporting
 
@@ -172,6 +177,8 @@ The current terms version is defined as a constant (e.g. `CURRENT_TERMS_VERSION 
 
 - `POST /api/report` — body: `{ quizId, reason, description? }`
 - Returns 201 on success, 409 if already reported by this user
+- Server-side check: reject if `reporterId === quiz.authorId` (prevent self-reporting)
+- Rate limiting: max 10 reports per user per hour (enforce in API, return 429)
 
 ## Feature 4: Admin Moderation Dashboard
 
@@ -253,14 +260,24 @@ Section 3 — Licenses:
 ### Suspended Quiz Guard
 
 All quiz-facing endpoints and UI must check `suspended` status:
-- `GET /api/quiz` (library) — exclude suspended quizzes
-- `POST /api/session` — reject session creation for suspended quizzes
+- `GET /api/quiz` (library) — exclude suspended quizzes from public listings
+- `GET /api/quiz/[id]` — return `suspended: true` flag; shared quiz views show "Questo quiz è stato sospeso" instead of content
+- `POST /api/session` — reject session creation for suspended quizzes (return 403)
+- In-progress sessions are allowed to finish; only new session creation is blocked
 - Quiz dashboard — show suspended badge, disable "Gioca" button
 
 ### Consent Check
 
-- Layout-level check in `(editor)/layout.tsx` for terms acceptance
-- API-level check in `POST/PUT /api/quiz` for publish declaration
+- Layout-level check via shared `TermsGuard` component in all authenticated layouts
+- API-level check in `POST/PUT /api/quiz`, `POST /api/quiz/duplicate`, and Excel import for publish declaration
+
+### Admin Authorization
+
+All `/api/admin/*` endpoints use a shared `assertAdmin(session)` helper (in `src/lib/auth/admin.ts`) that checks `session.user.role === "ADMIN"` and returns 403 if not.
+
+### Existing Data Migration
+
+Existing quizzes are grandfathered in — no retroactive consent records needed. The `license` field defaults to `CC_BY` and `suspended` defaults to `false`. The publish declaration only applies to saves going forward.
 
 ## Not Included (Future Work)
 
