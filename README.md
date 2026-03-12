@@ -34,13 +34,19 @@ Teachers create quizzes, project them on the interactive whiteboard and students
 - **Real-time live quizzes**: lobby with 6-digit PIN, countdown, animated leaderboard, final podium
 - **Confidence level**: students indicate how confident they are in their answer, with score bonus or penalty
 - **Excel import**: create quizzes from Excel files, with downloadable template and AI support
+- **Moodle import**: import quizzes from Moodle XML format (multichoice, truefalse, shortanswer, matching, numerical)
 - **Teacher dashboard**: create and edit quizzes, session history, advanced statistics
 - **Statistics**: by session, quiz, student, topic, with interactive charts
 - **Sharing**: share quizzes with colleagues with permissions (view/duplicate/edit)
+- **Public library**: share quizzes publicly under Creative Commons 4.0 license for other teachers to play or duplicate
 - **Export/Import**: .qlz format to share quizzes across schools, export results as CSV/PDF
 - **Image upload**: upload images in questions or use external URLs
 - **Custom emoticons**: custom avatars for students (just add PNGs to the `public/emoticons/` folder)
 - **Authentication**: login with school Google Workspace
+- **Multilingual**: Italian (default) and English, with automatic browser language detection and easy extensibility
+- **Player reconnection**: players who switch apps or lose connection can automatically rejoin within 2 minutes
+- **Session management**: teachers can rejoin active sessions and terminate them from the dashboard; sessions auto-expire after a configurable timeout (default 2 hours)
+- **Content moderation**: report system, admin review panel, quiz suspension
 - **Responsive**: optimized for interactive whiteboards (teacher) and phones (students)
 
 ## Tech Stack
@@ -54,6 +60,7 @@ Teachers create quizzes, project them on the interactive whiteboard and students
 | Database | PostgreSQL 16 |
 | ORM | Prisma 6 |
 | Auth | NextAuth v5 (Google OAuth) |
+| i18n | next-intl |
 | Charts | Recharts |
 | Test | Vitest + Playwright |
 

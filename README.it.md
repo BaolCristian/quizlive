@@ -34,13 +34,19 @@ Il docente crea quiz, li proietta sulla LIM e gli studenti rispondono in tempo r
 - **Quiz live in tempo reale**: lobby con PIN a 6 cifre, countdown, classifica animata, podio finale
 - **Livello di confidenza**: lo studente indica quanto e' sicuro della risposta, con bonus o malus sul punteggio
 - **Import da Excel**: crea quiz da file Excel, con template scaricabile e supporto AI
+- **Import da Moodle**: importa quiz dal formato Moodle XML (scelta multipla, vero/falso, risposta breve, abbinamento, numerica)
 - **Dashboard docente**: crea e modifica quiz, storico sessioni, statistiche avanzate
 - **Statistiche**: per sessione, per quiz, per studente, per argomento, con grafici interattivi
 - **Condivisione**: condividi quiz tra colleghi con permessi (visualizza/duplica/modifica)
+- **Libreria pubblica**: condividi quiz pubblicamente sotto licenza Creative Commons 4.0 per altri docenti
 - **Export/Import**: formato .qlz per condividere quiz tra scuole diverse, export risultati in CSV/PDF
 - **Upload immagini**: carica immagini nelle domande o usa URL esterni
 - **Emoticon personalizzate**: avatar custom per gli studenti (basta aggiungere PNG nella cartella `public/emoticons/`)
 - **Autenticazione**: login con Google Workspace scolastico
+- **Multilingua**: italiano (default) e inglese, con rilevamento automatico della lingua del browser e facile estensibilita'
+- **Riconnessione giocatori**: gli studenti che cambiano app o perdono la connessione possono rientrare automaticamente entro 2 minuti
+- **Gestione sessioni**: i docenti possono rientrare nelle sessioni attive e terminarle dalla dashboard; le sessioni scadono automaticamente dopo un timeout configurabile (default 2 ore)
+- **Moderazione contenuti**: sistema di segnalazione, pannello di revisione admin, sospensione quiz
 - **Responsive**: interfaccia ottimizzata per LIM (docente) e telefono (studenti)
 
 ## Stack tecnologico
@@ -54,6 +60,7 @@ Il docente crea quiz, li proietta sulla LIM e gli studenti rispondono in tempo r
 | Database | PostgreSQL 16 |
 | ORM | Prisma 6 |
 | Autenticazione | NextAuth v5 (Google OAuth) |
+| i18n | next-intl |
 | Grafici | Recharts |
 | Test | Vitest + Playwright |
 
