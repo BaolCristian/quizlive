@@ -3,6 +3,7 @@ import type { Provider } from "next-auth/providers";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { Adapter } from "next-auth/adapters";
 import { prisma } from "@/lib/db/client";
 
 const providers: Provider[] = [
@@ -31,20 +32,40 @@ if (process.env.NODE_ENV === "development" || process.env.DEMO_MODE === "true") 
   );
 }
 
-// PrismaAdapter expects prisma.session for auth sessions, but our Session
-// model is for live quiz sessions (has required pin/quizId/hostId).
-// Auth sessions live in AuthSession (@@map("auth_session")).
-// We use a Proxy so model delegate access (prisma.user, prisma.account, etc.)
-// works correctly — plain object spread doesn't copy Prisma's proxy-based getters.
-const prismaForAuth = new Proxy(prisma, {
-  get(target, prop, receiver) {
-    if (prop === "session") return target.authSession;
-    return Reflect.get(target, prop, receiver);
+// PrismaAdapter uses prisma.session for auth sessions, but our "Session"
+// model is for live quiz sessions (requires pin/quizId/hostId).
+// Auth sessions live in the "AuthSession" model (@@map("auth_session")).
+// Override the session CRUD methods to use prisma.authSession directly.
+const baseAdapter = PrismaAdapter(prisma) as Adapter;
+const adapter: Adapter = {
+  ...baseAdapter,
+  async createSession(session) {
+    const created = await prisma.authSession.create({ data: session });
+    return created;
   },
-}) as typeof prisma;
+  async getSessionAndUser(sessionToken) {
+    const row = await prisma.authSession.findUnique({
+      where: { sessionToken },
+      include: { user: true },
+    });
+    if (!row) return null;
+    const { user, ...session } = row;
+    return { session, user };
+  },
+  async updateSession({ sessionToken, ...data }) {
+    const updated = await prisma.authSession.update({
+      where: { sessionToken },
+      data,
+    });
+    return updated;
+  },
+  async deleteSession(sessionToken) {
+    await prisma.authSession.delete({ where: { sessionToken } });
+  },
+};
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prismaForAuth),
+  adapter,
   providers,
   basePath: "/savint/api/auth",
   trustHost: true,
