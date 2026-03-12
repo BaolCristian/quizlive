@@ -7,6 +7,7 @@ import { PlayQuizButton } from "@/components/quiz/play-button";
 import { ImportQuizButton } from "@/components/quiz/import-button";
 import { ExcelImportButton } from "@/components/quiz/excel-import-button";
 import { ExcelTemplateButton } from "@/components/quiz/excel-template-button";
+import { MoodleImportButton } from "@/components/quiz/moodle-import-button";
 import {
   Search,
   Plus,
@@ -148,6 +149,7 @@ export function QuizDashboard({
         <div className="flex gap-3">
           <ExcelTemplateButton />
           <ExcelImportButton />
+          <MoodleImportButton />
           <ImportQuizButton />
           <Link href="/dashboard/quiz/new">
             <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-2.5 rounded-full transition-all shadow-md shadow-indigo-200 dark:shadow-none hover:shadow-lg active:scale-[0.97]">

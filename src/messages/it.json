@@ -557,6 +557,15 @@
   "metadata": {
     "description": "Quiz interattivi per la scuola"
   },
+  "moodle": {
+    "importMoodle": "Importa da Moodle",
+    "importError": "Errore nell'importazione del file Moodle",
+    "parseErrors": "Errori nel file Moodle:",
+    "question": "Domanda",
+    "questionsImported": "domande importate",
+    "skippedTypes": "Tipi di domanda non supportati (saltati)",
+    "withErrors": "domande con errori (saltate)"
+  },
   "localeSwitcher": {
     "it": "Italiano",
     "en": "English"
