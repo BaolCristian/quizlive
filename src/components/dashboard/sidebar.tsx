@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Menu, Home, BookOpen, Play, BarChart3, Share2, Sparkles, Library, LogOut, Moon, Sun, ShieldCheck } from "lucide-react";
 import { useTheme } from "@/components/dashboard/theme-provider";
 import { withBasePath } from "@/lib/base-path";
+import { serverSignOut } from "@/app/actions/auth";
 import {
   Sheet,
   SheetTrigger,
@@ -78,13 +79,15 @@ function SidebarContent({ user, onNavigate }: { user: any; onNavigate?: () => vo
             <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email}</div>
           </div>
         </div>
-        <button
-          onClick={() => { window.location.href = withBasePath("/api/auth/logout"); }}
-          className="flex items-center gap-2 px-3 py-2 w-full rounded-lg text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 transition-colors"
-        >
-          <LogOut className="h-4 w-4" />
-          Esci
-        </button>
+        <form action={serverSignOut}>
+          <button
+            type="submit"
+            className="flex items-center gap-2 px-3 py-2 w-full rounded-lg text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-600 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Esci
+          </button>
+        </form>
       </div>
     </>
   );
