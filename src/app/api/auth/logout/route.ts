@@ -1,35 +1,47 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const response = NextResponse.redirect(
-    new URL("/savint/login", process.env.AUTH_URL || "https://www.friulware.it/savint")
+  const baseUrl = process.env.AUTH_URL || "https://www.friulware.it/savint/api/auth";
+  const origin = new URL(baseUrl).origin;
+  const response = NextResponse.redirect(new URL("/savint/login", origin));
+
+  // Clear session token (and possible chunks .0, .1, .2)
+  for (const suffix of ["", ".0", ".1", ".2", ".3"]) {
+    response.headers.append(
+      "Set-Cookie",
+      `__Secure-authjs.session-token${suffix}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`
+    );
+    response.headers.append(
+      "Set-Cookie",
+      `authjs.session-token${suffix}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`
+    );
+  }
+
+  // Clear CSRF token (__Host- prefix)
+  response.headers.append(
+    "Set-Cookie",
+    `__Host-authjs.csrf-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`
+  );
+  response.headers.append(
+    "Set-Cookie",
+    `authjs.csrf-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`
   );
 
-  // Clear all possible session cookie name variations
-  const cookieNames = [
-    "__Secure-authjs.session-token",
-    "authjs.session-token",
-    "__Secure-authjs.callback-url",
-    "authjs.callback-url",
-    "__Secure-authjs.csrf-token",
-    "authjs.csrf-token",
-  ];
+  // Clear callback URL cookie
+  response.headers.append(
+    "Set-Cookie",
+    `__Secure-authjs.callback-url=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`
+  );
+  response.headers.append(
+    "Set-Cookie",
+    `authjs.callback-url=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`
+  );
 
-  for (const name of cookieNames) {
-    response.cookies.set(name, "", {
-      expires: new Date(0),
-      path: "/",
-      secure: false,
-      httpOnly: false,
-    });
-    // Also clear with secure flag
-    response.cookies.set(name, "", {
-      expires: new Date(0),
-      path: "/",
-      secure: true,
-      httpOnly: true,
-    });
-  }
+  // Clear PKCE cookie
+  response.headers.append(
+    "Set-Cookie",
+    `__Secure-authjs.pkce.code_verifier=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`
+  );
 
   return response;
 }
