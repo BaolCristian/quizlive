@@ -288,6 +288,19 @@ export function PlayerView() {
     socket.emit("joinSession", { pin, playerName: trimmedName, playerAvatar: avatar });
   };
 
+  /* ---------- leave handler ---------- */
+  const handleLeave = useCallback(() => {
+    if (!confirm(t("leaveConfirm"))) return;
+    socket?.emit("leaveSession");
+    sessionStorage.removeItem("savint-session");
+    setPhase("join");
+    setPin("");
+    setName("");
+    setQuestionData(null);
+    setFeedback(null);
+    setPodium(null);
+  }, [socket, t]);
+
   /* ---------- render phases ---------- */
 
   if (phase === "join") {
@@ -437,19 +450,6 @@ export function PlayerView() {
       </div>
     );
   }
-
-  /* ---------- leave handler ---------- */
-  const handleLeave = useCallback(() => {
-    if (!confirm(t("leaveConfirm"))) return;
-    socket?.emit("leaveSession");
-    sessionStorage.removeItem("savint-session");
-    setPhase("join");
-    setPin("");
-    setName("");
-    setQuestionData(null);
-    setFeedback(null);
-    setPodium(null);
-  }, [socket, t]);
 
   /* ---------- leave button ---------- */
   const leaveButton = (dark = true) => (
