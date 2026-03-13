@@ -736,30 +736,10 @@ function MultipleChoiceInput({
   onSubmit: (value: AnswerValue) => void;
 }) {
   const t = useTranslations("live");
+  const [selected, setSelected] = useState<number[]>([]);
   const correctCount = options.choices.filter((c) => c.isCorrect).length;
   const isMulti = correctCount > 1;
-  const [selected, setSelected] = useState<number[]>([]);
 
-  if (!isMulti) {
-    // Single correct answer — tap to submit immediately
-    return (
-      <div className="grid flex-1 grid-cols-2 gap-3">
-        {options.choices.map((c, i) => (
-          <button
-            key={i}
-            onClick={() => onSubmit({ selected: [i] })}
-            className={`flex items-center justify-center rounded-2xl min-h-16 sm:min-h-20 lg:min-h-24 p-2 sm:p-3 lg:p-4 text-white font-bold text-base sm:text-lg lg:text-xl shadow-lg hover:scale-105 active:scale-95 transition-all ${
-              MC_GRADIENTS[i % MC_GRADIENTS.length]
-            }`}
-          >
-            {c.text}
-          </button>
-        ))}
-      </div>
-    );
-  }
-
-  // Multiple correct answers — select then confirm
   const toggle = (i: number) => {
     setSelected((prev) =>
       prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
@@ -768,25 +748,27 @@ function MultipleChoiceInput({
 
   return (
     <div className="flex flex-1 flex-col gap-3">
-      <p className="text-center text-sm text-gray-400">{t("selectMultiple")}</p>
+      {isMulti && (
+        <p className="text-center text-sm text-gray-400">{t("selectMultiple")}</p>
+      )}
       <div className="grid flex-1 grid-cols-2 gap-3">
         {options.choices.map((c, i) => {
           const isSelected = selected.includes(i);
           return (
             <button
               key={i}
-              onClick={() => toggle(i)}
+              onClick={() => isMulti ? toggle(i) : onSubmit({ selected: [i] })}
               className={`flex items-center justify-center rounded-2xl min-h-16 sm:min-h-20 lg:min-h-24 p-2 sm:p-3 lg:p-4 text-white font-bold text-base sm:text-lg lg:text-xl shadow-lg transition-all ${
                 MC_GRADIENTS[i % MC_GRADIENTS.length]
-              } ${isSelected ? "ring-4 ring-white scale-105" : "opacity-80 hover:opacity-100"}`}
+              } ${isMulti && isSelected ? "ring-4 ring-white scale-105" : ""} ${isMulti && !isSelected ? "opacity-80 hover:opacity-100" : "hover:scale-105 active:scale-95"}`}
             >
-              {isSelected && <span className="mr-2">✓</span>}
+              {isMulti && isSelected && <span className="mr-2">✓</span>}
               {c.text}
             </button>
           );
         })}
       </div>
-      {selected.length > 0 && (
+      {isMulti && selected.length > 0 && (
         <button
           onClick={() => onSubmit({ selected })}
           className="w-full py-4 rounded-2xl bg-white text-gray-900 font-bold text-lg shadow-lg hover:scale-[1.02] active:scale-95 transition-all"
