@@ -438,9 +438,19 @@ export function PlayerView() {
     );
   }
 
+  /* ---------- PIN badge (shown on all in-game screens) ---------- */
+  const pinBadge = (dark = true) => pin ? (
+    <div className={`absolute top-3 left-3 z-10 rounded-full backdrop-blur-sm px-3 py-1 text-xs font-bold select-none ${
+      dark ? "bg-black/20 text-white/80" : "bg-black/10 text-emerald-800/70"
+    }`}>
+      PIN: {pin}
+    </div>
+  ) : null;
+
   if (phase === "waiting") {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-emerald-100 p-6 text-center" style={{ backgroundImage: "url('/pattern-school.svg')", backgroundSize: "200px 200px" }}>
+      <div className="relative flex min-h-dvh flex-col items-center justify-center bg-emerald-100 p-6 text-center" style={{ backgroundImage: "url('/pattern-school.svg')", backgroundSize: "200px 200px" }}>
+        {pinBadge(false)}
         <div className="mb-4 sm:mb-6 animate-float-bounce">
           <AvatarDisplay avatar={avatar} className={isCustomAvatar(avatar) ? "w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40" : "text-6xl sm:text-8xl lg:text-9xl"} />
         </div>
@@ -454,7 +464,8 @@ export function PlayerView() {
 
   if (phase === "question" && questionData) {
     return (
-      <div className="flex min-h-dvh flex-col bg-gray-950 p-3 sm:p-4 lg:p-6 text-white">
+      <div className="relative flex min-h-dvh flex-col bg-gray-950 p-3 sm:p-4 lg:p-6 text-white">
+        {pinBadge()}
         {/* Header */}
         <div className="mb-3 sm:mb-4 flex items-center justify-between">
           <span className="text-xs sm:text-sm lg:text-base font-medium text-gray-400">
@@ -503,7 +514,8 @@ export function PlayerView() {
   if (phase === "feedback" && feedback) {
     if (awaitingConfidence) {
       return (
-        <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-b from-indigo-500 to-purple-700 p-6 text-center">
+        <div className="relative flex min-h-dvh flex-col items-center justify-center bg-gradient-to-b from-indigo-500 to-purple-700 p-6 text-center">
+          {pinBadge()}
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
             {t("confidenceQuestion")}
           </h2>
@@ -559,12 +571,13 @@ export function PlayerView() {
 
     return (
       <div
-        className={`flex min-h-dvh flex-col items-center justify-center p-6 text-center ${
+        className={`relative flex min-h-dvh flex-col items-center justify-center p-6 text-center ${
           isCorrect
             ? "bg-gradient-to-b from-emerald-400 to-green-600"
             : "bg-gradient-to-b from-red-400 to-rose-600"
         }`}
       >
+        {pinBadge()}
         {isCorrect ? content : <div className="animate-shake">{content}</div>}
       </div>
     );
