@@ -336,7 +336,10 @@
     "fullLeaderboard": "Full leaderboard",
     "backToDashboard": "← Back to dashboard",
     "errorRows": "Error rows: {indices}",
-    "hotspotCorrect": "Correct point shown on image"
+    "hotspotCorrect": "Correct point shown on image",
+    "skipToResults": "Skip",
+    "leave": "Leave",
+    "leaveConfirm": "Are you sure you want to leave the game?"
   },
   "legal": {
     "termsTitle": "Terms of use acceptance",

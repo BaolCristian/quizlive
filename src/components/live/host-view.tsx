@@ -455,6 +455,14 @@ export function HostView({ session }: Props) {
             >
               {timeLeft}
             </div>
+
+            {/* Skip to results */}
+            <button
+              onClick={handleShowResults}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 lg:px-6 py-2.5 rounded-full transition-all text-sm lg:text-base shadow-md hover:shadow-lg active:scale-95"
+            >
+              {t("skipToResults")} →
+            </button>
           </div>
         </header>
 

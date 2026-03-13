@@ -706,6 +706,36 @@ export function setupSocketHandlers(io: TypedIO) {
     });
 
     // ------------------------------------------------------------------
+    // leaveSession — player voluntarily leaves the game
+    // ------------------------------------------------------------------
+    socket.on("leaveSession", () => {
+      if (!currentSessionId || !currentPlayerName) return;
+      if (currentPlayerName === "__host__") return;
+
+      const game = games.get(currentSessionId);
+      if (!game) return;
+
+      game.players.delete(currentPlayerName);
+      socket.leave(room(currentSessionId));
+
+      io.to(room(currentSessionId)).emit("playerLeft", {
+        playerName: currentPlayerName,
+        playerCount: realPlayerCount(game),
+      });
+
+      // Clean up any pending disconnect entry
+      const key = disconnectKey(currentSessionId, currentPlayerName);
+      const entry = disconnectedPlayers.get(key);
+      if (entry) {
+        clearTimeout(entry.timeout);
+        disconnectedPlayers.delete(key);
+      }
+
+      currentSessionId = null;
+      currentPlayerName = null;
+    });
+
+    // ------------------------------------------------------------------
     // disconnect — grace period before removal
     // ------------------------------------------------------------------
     socket.on("disconnect", () => {

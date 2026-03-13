@@ -136,4 +136,5 @@ export interface ClientToServerEvents {
   showResults: () => void;
   endGame: () => void;
   submitConfidence: (data: { confidenceLevel: number }) => void;
+  leaveSession: () => void;
 }

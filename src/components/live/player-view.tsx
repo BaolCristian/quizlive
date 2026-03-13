@@ -438,6 +438,33 @@ export function PlayerView() {
     );
   }
 
+  /* ---------- leave handler ---------- */
+  const handleLeave = useCallback(() => {
+    if (!confirm(t("leaveConfirm"))) return;
+    socket?.emit("leaveSession");
+    sessionStorage.removeItem("savint-session");
+    setPhase("join");
+    setPin("");
+    setName("");
+    setQuestionData(null);
+    setFeedback(null);
+    setPodium(null);
+  }, [socket, t]);
+
+  /* ---------- leave button ---------- */
+  const leaveButton = (dark = true) => (
+    <button
+      onClick={handleLeave}
+      className={`absolute top-3 right-3 z-10 rounded-full backdrop-blur-sm px-3 py-1.5 text-xs font-bold transition-colors ${
+        dark
+          ? "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+          : "bg-black/5 text-emerald-700/60 hover:bg-black/10 hover:text-emerald-800"
+      }`}
+    >
+      {t("leave")}
+    </button>
+  );
+
   /* ---------- PIN badge (shown on all in-game screens) ---------- */
   const pinBadge = (dark = true) => pin ? (
     <div className={`absolute top-3 left-3 z-10 rounded-full backdrop-blur-sm px-3 py-1 text-xs font-bold select-none ${
@@ -451,6 +478,7 @@ export function PlayerView() {
     return (
       <div className="relative flex min-h-dvh flex-col items-center justify-center bg-emerald-100 p-6 text-center" style={{ backgroundImage: "url('/pattern-school.svg')", backgroundSize: "200px 200px" }}>
         {pinBadge(false)}
+        {leaveButton(false)}
         <div className="mb-4 sm:mb-6 animate-float-bounce">
           <AvatarDisplay avatar={avatar} className={isCustomAvatar(avatar) ? "w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40" : "text-6xl sm:text-8xl lg:text-9xl"} />
         </div>
@@ -466,6 +494,7 @@ export function PlayerView() {
     return (
       <div className="relative flex min-h-dvh flex-col bg-gray-950 p-3 sm:p-4 lg:p-6 text-white">
         {pinBadge()}
+        {leaveButton()}
         {/* Header */}
         <div className="mb-3 sm:mb-4 flex items-center justify-between">
           <span className="text-xs sm:text-sm lg:text-base font-medium text-gray-400">

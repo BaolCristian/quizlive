@@ -336,7 +336,10 @@
     "fullLeaderboard": "Classifica completa",
     "backToDashboard": "← Torna alla dashboard",
     "errorRows": "Righe con errore: {indices}",
-    "hotspotCorrect": "Punto corretto indicato sull'immagine"
+    "hotspotCorrect": "Punto corretto indicato sull'immagine",
+    "skipToResults": "Avanti",
+    "leave": "Esci",
+    "leaveConfirm": "Sei sicuro di voler abbandonare la partita?"
   },
   "legal": {
     "termsTitle": "Accettazione delle condizioni di utilizzo",
