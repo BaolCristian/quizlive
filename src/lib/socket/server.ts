@@ -358,6 +358,30 @@ export function setupSocketHandlers(io: TypedIO) {
               ? game.currentQuestionIndex
               : undefined,
         });
+
+        // If session is in progress and there's an active question,
+        // send it to the late-joining player so they can answer
+        if (
+          session.status === "IN_PROGRESS" &&
+          playerName !== "__host__" &&
+          game.currentQuestionIndex >= 0
+        ) {
+          const q = game.questions[game.currentQuestionIndex];
+          if (q) {
+            socket.emit("questionStart", {
+              questionIndex: game.currentQuestionIndex,
+              totalQuestions: game.questions.length,
+              question: {
+                text: q.text,
+                type: q.type,
+                options: sanitizeOptions(q.type, q.options),
+                timeLimit: q.timeLimit,
+                points: q.points,
+                mediaUrl: q.mediaUrl,
+              },
+            });
+          }
+        }
       } catch (err) {
         console.error("joinSession error:", err);
         socket.emit("sessionError", { message: "Failed to join session" });
