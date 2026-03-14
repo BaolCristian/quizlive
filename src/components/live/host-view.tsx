@@ -675,8 +675,8 @@ export function HostView({ session }: Props) {
                             className={`bg-gradient-to-t ${MC_COLORS[i % MC_COLORS.length]} w-full rounded-t-xl transition-all duration-700`}
                             style={{ height: `${heightPercent}%`, minHeight: 8 }}
                           />
-                          <div className="flex flex-col items-center gap-0.5 max-w-full px-1">
-                            {isCorrect && <span className="text-emerald-400 text-xs">✓</span>}
+                          <div className={`flex items-center gap-1.5 max-w-full px-2 py-1 rounded-lg ${isCorrect ? "bg-emerald-500/20 border border-emerald-500/40" : ""}`}>
+                            {isCorrect && <span className="text-emerald-400 text-sm shrink-0">✓</span>}
                             <span className={`text-xs lg:text-sm text-center leading-tight line-clamp-2 ${isCorrect ? "text-emerald-300 font-semibold" : "text-slate-400"}`}>
                               {q?.question.type === "TRUE_FALSE" ? (key === "true" ? tc("true") : tc("false")) : key}
                             </span>
