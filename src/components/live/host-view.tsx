@@ -651,22 +651,35 @@ export function HostView({ session }: Props) {
                   <h3 className="text-xl lg:text-2xl font-bold">{t("answerDistribution")}</h3>
                 </div>
                 <div className="flex-1 flex items-end gap-3 lg:gap-5 min-h-[200px] lg:min-h-[280px]">
-                  {Object.entries(resultData.distribution).map(([key, value], i) => {
-                    const maxVal = Math.max(...Object.values(resultData.distribution), 1);
-                    const heightPercent = (value / maxVal) * 100;
-                    return (
-                      <div key={key} className="flex-1 flex flex-col items-center gap-2">
-                        <span className="text-lg lg:text-xl font-bold">{value}</span>
-                        <div
-                          className={`bg-gradient-to-t ${MC_COLORS[i % MC_COLORS.length]} w-full rounded-t-xl transition-all duration-700`}
-                          style={{ height: `${heightPercent}%`, minHeight: 8 }}
-                        />
-                        <span className="text-xs lg:text-sm text-slate-400 truncate max-w-full text-center">
-                          {key}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  {(() => {
+                    const entries = Object.entries(resultData.distribution);
+                    const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+                    // Build a set of correct answer texts for highlighting
+                    const correctTexts = new Set<string>();
+                    if (q?.question.type === "MULTIPLE_CHOICE") {
+                      const choices = (resultData.correctAnswer as MultipleChoiceOptions)?.choices ?? [];
+                      choices.filter(c => c.isCorrect).forEach(c => correctTexts.add(c.text));
+                    }
+                    return entries.map(([key, value], i) => {
+                      const heightPercent = (value / maxVal) * 100;
+                      const isCorrect = correctTexts.has(key);
+                      return (
+                        <div key={key} className="flex-1 flex flex-col items-center gap-2 min-w-0">
+                          <span className="text-lg lg:text-xl font-bold">{value}</span>
+                          <div
+                            className={`bg-gradient-to-t ${MC_COLORS[i % MC_COLORS.length]} w-full rounded-t-xl transition-all duration-700`}
+                            style={{ height: `${heightPercent}%`, minHeight: 8 }}
+                          />
+                          <div className="flex flex-col items-center gap-0.5 max-w-full px-1">
+                            {isCorrect && <span className="text-emerald-400 text-xs">✓</span>}
+                            <span className={`text-xs lg:text-sm text-center leading-tight line-clamp-2 ${isCorrect ? "text-emerald-300 font-semibold" : "text-slate-400"}`}>
+                              {key}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
               </section>

@@ -167,17 +167,31 @@ function buildLeaderboard(game: GameState) {
 /** Build answer distribution string map for the current question */
 function buildDistribution(
   type: QuestionType,
-  answers: { value: any; isCorrect: boolean }[]
+  answers: { value: any; isCorrect: boolean }[],
+  questionOptions?: any
 ): Record<string, number> {
   const dist: Record<string, number> = {};
 
   switch (type) {
-    case "MULTIPLE_CHOICE":
+    case "MULTIPLE_CHOICE": {
+      const choices: { text: string; isCorrect: boolean }[] =
+        questionOptions?.choices ?? [];
+      // Initialize all choices with 0 so every option appears in the chart
+      for (const c of choices) {
+        dist[c.text] = 0;
+      }
       for (const a of answers) {
-        const key = JSON.stringify((a.value as any).selected ?? []);
-        dist[key] = (dist[key] || 0) + 1;
+        const selected: number[] = (a.value as any).selected ?? [];
+        // Map each selected index to the choice text
+        for (const idx of selected) {
+          const text = choices[idx]?.text;
+          if (text) {
+            dist[text] = (dist[text] || 0) + 1;
+          }
+        }
       }
       break;
+    }
     case "TRUE_FALSE":
       for (const a of answers) {
         const key = String((a.value as any).selected);
@@ -607,7 +621,8 @@ export function setupSocketHandlers(io: TypedIO) {
 
         const distribution = buildDistribution(
           question.type,
-          dbAnswers.map((a) => ({ value: a.value, isCorrect: a.isCorrect }))
+          dbAnswers.map((a) => ({ value: a.value, isCorrect: a.isCorrect })),
+          question.options
         );
 
         const leaderboard = buildLeaderboard(game);
