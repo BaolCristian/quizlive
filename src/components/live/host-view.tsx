@@ -637,7 +637,8 @@ export function HostView({ session }: Props) {
             {/* Left: Correct answer + Distribution chart */}
             {resultData && (
               <section className="lg:w-1/2 flex flex-col gap-6">
-              {/* Correct answer */}
+              {/* Correct answer — hidden for MC and TRUE_FALSE (shown in chart) */}
+              {q?.question.type !== "MULTIPLE_CHOICE" && q?.question.type !== "TRUE_FALSE" && (
               <div className="bg-emerald-800/40 border border-emerald-600/50 rounded-2xl p-5 lg:p-6">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-xl">✅</span>
@@ -645,6 +646,7 @@ export function HostView({ session }: Props) {
                 </div>
                 <CorrectAnswerDisplay type={q?.question.type} options={resultData.correctAnswer} />
               </div>
+              )}
               <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 lg:p-8 flex flex-col flex-1">
                 <div className="flex items-center gap-2 mb-6">
                   <span className="text-2xl">📊</span>
@@ -659,6 +661,9 @@ export function HostView({ session }: Props) {
                     if (q?.question.type === "MULTIPLE_CHOICE") {
                       const choices = (resultData.correctAnswer as MultipleChoiceOptions)?.choices ?? [];
                       choices.filter(c => c.isCorrect).forEach(c => correctTexts.add(c.text));
+                    } else if (q?.question.type === "TRUE_FALSE") {
+                      const tf = resultData.correctAnswer as { correct: boolean };
+                      correctTexts.add(String(tf.correct));
                     }
                     return entries.map(([key, value], i) => {
                       const heightPercent = (value / maxVal) * 100;
@@ -673,7 +678,7 @@ export function HostView({ session }: Props) {
                           <div className="flex flex-col items-center gap-0.5 max-w-full px-1">
                             {isCorrect && <span className="text-emerald-400 text-xs">✓</span>}
                             <span className={`text-xs lg:text-sm text-center leading-tight line-clamp-2 ${isCorrect ? "text-emerald-300 font-semibold" : "text-slate-400"}`}>
-                              {key}
+                              {q?.question.type === "TRUE_FALSE" ? (key === "true" ? tc("true") : tc("false")) : key}
                             </span>
                           </div>
                         </div>
