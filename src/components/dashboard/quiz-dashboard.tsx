@@ -20,6 +20,8 @@ import {
   MoreHorizontal,
   X,
   Play,
+  Globe,
+  Lock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { withBasePath } from "@/lib/base-path";
@@ -35,6 +37,7 @@ export interface QuizItem {
   title: string;
   tags: string[];
   authorId: string;
+  isPublic: boolean;
   license: string;
   _count: { questions: number; sessions: number };
   author: { name: string | null };
@@ -453,12 +456,31 @@ function QuizCard({
     >
       {/* Content */}
       <div className="p-5 pb-3 space-y-3">
-        {/* Title */}
-        <Link href={`/dashboard/quiz/${quiz.id}/edit`}>
-          <h3 className="text-base font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug min-h-[2.5rem]">
-            {quiz.title || t("untitledQuiz")}
-          </h3>
-        </Link>
+        {/* Title + visibility */}
+        <div className="flex items-start justify-between gap-2">
+          <Link href={`/dashboard/quiz/${quiz.id}/edit`} className="flex-1 min-w-0">
+            <h3 className="text-base font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug min-h-[2.5rem]">
+              {quiz.title || t("untitledQuiz")}
+            </h3>
+          </Link>
+          {quiz.isPublic ? (
+            <span
+              className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-md"
+              title={t("publicQuiz")}
+            >
+              <Globe className="size-3" />
+              {t("publicBadge")}
+            </span>
+          ) : (
+            <span
+              className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md"
+              title={t("privateQuiz")}
+            >
+              <Lock className="size-3" />
+              {t("privateBadge")}
+            </span>
+          )}
+        </div>
         {quiz.suspended && (
           <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded-md">
             {t("suspended")}

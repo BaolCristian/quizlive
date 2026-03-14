@@ -130,6 +130,8 @@
     "retry": "Riprova",
     "publicQuiz": "Quiz pubblico nella libreria",
     "privateQuiz": "Quiz privato",
+    "publicBadge": "Pubblico",
+    "privateBadge": "Privato",
     "publicTooltip": "Condividi il tuo quiz con tutti i docenti! I quiz pubblici appaiono nella Libreria: altri docenti possono giocarli direttamente o duplicarli e adattarli alle proprie classi. Insieme creiamo una raccolta di risorse didattiche libere e gratuite.",
     "quizSettings": "Impostazioni quiz",
     "description": "Descrizione",

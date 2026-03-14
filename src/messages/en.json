@@ -130,6 +130,8 @@
     "retry": "Retry",
     "publicQuiz": "Public quiz in library",
     "privateQuiz": "Private quiz",
+    "publicBadge": "Public",
+    "privateBadge": "Private",
     "publicTooltip": "Share your quiz with all teachers! Public quizzes appear in the Library: other teachers can play them directly or duplicate and adapt them for their classes. Together we create a collection of free educational resources.",
     "quizSettings": "Quiz settings",
     "description": "Description",
