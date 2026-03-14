@@ -86,9 +86,11 @@ function sanitizeOptions(
   switch (type) {
     case "MULTIPLE_CHOICE": {
       const mc = options as MultipleChoiceOptions;
+      const correctCount = mc.choices.filter((c) => c.isCorrect).length;
       return {
         choices: mc.choices.map((c) => ({ text: c.text, isCorrect: false })),
-      } as MultipleChoiceOptions;
+        correctCount,
+      } as any;
     }
     case "TRUE_FALSE":
       // Player just sees true/false buttons; no need to reveal correct value

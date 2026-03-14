@@ -737,7 +737,7 @@ function MultipleChoiceInput({
 }) {
   const t = useTranslations("live");
   const [selected, setSelected] = useState<number[]>([]);
-  const correctCount = options.choices.filter((c) => c.isCorrect).length;
+  const correctCount = (options as any).correctCount ?? options.choices.filter((c) => c.isCorrect).length;
   const isMulti = correctCount > 1;
 
   const toggle = (i: number) => {
