@@ -334,6 +334,8 @@
     "top5": "Top 5 Leaderboard",
     "nextQuestion": "Next question →",
     "showPodium": "🏆 Show podium",
+    "mute": "Mute sounds",
+    "unmute": "Unmute sounds",
     "ready": "READY",
     "set": "SET",
     "go": "GO!",

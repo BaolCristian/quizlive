@@ -8,7 +8,8 @@ import type { QuestionOptions, MultipleChoiceOptions } from "@/types";
 import type { QuestionType } from "@prisma/client";
 import { isCustomAvatar } from "@/lib/emoji-avatars";
 import { withBasePath } from "@/lib/base-path";
-import { playTick, playTimeUp, playDrumroll, playFanfare } from "@/lib/sounds";
+import { playTick, playTimeUp, playDrumroll, playFanfare, isMuted, toggleMute } from "@/lib/sounds";
+import { Volume2, VolumeX } from "lucide-react";
 
 function HostConfetti() {
   const colors = [
@@ -206,6 +207,12 @@ export function HostView({ session }: Props) {
   const [resultData, setResultData] = useState<ResultData | null>(null);
   const [gameOverData, setGameOverData] = useState<GameOverData | null>(null);
   const [resultsRevealed, setResultsRevealed] = useState(false);
+  const [muted, setMutedState] = useState(false);
+
+  const handleToggleMute = () => {
+    const newVal = toggleMute();
+    setMutedState(newVal);
+  };
 
   // Join session as host on mount
   useEffect(() => {
@@ -460,20 +467,29 @@ export function HostView({ session }: Props) {
               )}
             </div>
 
-            {/* Start button */}
-            <button
-              onClick={handleStartGame}
-              disabled={playerCount === 0}
-              className={`w-full font-extrabold px-10 py-5 lg:py-6 rounded-2xl text-xl lg:text-2xl transition-all shrink-0 ${
-                playerCount === 0
-                  ? "bg-slate-700 text-slate-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg shadow-green-900/30 hover:shadow-green-500/30 hover:scale-[1.01] active:scale-[0.98]"
-              }`}
-            >
-              {playerCount === 0
-                ? t("waitingForPlayersBtn")
-                : t("startQuiz", { count: playerCount, suffix: playerCount === 1 ? "e" : "i" })}
-            </button>
+            {/* Start + Mute buttons */}
+            <div className="flex gap-3 shrink-0">
+              <button
+                onClick={handleStartGame}
+                disabled={playerCount === 0}
+                className={`flex-1 font-extrabold px-10 py-5 lg:py-6 rounded-2xl text-xl lg:text-2xl transition-all ${
+                  playerCount === 0
+                    ? "bg-slate-700 text-slate-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-lg shadow-green-900/30 hover:shadow-green-500/30 hover:scale-[1.01] active:scale-[0.98]"
+                }`}
+              >
+                {playerCount === 0
+                  ? t("waitingForPlayersBtn")
+                  : t("startQuiz", { count: playerCount, suffix: playerCount === 1 ? "e" : "i" })}
+              </button>
+              <button
+                onClick={handleToggleMute}
+                className="w-14 lg:w-16 rounded-2xl bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center transition-colors"
+                title={muted ? t("unmute") : t("mute")}
+              >
+                {muted ? <VolumeX className="size-6" /> : <Volume2 className="size-6" />}
+              </button>
+            </div>
           </section>
         </div>
       </div>
@@ -559,6 +575,15 @@ export function HostView({ session }: Props) {
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 lg:px-6 py-2.5 rounded-full transition-all text-sm lg:text-base shadow-md hover:shadow-lg active:scale-95"
             >
               {t("skipToResults")} →
+            </button>
+
+            {/* Mute toggle */}
+            <button
+              onClick={handleToggleMute}
+              className="p-2.5 rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors"
+              title={muted ? t("unmute") : t("mute")}
+            >
+              {muted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
             </button>
           </div>
         </header>

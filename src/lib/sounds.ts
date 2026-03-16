@@ -1,8 +1,14 @@
 "use client";
 
 let audioCtx: AudioContext | null = null;
+let _muted = false;
 
-function getCtx(): AudioContext {
+export function isMuted() { return _muted; }
+export function setMuted(v: boolean) { _muted = v; }
+export function toggleMute() { _muted = !_muted; return _muted; }
+
+function getCtx(): AudioContext | null {
+  if (_muted) return null;
   if (!audioCtx) audioCtx = new AudioContext();
   if (audioCtx.state === "suspended") audioCtx.resume();
   return audioCtx;
@@ -11,8 +17,9 @@ function getCtx(): AudioContext {
 /** Short ascending jingle — correct answer */
 export function playCorrect() {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
-  const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+  const notes = [523.25, 659.25, 783.99, 1046.5];
   notes.forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -29,6 +36,7 @@ export function playCorrect() {
 /** Descending buzzer — wrong answer */
 export function playWrong() {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -45,6 +53,7 @@ export function playWrong() {
 /** Single tick for countdown (last 5 seconds) */
 export function playTick() {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -60,6 +69,7 @@ export function playTick() {
 /** Drumroll for leaderboard reveal */
 export function playDrumroll(durationMs = 2000) {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   const dur = durationMs / 1000;
   const count = Math.floor(dur * 25);
@@ -82,6 +92,7 @@ export function playDrumroll(durationMs = 2000) {
 /** Fanfare for podium — triumphant chord */
 export function playFanfare() {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   const notes = [261.63, 329.63, 392, 523.25, 659.25, 783.99];
   notes.forEach((freq, i) => {
@@ -103,6 +114,7 @@ export function playFanfare() {
 /** Time's up — urgent double beep */
 export function playTimeUp() {
   const ctx = getCtx();
+  if (!ctx) return;
   const now = ctx.currentTime;
   [0, 0.15].forEach((delay) => {
     const osc = ctx.createOscillator();
