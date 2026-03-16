@@ -8,6 +8,42 @@ import type { QuestionOptions, MultipleChoiceOptions } from "@/types";
 import type { QuestionType } from "@prisma/client";
 import { isCustomAvatar } from "@/lib/emoji-avatars";
 import { withBasePath } from "@/lib/base-path";
+import { playTick, playTimeUp, playDrumroll, playFanfare } from "@/lib/sounds";
+
+function HostConfetti() {
+  const colors = [
+    "#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF",
+    "#FF8C00", "#E040FB", "#00E5FF", "#FF4081",
+    "#FFEB3B", "#76FF03", "#536DFE", "#FF1744",
+  ];
+  const pieces = Array.from({ length: 80 }, (_, i) => ({
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 2}s`,
+    color: colors[i % colors.length],
+    size: 8 + Math.random() * 12,
+    duration: `${2.5 + Math.random() * 2}s`,
+    isCircle: Math.random() > 0.5,
+  }));
+  return (
+    <div className="confetti-container">
+      {pieces.map((p, i) => (
+        <div
+          key={i}
+          className="confetti-piece-v2"
+          style={{
+            left: p.left,
+            animationDelay: p.delay,
+            animationDuration: p.duration,
+            backgroundColor: p.color,
+            width: p.size,
+            height: p.isCircle ? p.size : p.size * 0.4,
+            borderRadius: p.isCircle ? "50%" : "2px",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 function HostAvatar({ avatar, className }: { avatar?: string; className?: string }) {
   const av = avatar || "👤";
@@ -192,11 +228,14 @@ export function HostView({ session }: Props) {
     const handleQuestionResult = (data: ResultData) => {
       setResultData(data);
       setResultsRevealed(true);
+      playDrumroll(1500);
     };
 
     const handleGameOver = (data: GameOverData) => {
       setGameOverData(data);
       setPhase("podium");
+      playDrumroll(2000);
+      setTimeout(() => playFanfare(), 2000);
     };
 
     socket.on("playerJoined", handlePlayerJoined);
@@ -227,8 +266,10 @@ export function HostView({ session }: Props) {
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(interval);
+          playTimeUp();
           return 0;
         }
+        if (t <= 6) playTick();
         return t - 1;
       });
     }, 1000);
@@ -454,7 +495,7 @@ export function HostView({ session }: Props) {
             <div
               className={`w-14 h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center text-2xl lg:text-3xl font-black transition-colors ${
                 timeLeft <= 5 && timeLeft > 0
-                  ? "bg-red-500 text-white animate-countdown-pulse ring-4 ring-red-400/50"
+                  ? "bg-red-500 text-white animate-countdown-pulse ring-4 ring-red-400/50 animate-timer-shake"
                   : timeLeft <= 10 && timeLeft > 0
                     ? "bg-amber-500 text-white"
                     : "bg-slate-700 text-white"
@@ -671,11 +712,11 @@ export function HostView({ session }: Props) {
                       const heightPercent = (value / maxVal) * 100;
                       const isCorrect = correctTexts.has(key);
                       return (
-                        <div key={key} className={`flex-1 flex flex-col items-center gap-2 min-w-0 rounded-xl px-2 py-3 ${isCorrect ? "bg-emerald-500/20 border border-emerald-500/40" : ""}`}>
-                          <span className="text-lg lg:text-xl font-bold">{value}</span>
+                        <div key={key} className={`flex-1 flex flex-col items-center gap-2 min-w-0 rounded-xl px-2 py-3 animate-slot-reveal ${isCorrect ? "bg-emerald-500/20 border border-emerald-500/40" : ""}`} style={{ animationDelay: `${i * 200}ms` }}>
+                          <span className="text-lg lg:text-xl font-bold animate-zoom-in-bounce" style={{ animationDelay: `${i * 200 + 300}ms` }}>{value}</span>
                           <div
-                            className={`bg-gradient-to-t ${MC_COLORS[i % MC_COLORS.length]} w-full rounded-t-xl transition-all duration-700`}
-                            style={{ height: `${heightPercent}%`, minHeight: 8 }}
+                            className={`bg-gradient-to-t ${MC_COLORS[i % MC_COLORS.length]} w-full rounded-t-xl transition-all duration-1000`}
+                            style={{ height: `${heightPercent}%`, minHeight: 8, transitionDelay: `${i * 200}ms` }}
                           />
                           <div className="flex items-center gap-1 max-w-full">
                             {isCorrect && <span className="text-emerald-400 text-sm shrink-0">✓</span>}
@@ -705,8 +746,8 @@ export function HostView({ session }: Props) {
                     {resultData.leaderboard.slice(0, 5).map((entry, i) => (
                       <div
                         key={entry.playerName}
-                        className="flex items-center justify-between bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-xl px-4 lg:px-5 py-3 lg:py-4 transition-colors animate-slide-up-fade"
-                        style={{ animationDelay: `${i * 100}ms` }}
+                        className="flex items-center justify-between bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 rounded-xl px-4 lg:px-5 py-3 lg:py-4 transition-colors animate-slide-up-dramatic"
+                        style={{ animationDelay: `${i * 150 + 500}ms` }}
                       >
                         <div className="flex items-center gap-3 lg:gap-4">
                           <span className="text-xl lg:text-2xl font-black text-slate-500 w-8">
@@ -768,13 +809,14 @@ export function HostView({ session }: Props) {
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col">
+        <HostConfetti />
         {/* Header */}
         <header className="text-center pt-8 lg:pt-12 pb-4 relative">
           <div className="absolute top-4 right-6 lg:right-10 hidden sm:flex items-center gap-1.5 bg-indigo-600/30 border border-indigo-500/40 rounded-xl px-3 py-2">
             <span className="text-xs uppercase tracking-wider text-indigo-300 font-semibold">PIN</span>
             <span className="text-base lg:text-lg font-bold text-white tabular-nums">{formattedPin}</span>
           </div>
-          <h2 className="text-4xl lg:text-6xl font-black">{t("podiumTitle")}</h2>
+          <h2 className="text-4xl lg:text-6xl font-black animate-zoom-in-bounce">{t("podiumTitle")}</h2>
           <p className="text-lg lg:text-xl text-slate-400 mt-2">{session.quiz.title}</p>
         </header>
 

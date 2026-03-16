@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useSocket } from "@/lib/socket/client";
 import { fetchCustomEmoticons, buildCategories, randomEmoji, isCustomAvatar } from "@/lib/emoji-avatars";
 import { withBasePath } from "@/lib/base-path";
+import { playCorrect, playWrong, playTick, playTimeUp } from "@/lib/sounds";
 import type {
   AnswerValue,
   MatchingOptions,
@@ -56,25 +57,42 @@ interface PodiumData {
 /* ------------------------------------------------------------------ */
 
 function Confetti() {
-  const colors = ["#E8E8E8", "#D4D4D4", "#C0C0C0", "#F5F5DC", "#D2B48C", "#C4B59D", "#A9A9A9", "#BFBFBF"];
-  const pieces = Array.from({ length: 30 }, (_, i) => ({
+  const colors = [
+    "#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF",
+    "#FF8C00", "#E040FB", "#00E5FF", "#FF4081",
+    "#FFEB3B", "#76FF03", "#536DFE", "#FF1744",
+  ];
+  const shapes = ["circle", "rect", "star"] as const;
+  const pieces = Array.from({ length: 60 }, (_, i) => ({
     left: `${Math.random() * 100}%`,
-    delay: `${Math.random() * 0.5}s`,
+    delay: `${Math.random() * 1}s`,
     color: colors[i % colors.length],
-    size: 6 + Math.random() * 8,
+    size: 6 + Math.random() * 10,
+    shape: shapes[i % shapes.length],
+    duration: `${2 + Math.random() * 1.5}s`,
   }));
   return (
     <div className="confetti-container">
       {pieces.map((p, i) => (
         <div
           key={i}
-          className="confetti-piece"
+          className="confetti-piece-v2"
           style={{
             left: p.left,
             animationDelay: p.delay,
-            backgroundColor: p.color,
+            animationDuration: p.duration,
+            backgroundColor: p.shape !== "star" ? p.color : "transparent",
             width: p.size,
-            height: p.size,
+            height: p.shape === "rect" ? p.size * 0.4 : p.size,
+            borderRadius: p.shape === "circle" ? "50%" : p.shape === "rect" ? "2px" : "0",
+            ...(p.shape === "star" ? {
+              borderLeft: `${p.size / 2}px solid transparent`,
+              borderRight: `${p.size / 2}px solid transparent`,
+              borderBottom: `${p.size}px solid ${p.color}`,
+              backgroundColor: "transparent",
+              width: 0,
+              height: 0,
+            } : {}),
           }}
         />
       ))}
@@ -242,8 +260,10 @@ export function PlayerView() {
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(id);
+          playTimeUp();
           return 0;
         }
+        if (t <= 6) playTick(); // tick for last 5 seconds (t-1 will be <=5)
         return t - 1;
       });
     }, 1000);
@@ -254,8 +274,13 @@ export function PlayerView() {
   /* ---------- vibrate on wrong answer ---------- */
 
   useEffect(() => {
-    if (phase === "feedback" && feedback && !feedback.isCorrect) {
-      navigator.vibrate?.(200);
+    if (phase === "feedback" && feedback) {
+      if (feedback.isCorrect) {
+        playCorrect();
+      } else {
+        playWrong();
+        navigator.vibrate?.(200);
+      }
     }
   }, [phase, feedback]);
 
@@ -584,7 +609,7 @@ export function PlayerView() {
     const content = (
       <div className="flex flex-col items-center">
         {isCorrect && <Confetti />}
-        <div className="text-6xl sm:text-8xl lg:text-9xl mb-3 sm:mb-4 animate-score-pop">
+        <div className={`text-7xl sm:text-9xl lg:text-[10rem] mb-3 sm:mb-4 animate-zoom-in-bounce ${isCorrect ? "animate-pulse-glow rounded-full" : ""}`}>
           {isCorrect ? "\u2713" : "\u2717"}
         </div>
         <div className="mb-3 sm:mb-4">
