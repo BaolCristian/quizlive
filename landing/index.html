@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAVINT — Quiz Interattivi per la Didattica</title>
+  <meta name="description" content="SAVINT: piattaforma open source di quiz interattivi per la scuola. Crea, condividi e gioca quiz in tempo reale con i tuoi studenti.">
+  <link rel="icon" href="/savint/favicon.ico">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --indigo: #4f46e5;
+      --indigo-dark: #3730a3;
+      --emerald: #10b981;
+      --emerald-dark: #059669;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-400: #94a3b8;
+      --slate-600: #475569;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--slate-800);
+      background: var(--slate-50);
+      line-height: 1.6;
+    }
+
+    /* Language switcher */
+    .lang-switch {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 50;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .lang-btn {
+      padding: 0.4rem 0.8rem;
+      border: 2px solid var(--slate-400);
+      border-radius: 0.5rem;
+      background: white;
+      color: var(--slate-600);
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-btn.active {
+      background: var(--indigo);
+      border-color: var(--indigo);
+      color: white;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--indigo) 0%, #7c3aed 100%);
+      color: white;
+      text-align: center;
+      padding: 6rem 1.5rem 4rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 900;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+    .hero p {
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      max-width: 700px;
+      margin: 0 auto 2.5rem;
+      opacity: 0.9;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      border-radius: 1rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+    .btn:active { transform: scale(0.98); }
+    .btn-play {
+      background: var(--emerald);
+      color: white;
+    }
+    .btn-teacher {
+      background: white;
+      color: var(--indigo);
+    }
+    .btn-github {
+      background: var(--slate-800);
+      color: white;
+    }
+
+    /* Features */
+    .features {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+    .features h2 {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 3rem;
+      color: var(--slate-900);
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    .feature-card {
+      background: white;
+      border: 1px solid var(--slate-100);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .feature-card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .feature-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--slate-900);
+    }
+    .feature-card p {
+      color: var(--slate-600);
+      font-size: 0.95rem;
+    }
+
+    /* Question types */
+    .types {
+      background: var(--slate-900);
+      color: white;
+      padding: 4rem 1.5rem;
+      text-align: center;
+    }
+    .types h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 2rem;
+    }
+    .types-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .type-tag {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 2rem;
+      padding: 0.5rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    /* How it works */
+    .how {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+    .how h2 {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 3rem;
+    }
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+    .step-num {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      background: var(--indigo);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .step h3 { font-weight: 700; margin-bottom: 0.3rem; }
+    .step p { color: var(--slate-600); }
+
+    /* CTA */
+    .cta {
+      background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
+      color: white;
+      text-align: center;
+      padding: 4rem 1.5rem;
+    }
+    .cta h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+    .cta p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .btn-cta {
+      background: white;
+      color: var(--emerald-dark);
+      padding: 1rem 2.5rem;
+      border-radius: 1rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+    .btn-cta:hover { transform: translateY(-2px); }
+
+    /* Footer */
+    footer {
+      background: var(--slate-900);
+      color: var(--slate-400);
+      text-align: center;
+      padding: 2rem 1.5rem;
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--slate-400); text-decoration: underline; }
+    footer a:hover { color: white; }
+
+    /* i18n: hide inactive language */
+    [data-lang="en"] { display: none; }
+    body.en [data-lang="en"] { display: revert; }
+    body.en [data-lang="it"] { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- Language switcher -->
+<div class="lang-switch">
+  <button class="lang-btn active" id="btn-it" onclick="setLang('it')">IT</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>SAVINT</h1>
+  <p data-lang="it">Piattaforma open source di quiz interattivi per la didattica. Crea, condividi e gioca quiz in tempo reale con i tuoi studenti.</p>
+  <p data-lang="en">Open source interactive quiz platform for education. Create, share and play quizzes in real time with your students.</p>
+  <div class="hero-buttons">
+    <a href="/savint/play" class="btn btn-play">
+      <span data-lang="it">&#9654; Gioca</span>
+      <span data-lang="en">&#9654; Play</span>
+    </a>
+    <a href="/savint/login" class="btn btn-teacher">
+      <span data-lang="it">&#128218; Accesso Docenti</span>
+      <span data-lang="en">&#128218; Teacher Login</span>
+    </a>
+    <a href="https://github.com/BaolCristian/savint" target="_blank" rel="noopener" class="btn btn-github">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <h2 data-lang="it">Perch&eacute; SAVINT?</h2>
+  <h2 data-lang="en">Why SAVINT?</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="icon">&#127891;</div>
+      <h3 data-lang="it">9 tipi di domande</h3>
+      <h3 data-lang="en">9 question types</h3>
+      <p data-lang="it">Scelta multipla, vero/falso, ordinamento, abbinamento, risposta aperta, trova l'errore, stima numerica, hotspot su immagine, completamento codice.</p>
+      <p data-lang="en">Multiple choice, true/false, ordering, matching, open answer, spot the error, numeric estimation, image hotspot, code completion.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#9889;</div>
+      <h3 data-lang="it">Tempo reale</h3>
+      <h3 data-lang="en">Real time</h3>
+      <p data-lang="it">Gli studenti rispondono dai propri dispositivi. Risultati istantanei, classifica live, effetti sonori e animazioni stile game show.</p>
+      <p data-lang="en">Students answer from their own devices. Instant results, live leaderboard, sound effects and game show animations.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128275;</div>
+      <h3 data-lang="it">Open source</h3>
+      <h3 data-lang="en">Open source</h3>
+      <p data-lang="it">Licenza AGPL-3.0. Ogni scuola installa la propria istanza sul proprio server. Nessuna dipendenza da servizi esterni.</p>
+      <p data-lang="en">AGPL-3.0 license. Each school runs its own instance on its own server. No dependency on external services.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128203;</div>
+      <h3 data-lang="it">Libreria condivisa</h3>
+      <h3 data-lang="en">Shared library</h3>
+      <p data-lang="it">I docenti possono pubblicare i propri quiz nella libreria pubblica. Altri docenti possono duplicarli e adattarli alle proprie classi.</p>
+      <p data-lang="en">Teachers can publish quizzes to the public library. Other teachers can duplicate and adapt them for their classes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128229;</div>
+      <h3 data-lang="it">Importa da ovunque</h3>
+      <h3 data-lang="en">Import from anywhere</h3>
+      <p data-lang="it">Importa quiz da file Excel, formato .qlz nativo o Moodle XML. Esporta e condividi i tuoi quiz.</p>
+      <p data-lang="en">Import quizzes from Excel, native .qlz format or Moodle XML. Export and share your quizzes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon">&#128202;</div>
+      <h3 data-lang="it">Statistiche dettagliate</h3>
+      <h3 data-lang="en">Detailed statistics</h3>
+      <p data-lang="it">Analisi dei risultati per sessione, per studente e per argomento. Esporta i dati in Excel.</p>
+      <p data-lang="en">Results analysis by session, student and topic. Export data to Excel.</p>
+    </div>
+  </div>
+</section>
+
+<!-- QUESTION TYPES -->
+<section class="types">
+  <h2 data-lang="it">Tipi di domande supportati</h2>
+  <h2 data-lang="en">Supported question types</h2>
+  <div class="types-list">
+    <span class="type-tag" data-lang="it">Scelta multipla</span>
+    <span class="type-tag" data-lang="en">Multiple choice</span>
+    <span class="type-tag" data-lang="it">Vero / Falso</span>
+    <span class="type-tag" data-lang="en">True / False</span>
+    <span class="type-tag" data-lang="it">Risposta aperta</span>
+    <span class="type-tag" data-lang="en">Open answer</span>
+    <span class="type-tag" data-lang="it">Ordinamento</span>
+    <span class="type-tag" data-lang="en">Ordering</span>
+    <span class="type-tag" data-lang="it">Abbinamento</span>
+    <span class="type-tag" data-lang="en">Matching</span>
+    <span class="type-tag" data-lang="it">Trova l'errore</span>
+    <span class="type-tag" data-lang="en">Spot the error</span>
+    <span class="type-tag" data-lang="it">Stima numerica</span>
+    <span class="type-tag" data-lang="en">Numeric estimation</span>
+    <span class="type-tag" data-lang="it">Hotspot su immagine</span>
+    <span class="type-tag" data-lang="en">Image hotspot</span>
+    <span class="type-tag" data-lang="it">Completamento codice</span>
+    <span class="type-tag" data-lang="en">Code completion</span>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <h2 data-lang="it">Come funziona</h2>
+  <h2 data-lang="en">How it works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3 data-lang="it">Installa</h3>
+        <h3 data-lang="en">Install</h3>
+        <p data-lang="it">Scarica il codice da GitHub e installa SAVINT sul server della tua scuola. Serve Node.js e PostgreSQL.</p>
+        <p data-lang="en">Download the code from GitHub and install SAVINT on your school's server. Requires Node.js and PostgreSQL.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3 data-lang="it">Crea i quiz</h3>
+        <h3 data-lang="en">Create quizzes</h3>
+        <p data-lang="it">Accedi con il tuo account Google e crea i quiz dall'editor visuale. Oppure importa da Excel o Moodle.</p>
+        <p data-lang="en">Log in with your Google account and create quizzes from the visual editor. Or import from Excel or Moodle.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3 data-lang="it">Gioca in classe</h3>
+        <h3 data-lang="en">Play in class</h3>
+        <p data-lang="it">Avvia il quiz e condividi il PIN con gli studenti. Loro si collegano dal telefono e giocano in tempo reale.</p>
+        <p data-lang="en">Start the quiz and share the PIN with students. They connect from their phones and play in real time.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <h3 data-lang="it">Analizza i risultati</h3>
+        <h3 data-lang="en">Analyze results</h3>
+        <p data-lang="it">Consulta le statistiche dettagliate per ogni sessione, studente e argomento.</p>
+        <p data-lang="en">View detailed statistics for each session, student and topic.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2 data-lang="it">Inizia subito</h2>
+  <h2 data-lang="en">Get started</h2>
+  <p data-lang="it">SAVINT &egrave; gratuito e open source. Scarica il codice, installa e inizia a creare quiz interattivi per i tuoi studenti.</p>
+  <p data-lang="en">SAVINT is free and open source. Download the code, install it and start creating interactive quizzes for your students.</p>
+  <a href="https://github.com/BaolCristian/savint" target="_blank" rel="noopener" class="btn-cta" data-lang="it">Scarica da GitHub</a>
+  <a href="https://github.com/BaolCristian/savint" target="_blank" rel="noopener" class="btn-cta" data-lang="en">Download from GitHub</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    SAVINT v1.0.0 &mdash;
+    <span data-lang="it">creato da</span>
+    <span data-lang="en">made by</span>
+    Cristian Virgili &middot;
+    <a href="https://github.com/BaolCristian/savint">GitHub</a> &middot;
+    AGPL-3.0 &middot;
+    <a href="/savint/help">Help</a> &middot;
+    <a href="/savint/privacy">Privacy</a>
+  </p>
+</footer>
+
+<script>
+function setLang(lang) {
+  document.body.className = lang === 'en' ? 'en' : '';
+  document.getElementById('btn-it').classList.toggle('active', lang === 'it');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.documentElement.lang = lang;
+  localStorage.setItem('savint-lang', lang);
+}
+// Auto-detect language
+const saved = localStorage.getItem('savint-lang');
+if (saved) { setLang(saved); }
+else if (navigator.language && !navigator.language.startsWith('it')) { setLang('en'); }
+</script>
+
+</body>
+</html>
