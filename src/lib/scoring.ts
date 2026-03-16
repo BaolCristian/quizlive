@@ -33,8 +33,15 @@ export function checkAnswer(type: string, options: any, value: any): boolean {
       return options.acceptedAnswers.some(
         (a: string) => a.toLowerCase().trim() === value.text.toLowerCase().trim()
       );
-    case "ORDERING":
-      return JSON.stringify(value.order) === JSON.stringify(options.correctOrder);
+    case "ORDERING": {
+      // Compare by text: the player sends orderedTexts (texts in the order they chose)
+      // The server knows the correct order from options.correctOrder + options.items
+      const correctTexts = (options.correctOrder as number[]).map(
+        (i: number) => options.items[i]
+      );
+      const playerTexts: string[] = value.orderedTexts ?? [];
+      return JSON.stringify(playerTexts) === JSON.stringify(correctTexts);
+    }
     case "MATCHING": {
       const expected = options.pairs.map((_: any, i: number) => [i, i]);
       const sorted = [...value.matches].sort((a: number[], b: number[]) => a[0] - b[0]);

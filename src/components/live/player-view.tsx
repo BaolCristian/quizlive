@@ -979,7 +979,7 @@ function OrderingInput({
         ))}
       </div>
       <button
-        onClick={() => onSubmit({ order })}
+        onClick={() => onSubmit({ order, orderedTexts: order.map((i) => options.items[i]) })}
         className="mt-4 h-14 w-full rounded-2xl bg-white text-xl font-bold text-gray-900 transition active:scale-95"
       >
         {tc("confirm")}
