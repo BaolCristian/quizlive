@@ -43,9 +43,14 @@ export function checkAnswer(type: string, options: any, value: any): boolean {
       return JSON.stringify(playerTexts) === JSON.stringify(correctTexts);
     }
     case "MATCHING": {
-      const expected = options.pairs.map((_: any, i: number) => [i, i]);
-      const sorted = [...value.matches].sort((a: number[], b: number[]) => a[0] - b[0]);
-      return JSON.stringify(sorted) === JSON.stringify(expected);
+      // Compare by text: the player sends matchedPairs with actual left/right texts
+      const correctPairs = (options.pairs as { left: string; right: string }[])
+        .map((p) => `${p.left}::${p.right}`)
+        .sort();
+      const playerPairs = ((value.matchedPairs ?? []) as { left: string; right: string }[])
+        .map((p) => `${p.left}::${p.right}`)
+        .sort();
+      return JSON.stringify(playerPairs) === JSON.stringify(correctPairs);
     }
     case "SPOT_ERROR": {
       const errorSet = new Set(options.errorIndices as number[]);

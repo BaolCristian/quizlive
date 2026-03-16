@@ -1221,7 +1221,13 @@ function MatchingInput({
       )}
 
       <button
-        onClick={() => onSubmit({ matches })}
+        onClick={() => onSubmit({
+          matches,
+          matchedPairs: matches.map(([l, r]) => ({
+            left: leftItems[l],
+            right: rightItems[shuffledRight.current[r]],
+          })),
+        })}
         disabled={matches.length === 0}
         className="mt-4 h-14 w-full rounded-2xl bg-white text-xl font-bold text-gray-900 transition active:scale-95 disabled:opacity-40"
       >
