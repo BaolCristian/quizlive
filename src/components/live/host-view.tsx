@@ -115,7 +115,7 @@ function CorrectAnswerDisplay({ type, options }: { type?: QuestionType; options:
   }
 }
 
-type Phase = "lobby" | "question" | "result" | "podium";
+type Phase = "lobby" | "countdown" | "question" | "result" | "podium";
 
 interface Props {
   session: {
@@ -157,6 +157,41 @@ const MC_COLORS = [
 ];
 
 const MC_ICONS = ["\u25B2", "\u25C6", "\u25CF", "\u25A0"];
+
+function CountdownScreen({ onComplete }: { onComplete: () => void }) {
+  const t = useTranslations("live");
+  const [step, setStep] = useState(0); // 0=pronti, 1=partenza, 2=via
+
+  const words = [t("ready"), t("set"), t("go")];
+  const colors = [
+    "from-amber-500 to-orange-600",
+    "from-orange-500 to-red-600",
+    "from-green-500 to-emerald-600",
+  ];
+  const scales = ["text-6xl lg:text-9xl", "text-7xl lg:text-[10rem]", "text-8xl lg:text-[12rem]"];
+
+  useEffect(() => {
+    if (step < 2) {
+      const timer = setTimeout(() => setStep((s) => s + 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(onComplete, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [step, onComplete]);
+
+  useEffect(() => {
+    playTick();
+  }, [step]);
+
+  return (
+    <div className={`min-h-screen bg-gradient-to-br ${colors[step]} flex items-center justify-center transition-all duration-300`}>
+      <div key={step} className={`${scales[step]} font-black text-white animate-zoom-in-bounce drop-shadow-2xl`}>
+        {words[step]}
+      </div>
+    </div>
+  );
+}
 
 export function HostView({ session }: Props) {
   const t = useTranslations("live");
@@ -291,8 +326,8 @@ export function HostView({ session }: Props) {
   }, [phase, answerCount]);
 
   const handleStartGame = useCallback(() => {
-    socket?.emit("startGame");
-  }, [socket]);
+    setPhase("countdown");
+  }, []);
 
   const handleShowResults = useCallback(() => {
     socket?.emit("showResults");
@@ -442,6 +477,20 @@ export function HostView({ session }: Props) {
           </section>
         </div>
       </div>
+    );
+  }
+
+  /* ================================================================== */
+  /*  COUNTDOWN — "Pronti, Partenza, Via!"                               */
+  /* ================================================================== */
+  if (phase === "countdown") {
+    return (
+      <CountdownScreen
+        onComplete={() => {
+          socket?.emit("startGame");
+          setPhase("question");
+        }}
+      />
     );
   }
 

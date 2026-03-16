@@ -24,7 +24,7 @@ import type { QuestionType } from "@prisma/client";
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 
-type Phase = "join" | "waiting" | "question" | "feedback" | "podium";
+type Phase = "join" | "waiting" | "countdown" | "question" | "feedback" | "podium";
 
 interface QuestionData {
   questionIndex: number;
@@ -96,6 +96,44 @@ function Confetti() {
           }}
         />
       ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Countdown "Pronti, Partenza, Via!"                                 */
+/* ------------------------------------------------------------------ */
+
+function PlayerCountdownScreen({ onComplete }: { onComplete: () => void }) {
+  const t = useTranslations("live");
+  const [step, setStep] = useState(0);
+
+  const words = [t("ready"), t("set"), t("go")];
+  const colors = [
+    "from-amber-500 to-orange-600",
+    "from-orange-500 to-red-600",
+    "from-green-500 to-emerald-600",
+  ];
+
+  useEffect(() => {
+    if (step < 2) {
+      const timer = setTimeout(() => setStep((s) => s + 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(onComplete, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [step, onComplete]);
+
+  useEffect(() => {
+    playTick();
+  }, [step]);
+
+  return (
+    <div className={`min-h-dvh bg-gradient-to-br ${colors[step]} flex items-center justify-center transition-all duration-300`}>
+      <div key={step} className="text-5xl sm:text-7xl lg:text-9xl font-black text-white animate-zoom-in-bounce drop-shadow-2xl">
+        {words[step]}
+      </div>
     </div>
   );
 }
@@ -214,7 +252,12 @@ export function PlayerView() {
       setTimeLeft(data.question.timeLimit);
       setSubmitted(false);
       questionStartTime.current = Date.now();
-      setPhase("question");
+      // Show countdown only for the first question
+      if (data.questionIndex === 0) {
+        setPhase("countdown");
+      } else {
+        setPhase("question");
+      }
     };
 
     const onAnswerFeedback = (data: FeedbackData & { confidenceEnabled?: boolean }) => {
@@ -505,6 +548,10 @@ export function PlayerView() {
       PIN: {pin}
     </div>
   ) : null;
+
+  if (phase === "countdown") {
+    return <PlayerCountdownScreen onComplete={() => setPhase("question")} />;
+  }
 
   if (phase === "waiting") {
     return (
