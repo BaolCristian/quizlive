@@ -239,3 +239,13 @@ SAVINT e' progettato con il principio di minimizzazione dei dati:
 ## Licenza
 
 SAVINT e' rilasciato sotto licenza **AGPL-3.0**. Gratuito per uso scolastico ed educativo.
+
+---
+
+## Una nota sulla collaborazione uomo-AI
+
+Questo progetto e stato costruito attraverso una collaborazione tra **Cristian Virgili** e **Claude Code** (di Anthropic). Dall'architettura all'implementazione, dalla correzione dei bug al design dell'esperienza utente, ogni funzionalita e stata sviluppata attraverso un dialogo continuo tra la visione umana e le capacita dell'AI.
+
+SAVINT e un esempio concreto di cio che diventa possibile quando un docente con un'idea chiara e un assistente AI lavorano insieme: una piattaforma completa e pronta per la produzione, realizzata in una frazione del tempo che sarebbe stato tradizionalmente necessario, senza compromessi sulla qualita.
+
+Crediamo che questo tipo di collaborazione rappresenti il futuro dello sviluppo software — non l'AI che sostituisce l'uomo, ma uomini e AI che costruiscono insieme cio che nessuno dei due potrebbe realizzare da solo.
