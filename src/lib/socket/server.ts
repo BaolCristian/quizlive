@@ -723,6 +723,14 @@ export function setupSocketHandlers(io: TypedIO) {
     });
 
     // ------------------------------------------------------------------
+    // toggleMute — host mutes/unmutes sounds for all players
+    // ------------------------------------------------------------------
+    socket.on("toggleMute", ({ muted }) => {
+      if (!currentSessionId || currentPlayerName !== "__host__") return;
+      io.to(room(currentSessionId)).emit("muteChanged", { muted });
+    });
+
+    // ------------------------------------------------------------------
     // leaveSession — player voluntarily leaves the game
     // ------------------------------------------------------------------
     socket.on("leaveSession", () => {

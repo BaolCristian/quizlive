@@ -212,6 +212,7 @@ export function HostView({ session }: Props) {
   const handleToggleMute = () => {
     const newVal = toggleMute();
     setMutedState(newVal);
+    socket?.emit("toggleMute", { muted: newVal });
   };
 
   // Join session as host on mount

@@ -125,6 +125,7 @@ export interface ServerToClientEvents {
   }) => void;
   sessionError: (data: { message: string }) => void;
   gameState: (data: { status: string; currentQuestion?: number; sessionId: string }) => void;
+  muteChanged: (data: { muted: boolean }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -137,4 +138,5 @@ export interface ClientToServerEvents {
   endGame: () => void;
   submitConfidence: (data: { confidenceLevel: number }) => void;
   leaveSession: () => void;
+  toggleMute: (data: { muted: boolean }) => void;
 }

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useSocket } from "@/lib/socket/client";
 import { fetchCustomEmoticons, buildCategories, randomEmoji, isCustomAvatar } from "@/lib/emoji-avatars";
 import { withBasePath } from "@/lib/base-path";
-import { playCorrect, playWrong, playTick, playTimeUp } from "@/lib/sounds";
+import { playCorrect, playWrong, playTick, playTimeUp, setMuted } from "@/lib/sounds";
 import type {
   AnswerValue,
   MatchingOptions,
@@ -270,6 +270,10 @@ export function PlayerView() {
       sessionStorage.removeItem("savint-session");
     };
 
+    const onMuteChanged = ({ muted }: { muted: boolean }) => {
+      setMuted(muted);
+    };
+
     socket.on("sessionError", onSessionError);
     socket.on("playerJoined", onPlayerJoined);
     socket.on("gameState", onGameState);
@@ -277,6 +281,7 @@ export function PlayerView() {
     socket.on("questionStart", onQuestionStart);
     socket.on("answerFeedback", onAnswerFeedback);
     socket.on("gameOver", onGameOver);
+    socket.on("muteChanged", onMuteChanged);
 
     return () => {
       socket.off("sessionError", onSessionError);
@@ -286,6 +291,7 @@ export function PlayerView() {
       socket.off("questionStart", onQuestionStart);
       socket.off("answerFeedback", onAnswerFeedback);
       socket.off("gameOver", onGameOver);
+      socket.off("muteChanged", onMuteChanged);
     };
   }, [socket, name]);
 
