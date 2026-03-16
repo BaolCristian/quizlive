@@ -340,6 +340,7 @@
     "set": "PARTENZA",
     "go": "VIA!",
     "madeBy": "creato da",
+    "updated": "aggiornato il",
     "podiumTitle": "🏆 Podio 🏆",
     "fullLeaderboard": "Classifica completa",
     "backToDashboard": "← Torna alla dashboard",
