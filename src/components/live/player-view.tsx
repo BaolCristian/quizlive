@@ -168,6 +168,7 @@ export function PlayerView() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [awaitingConfidence, setAwaitingConfidence] = useState(false);
+  const [confidenceRevealing, setConfidenceRevealing] = useState(false);
 
   const [avatar, setAvatar] = useState("");
   const [avatarCategory, setAvatarCategory] = useState(0);
@@ -314,10 +315,24 @@ export function PlayerView() {
     return () => clearInterval(id);
   }, [phase, questionData, timeLeft]);
 
-  /* ---------- sound + vibrate on feedback (after confidence if applicable) ---------- */
+  /* ---------- sound + vibrate on feedback ---------- */
+
+  const soundPlayedRef = useRef(false);
 
   useEffect(() => {
-    if (phase === "feedback" && feedback && !awaitingConfidence) {
+    // Reset sound flag when new feedback arrives
+    if (phase === "feedback" && feedback) {
+      soundPlayedRef.current = false;
+    }
+  }, [phase, feedback]);
+
+  // Play sound on confidence reveal or direct feedback (no confidence)
+  useEffect(() => {
+    if (!feedback || soundPlayedRef.current) return;
+
+    const shouldPlay = confidenceRevealing || (phase === "feedback" && !awaitingConfidence && !confidenceRevealing);
+    if (shouldPlay) {
+      soundPlayedRef.current = true;
       if (feedback.isCorrect) {
         playCorrect();
       } else {
@@ -325,7 +340,7 @@ export function PlayerView() {
         navigator.vibrate?.(200);
       }
     }
-  }, [phase, feedback, awaitingConfidence]);
+  }, [phase, feedback, awaitingConfidence, confidenceRevealing]);
 
   /* ---------- submit handler ---------- */
 
@@ -640,7 +655,11 @@ export function PlayerView() {
                 key={level}
                 onClick={() => {
                   socket?.emit("submitConfidence", { confidenceLevel: level });
-                  setAwaitingConfidence(false);
+                  setConfidenceRevealing(true);
+                  setTimeout(() => {
+                    setConfidenceRevealing(false);
+                    setAwaitingConfidence(false);
+                  }, 1500);
                 }}
                 className={`w-full py-4 rounded-2xl bg-gradient-to-r ${color} text-white font-bold text-lg shadow-lg hover:scale-105 active:scale-95 transition-all`}
               >
@@ -648,6 +667,25 @@ export function PlayerView() {
               </button>
             ))}
           </div>
+        </div>
+      );
+    }
+
+    if (confidenceRevealing) {
+      const isCorrect = feedback.isCorrect;
+      return (
+        <div className={`relative flex min-h-dvh flex-col items-center justify-center p-6 text-center transition-all duration-500 ${
+          isCorrect
+            ? "bg-gradient-to-b from-emerald-400 to-green-600"
+            : "bg-gradient-to-b from-red-400 to-rose-600"
+        }`}>
+          {isCorrect && <Confetti />}
+          <div className={`text-8xl sm:text-9xl lg:text-[12rem] animate-zoom-in-bounce ${isCorrect ? "" : "animate-shake"}`}>
+            {isCorrect ? "🎉" : "😬"}
+          </div>
+          <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-black text-white animate-slide-up-fade">
+            {isCorrect ? t("correct") : t("wrong")}
+          </h2>
         </div>
       );
     }
