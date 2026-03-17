@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const baseUrl = process.env.AUTH_URL || "https://www.friulware.it/savint/api/auth";
+  const baseUrl = process.env.AUTH_URL || "https://www.savint.it/savint/api/auth";
   const origin = new URL(baseUrl).origin;
   const response = NextResponse.redirect(new URL("/savint/login", origin));
 
