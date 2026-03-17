@@ -59,7 +59,8 @@ const disconnectedPlayers = new Map<string, {
   timeout: ReturnType<typeof setTimeout>;
 }>();
 
-const RECONNECT_GRACE_PERIOD_MS = 120_000; // 2 minutes to reconnect
+const RECONNECT_GRACE_PERIOD_MS =
+  (Number(process.env.RECONNECT_GRACE_MINUTES) || 10) * 60 * 1000;
 const SESSION_TIMEOUT_MS =
   (Number(process.env.SESSION_TIMEOUT_HOURS) || 2) * 60 * 60 * 1000;
 const SESSION_RETENTION_DAYS =
@@ -714,6 +715,25 @@ export function setupSocketHandlers(io: TypedIO) {
         totalQuestions: game.questions.length,
         phase,
       });
+
+      // Send the current question so the player can answer immediately
+      if (game.currentQuestionIndex >= 0) {
+        const q = game.questions[game.currentQuestionIndex];
+        if (q) {
+          socket.emit("questionStart", {
+            questionIndex: game.currentQuestionIndex,
+            totalQuestions: game.questions.length,
+            question: {
+              text: q.text,
+              type: q.type,
+              options: sanitizeOptions(q.type, q.options),
+              timeLimit: q.timeLimit,
+              points: q.points,
+              mediaUrl: q.mediaUrl,
+            },
+          });
+        }
+      }
 
       // Notify others
       io.to(room(sessionId)).emit("playerReconnected", {
