@@ -306,6 +306,7 @@
     "questionCounter": "Question {index}/{total}",
     "waitingForStart": "Waiting for the teacher to start the quiz...",
     "answerSubmitted": "Answer submitted!",
+    "timeUp": "Time's up!",
     "waitingResults": "Waiting for results...",
     "confidenceQuestion": "How confident are you in your answer?",
     "notSure": "Not sure",

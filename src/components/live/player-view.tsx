@@ -347,12 +347,12 @@ export function PlayerView() {
 
   const handleSubmit = useCallback(
     (value: AnswerValue) => {
-      if (!socket || submitted) return;
+      if (!socket || submitted || timeLeft <= 0) return;
       const responseTimeMs = Date.now() - questionStartTime.current;
       socket.emit("submitAnswer", { value, responseTimeMs });
       setSubmitted(true);
     },
-    [socket, submitted],
+    [socket, submitted, timeLeft],
   );
 
   /* ---------- join handler ---------- */
@@ -621,6 +621,14 @@ export function PlayerView() {
             </div>
             <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-400">
               {t("answerSubmitted")}
+            </p>
+            <p className="mt-2 text-sm sm:text-base lg:text-lg text-gray-400">{t("waitingResults")}</p>
+          </div>
+        ) : timeLeft <= 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <span className="text-5xl sm:text-6xl mb-4">&#9203;</span>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-red-400">
+              {t("timeUp")}
             </p>
             <p className="mt-2 text-sm sm:text-base lg:text-lg text-gray-400">{t("waitingResults")}</p>
           </div>

@@ -458,6 +458,13 @@ export function setupSocketHandlers(io: TypedIO) {
       const question = game.questions[game.currentQuestionIndex];
       if (!question) return;
 
+      // Reject answers submitted after the time limit (with 2s grace for network lag)
+      if (game.questionStartTime) {
+        const elapsed = Date.now() - game.questionStartTime;
+        const deadlineMs = (question.timeLimit + 2) * 1000;
+        if (elapsed > deadlineMs) return;
+      }
+
       const isCorrect = checkAnswer(question.type, question.options, value);
 
       // Calculate score: use partial scoring for types that support it

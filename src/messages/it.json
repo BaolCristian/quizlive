@@ -306,6 +306,7 @@
     "questionCounter": "Domanda {index}/{total}",
     "waitingForStart": "In attesa che il prof avvii il quiz...",
     "answerSubmitted": "Risposta inviata!",
+    "timeUp": "Tempo scaduto!",
     "waitingResults": "In attesa dei risultati...",
     "confidenceQuestion": "Quanto sei sicuro della tua risposta?",
     "notSure": "Poco sicuro",
