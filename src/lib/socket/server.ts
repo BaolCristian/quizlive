@@ -680,7 +680,7 @@ export function setupSocketHandlers(io: TypedIO) {
     // ------------------------------------------------------------------
     // rejoinSession
     // ------------------------------------------------------------------
-    socket.on("rejoinSession", ({ sessionId, playerName }) => {
+    socket.on("rejoinSession", async ({ sessionId, playerName }) => {
       const key = disconnectKey(sessionId, playerName);
       const entry = disconnectedPlayers.get(key);
       const game = games.get(sessionId);
@@ -703,10 +703,24 @@ export function setupSocketHandlers(io: TypedIO) {
       currentPlayerName = playerName;
       socket.join(room(sessionId));
 
-      // Determine current phase
+      // Determine current phase — check if player already answered
       let phase: "waiting" | "question" | "feedback" = "waiting";
+      let existingAnswer: Awaited<ReturnType<typeof prisma.answer.findUnique>> = null;
+
       if (game.currentQuestionIndex >= 0) {
-        phase = "question";
+        const q = game.questions[game.currentQuestionIndex];
+        if (q) {
+          existingAnswer = await prisma.answer.findUnique({
+            where: {
+              sessionId_questionId_playerName: {
+                sessionId: game.sessionId,
+                questionId: q.id,
+                playerName,
+              },
+            },
+          });
+        }
+        phase = existingAnswer ? "feedback" : "question";
       }
 
       socket.emit("rejoinSuccess", {
@@ -716,22 +730,45 @@ export function setupSocketHandlers(io: TypedIO) {
         phase,
       });
 
-      // Send the current question so the player can answer immediately
+      // Send the current question OR feedback if the player already answered
       if (game.currentQuestionIndex >= 0) {
         const q = game.questions[game.currentQuestionIndex];
         if (q) {
-          socket.emit("questionStart", {
-            questionIndex: game.currentQuestionIndex,
-            totalQuestions: game.questions.length,
-            question: {
-              text: q.text,
-              type: q.type,
-              options: sanitizeOptions(q.type, q.options),
-              timeLimit: q.timeLimit,
-              points: q.points,
-              mediaUrl: q.mediaUrl,
-            },
-          });
+          if (existingAnswer) {
+            // Player already answered — show feedback, not the question
+            const leaderboard = buildLeaderboard(game);
+            const position =
+              leaderboard.findIndex((l) => l.playerName === playerName) + 1;
+            const correctCount = [...game.players.values()].filter(
+              (p) => p.lastDelta > 0
+            ).length;
+            const total = realPlayerCount(game);
+            const classCorrectPercent =
+              total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+            socket.emit("answerFeedback", {
+              isCorrect: existingAnswer.isCorrect,
+              score: existingAnswer.score,
+              totalScore: player.totalScore,
+              position,
+              classCorrectPercent,
+              confidenceEnabled: q.confidenceEnabled,
+            });
+          } else {
+            // Player hasn't answered yet — send the question
+            socket.emit("questionStart", {
+              questionIndex: game.currentQuestionIndex,
+              totalQuestions: game.questions.length,
+              question: {
+                text: q.text,
+                type: q.type,
+                options: sanitizeOptions(q.type, q.options),
+                timeLimit: q.timeLimit,
+                points: q.points,
+                mediaUrl: q.mediaUrl,
+              },
+            });
+          }
         }
       }
 
