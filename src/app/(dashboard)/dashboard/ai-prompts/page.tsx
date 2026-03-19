@@ -110,19 +110,20 @@ export default function AiPromptsPage() {
             >
               {t("targetLabel")}
             </label>
-            <select
+            <input
               id="ai-target"
+              list="ai-target-options"
+              type="text"
               value={target}
               onChange={(e) => setTarget(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">{t("targetPlaceholder")}</option>
+              placeholder={t("targetPlaceholder")}
+              className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <datalist id="ai-target-options">
               {TARGET_KEYS.map((key) => (
-                <option key={key} value={t(`targets.${key}`)}>
-                  {t(`targets.${key}`)}
-                </option>
+                <option key={key} value={t(`targets.${key}`)} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           {/* Language */}
