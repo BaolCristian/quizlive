@@ -348,8 +348,7 @@ export function PlayerView() {
   const handleSubmit = useCallback(
     (value: AnswerValue) => {
       if (!socket || submitted || timeLeft <= 0) return;
-      const responseTimeMs = Date.now() - questionStartTime.current;
-      socket.emit("submitAnswer", { value, responseTimeMs });
+      socket.emit("submitAnswer", { value });
       setSubmitted(true);
     },
     [socket, submitted, timeLeft],

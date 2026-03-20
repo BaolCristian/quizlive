@@ -331,6 +331,13 @@ export function setupSocketHandlers(io: TypedIO) {
 
         const game = games.get(sessionId)!;
 
+        // Reject duplicate player names (unless it's the same socket reconnecting)
+        const existingPlayer = game.players.get(playerName);
+        if (existingPlayer && existingPlayer.socketId && existingPlayer.socketId !== socket.id && playerName !== "__host__") {
+          socket.emit("sessionError", { message: "Name already taken" });
+          return;
+        }
+
         // Add / update player
         game.players.set(playerName, {
           socketId: socket.id,
@@ -452,7 +459,7 @@ export function setupSocketHandlers(io: TypedIO) {
     // ------------------------------------------------------------------
     // submitAnswer
     // ------------------------------------------------------------------
-    socket.on("submitAnswer", async ({ value, responseTimeMs }) => {
+    socket.on("submitAnswer", async ({ value }) => {
       if (!currentSessionId || !currentPlayerName) return;
 
       const game = games.get(currentSessionId);
@@ -461,12 +468,27 @@ export function setupSocketHandlers(io: TypedIO) {
       const question = game.questions[game.currentQuestionIndex];
       if (!question) return;
 
+      // Compute response time server-side (not from client — prevents spoofing)
+      const responseTimeMs = game.questionStartTime
+        ? Math.max(0, Date.now() - game.questionStartTime)
+        : 0;
+
       // Reject answers submitted after the time limit (with 2s grace for network lag)
-      if (game.questionStartTime) {
-        const elapsed = Date.now() - game.questionStartTime;
-        const deadlineMs = (question.timeLimit + 2) * 1000;
-        if (elapsed > deadlineMs) return;
-      }
+      const deadlineMs = (question.timeLimit + 2) * 1000;
+      if (responseTimeMs > deadlineMs) return;
+
+      // Reject duplicate answers
+      const existingAnswer = await prisma.answer.findUnique({
+        where: {
+          sessionId_questionId_playerName: {
+            sessionId: game.sessionId,
+            questionId: question.id,
+            playerName: currentPlayerName,
+          },
+        },
+        select: { id: true },
+      });
+      if (existingAnswer) return;
 
       const isCorrect = checkAnswer(question.type, question.options, value);
 
@@ -497,27 +519,14 @@ export function setupSocketHandlers(io: TypedIO) {
 
       game.answerCount += 1;
 
-      // Persist answer to DB
+      // Persist answer to DB (create only — duplicates rejected above)
       try {
-        await prisma.answer.upsert({
-          where: {
-            sessionId_questionId_playerName: {
-              sessionId: game.sessionId,
-              questionId: question.id,
-              playerName: currentPlayerName,
-            },
-          },
-          create: {
+        await prisma.answer.create({
+          data: {
             sessionId: game.sessionId,
             questionId: question.id,
             playerName: currentPlayerName,
             playerEmail: player?.email ?? null,
-            value: value as any,
-            isCorrect,
-            responseTimeMs,
-            score,
-          },
-          update: {
             value: value as any,
             isCorrect,
             responseTimeMs,
@@ -565,6 +574,9 @@ export function setupSocketHandlers(io: TypedIO) {
     // ------------------------------------------------------------------
     socket.on("submitConfidence", async ({ confidenceLevel }) => {
       if (!currentSessionId || !currentPlayerName) return;
+
+      // Validate confidence level (must be 1, 2, or 3)
+      if (![1, 2, 3].includes(confidenceLevel)) return;
 
       const game = games.get(currentSessionId);
       if (!game || game.currentQuestionIndex < 0) return;

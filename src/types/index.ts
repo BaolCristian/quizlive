@@ -135,7 +135,7 @@ export interface ClientToServerEvents {
   rejoinSession: (data: { sessionId: string; playerName: string }) => void;
   startGame: () => void;
   nextQuestion: () => void;
-  submitAnswer: (data: { value: AnswerValue; responseTimeMs: number }) => void;
+  submitAnswer: (data: { value: AnswerValue }) => void;
   showResults: () => void;
   endGame: () => void;
   submitConfidence: (data: { confidenceLevel: number }) => void;
