@@ -331,11 +331,34 @@ export function setupSocketHandlers(io: TypedIO) {
 
         const game = games.get(sessionId)!;
 
-        // Reject duplicate player names (unless it's the same socket reconnecting)
+        // Check if this player name is already actively connected
         const existingPlayer = game.players.get(playerName);
         if (existingPlayer && existingPlayer.socketId && existingPlayer.socketId !== socket.id && playerName !== "__host__") {
-          socket.emit("sessionError", { message: "Name already taken" });
-          return;
+          // Check if the existing socket is actually still connected
+          const existingSocket = io.sockets.sockets.get(existingPlayer.socketId);
+          if (existingSocket?.connected) {
+            socket.emit("sessionError", { message: "Name already taken" });
+            return;
+          }
+          // Old socket is dead — allow this player to reclaim the name
+        }
+
+        // Cancel any pending disconnect timeout for this player
+        const disconnKey = disconnectKey(sessionId, playerName);
+        const disconnEntry = disconnectedPlayers.get(disconnKey);
+        if (disconnEntry) {
+          clearTimeout(disconnEntry.timeout);
+          disconnectedPlayers.delete(disconnKey);
+        }
+
+        // Recover score: from in-memory state, or from DB if player was removed
+        let recoveredScore = existingPlayer?.totalScore ?? 0;
+        if (!existingPlayer && playerName !== "__host__") {
+          const dbAnswers = await prisma.answer.findMany({
+            where: { sessionId: game.sessionId, playerName },
+            select: { score: true },
+          });
+          recoveredScore = dbAnswers.reduce((sum, a) => sum + a.score, 0);
         }
 
         // Add / update player
@@ -344,7 +367,7 @@ export function setupSocketHandlers(io: TypedIO) {
           name: playerName,
           email: playerEmail,
           avatar: playerAvatar,
-          totalScore: game.players.get(playerName)?.totalScore ?? 0,
+          totalScore: recoveredScore,
           lastDelta: 0,
         });
 
@@ -904,6 +927,9 @@ export function setupSocketHandlers(io: TypedIO) {
 
       const player = game.players.get(currentPlayerName);
       if (!player) return;
+
+      // Mark player as disconnected (clear socketId so name check works)
+      player.socketId = "";
 
       // Move player to disconnected list instead of removing immediately
       const key = disconnectKey(currentSessionId, currentPlayerName);
