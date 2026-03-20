@@ -575,6 +575,19 @@ export function setupSocketHandlers(io: TypedIO) {
       const player = game.players.get(currentPlayerName);
       if (!player) return;
 
+      // Reject if confidence was already submitted
+      const existing = await prisma.answer.findUnique({
+        where: {
+          sessionId_questionId_playerName: {
+            sessionId: game.sessionId,
+            questionId: question.id,
+            playerName: currentPlayerName,
+          },
+        },
+        select: { confidenceLevel: true },
+      });
+      if (existing?.confidenceLevel != null) return;
+
       const oldDelta = player.lastDelta;
       const isCorrect = oldDelta > 0;
       const newDelta = applyConfidence(oldDelta, isCorrect, confidenceLevel);
@@ -766,13 +779,16 @@ export function setupSocketHandlers(io: TypedIO) {
             const classCorrectPercent =
               total > 0 ? Math.round((correctCount / total) * 100) : 0;
 
+            // Only prompt for confidence if enabled AND not already submitted
+            const alreadyConfident = existingAnswer.confidenceLevel != null;
+
             socket.emit("answerFeedback", {
               isCorrect: existingAnswer.isCorrect,
               score: existingAnswer.score,
               totalScore: player.totalScore,
               position,
               classCorrectPercent,
-              confidenceEnabled: q.confidenceEnabled,
+              confidenceEnabled: q.confidenceEnabled && !alreadyConfident,
             });
           } else {
             // Player hasn't answered yet — send the question
