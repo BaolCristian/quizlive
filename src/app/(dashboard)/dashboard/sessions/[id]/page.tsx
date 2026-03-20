@@ -139,11 +139,14 @@ export default async function SessionDetailPage({
   })();
 
   const questionsByError = answeredStats
-    .map((q) => ({
-      label: `D${q.number}`,
-      pctWrong: 100 - q.pctCorrect,
-      pctCorrect: q.pctCorrect,
-    }))
+    .map((q) => {
+      const truncated = q.text.length > 30 ? q.text.slice(0, 30) + "..." : q.text;
+      return {
+        label: `D${q.number}: ${truncated}`,
+        pctWrong: 100 - q.pctCorrect,
+        pctCorrect: q.pctCorrect,
+      };
+    })
     .sort((a, b) => b.pctWrong - a.pctWrong);
 
   function pctColor(pct: number) {

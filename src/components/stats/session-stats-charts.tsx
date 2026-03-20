@@ -64,19 +64,19 @@ export function SessionStatsCharts({
 
       {/* Questions ranked by error rate */}
       {questionsByError.length > 0 && (
-        <ResponsiveContainer width="100%" height={Math.max(260, questionsByError.length * 36)}>
+        <ResponsiveContainer width="100%" height={Math.max(260, questionsByError.length * 44)}>
           <BarChart
             data={questionsByError}
             layout="vertical"
-            margin={{ left: 0, right: 20, top: 5, bottom: 5 }}
+            margin={{ left: 10, right: 20, top: 5, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
             <YAxis
               type="category"
               dataKey="label"
-              width={50}
-              tick={{ fontSize: 12 }}
+              width={200}
+              tick={{ fontSize: 11 }}
               stroke="hsl(var(--muted-foreground))"
             />
             <Tooltip
