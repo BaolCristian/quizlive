@@ -86,7 +86,7 @@ export type AnswerValue =
 export interface ServerToClientEvents {
   playerJoined: (data: { playerName: string; playerCount: number; playerAvatar?: string }) => void;
   playerLeft: (data: { playerName: string; playerCount: number }) => void;
-  playerReconnected: (data: { playerName: string; playerCount: number }) => void;
+  playerReconnected: (data: { playerName: string; playerCount: number; playerAvatar?: string }) => void;
   rejoinSuccess: (data: {
     totalScore: number;
     currentQuestion?: number;

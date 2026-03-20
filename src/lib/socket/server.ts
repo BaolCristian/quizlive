@@ -374,7 +374,8 @@ export function setupSocketHandlers(io: TypedIO) {
         socket.join(room(sessionId));
 
         // Notify everyone in the room
-        io.to(room(sessionId)).emit("playerJoined", {
+        const isReturning = !!existingPlayer || recoveredScore > 0;
+        io.to(room(sessionId)).emit(isReturning ? "playerReconnected" : "playerJoined", {
           playerName,
           playerCount: realPlayerCount(game),
           playerAvatar: playerAvatar,
@@ -872,6 +873,7 @@ export function setupSocketHandlers(io: TypedIO) {
       io.to(room(sessionId)).emit("playerReconnected", {
         playerName,
         playerCount: realPlayerCount(game),
+        playerAvatar: player.avatar,
       });
     });
 

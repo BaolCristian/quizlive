@@ -253,7 +253,12 @@ export function HostView({ session }: Props) {
       setPlayerCount(data.playerCount);
     };
 
-    const handlePlayerReconnected = (data: { playerName: string; playerCount: number }) => {
+    const handlePlayerReconnected = (data: { playerName: string; playerCount: number; playerAvatar?: string }) => {
+      // Re-add to the list if they were removed (grace period expired)
+      setPlayers((prev) => {
+        if (prev.some((p) => p.name === data.playerName)) return prev;
+        return [...prev, { name: data.playerName, avatar: data.playerAvatar }];
+      });
       setPlayerCount(data.playerCount);
     };
 
