@@ -224,6 +224,46 @@ function parseStimaNumerica(
   } as Omit<QuestionInput, "order">;
 }
 
+function parseAbbinamenti(
+  row: ExcelJS.Row,
+  rowNumber: number,
+  sheetName: string,
+  errors: ParseError[],
+): Omit<QuestionInput, "order"> | null {
+  const common = parseCommonColumns(row, sheetName, rowNumber, errors);
+  if (!common) return null;
+
+  // Cols 5-12: pairs as Sinistra1, Destra1, Sinistra2, Destra2, ...
+  const pairs: { left: string; right: string }[] = [];
+  for (let col = 5; col <= 12; col += 2) {
+    const left = cellStr(row, col);
+    const right = cellStr(row, col + 1);
+    if (left && right) {
+      pairs.push({ left, right });
+    } else if (left || right) {
+      errors.push({
+        sheet: sheetName,
+        row: rowNumber,
+        message: `Coppia incompleta alla colonna ${col}: servono sia il termine sinistro che destro`,
+      });
+    }
+  }
+
+  if (pairs.length < 2) {
+    errors.push({ sheet: sheetName, row: rowNumber, message: "Servono almeno 2 coppie di abbinamento" });
+    return null;
+  }
+
+  return {
+    type: "MATCHING",
+    text: common.text,
+    timeLimit: common.timeLimit,
+    points: common.points,
+    confidenceEnabled: common.confidenceEnabled,
+    options: { pairs },
+  } as Omit<QuestionInput, "order">;
+}
+
 /** Sheet name → parser function mapping. */
 const SHEET_PARSERS: Record<
   string,
@@ -234,6 +274,7 @@ const SHEET_PARSERS: Record<
   "Risposta Aperta": parseRispostaAperta,
   "Ordinamento": parseOrdinamento,
   "Stima Numerica": parseStimaNumerica,
+  "Abbinamenti": parseAbbinamenti,
 };
 
 export async function parseExcelQuiz(buffer: Buffer): Promise<ParseResult> {

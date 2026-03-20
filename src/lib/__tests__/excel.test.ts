@@ -23,7 +23,7 @@ async function buildWorkbook(
 // Template tests
 // ===========================================================================
 describe("generateQuizTemplate", () => {
-  it("creates a workbook with 5 sheets with the correct names", async () => {
+  it("creates a workbook with 6 sheets with the correct names", async () => {
     const buffer = await generateQuizTemplate();
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.load(buffer as unknown as ExcelJS.Buffer);
@@ -35,6 +35,7 @@ describe("generateQuizTemplate", () => {
       "Risposta Aperta",
       "Ordinamento",
       "Stima Numerica",
+      "Abbinamenti",
     ]);
   });
 
@@ -109,6 +110,21 @@ describe("parseExcelQuiz", () => {
     "Tolleranza",
     "Range Massimo",
     "Unità",
+  ];
+
+  const MATCH_HEADERS = [
+    "Domanda",
+    "Tempo (sec)",
+    "Punti",
+    "Confidenza (S/N)",
+    "Sinistra1",
+    "Destra1",
+    "Sinistra2",
+    "Destra2",
+    "Sinistra3",
+    "Destra3",
+    "Sinistra4",
+    "Destra4",
   ];
 
   it("parses MULTIPLE_CHOICE correctly (3 options, 1 correct)", async () => {
@@ -188,6 +204,45 @@ describe("parseExcelQuiz", () => {
       maxRange: 10,
       unit: "milioni",
     });
+  });
+
+  it("parses MATCHING correctly", async () => {
+    const buf = await buildWorkbook("Abbinamenti", MATCH_HEADERS, [
+      ["Abbina paese-capitale", 30, 1000, "N", "Italia", "Roma", "Francia", "Parigi", "Spagna", "Madrid", "", ""],
+    ]);
+    const { questions, errors } = await parseExcelQuiz(buf);
+
+    expect(errors).toHaveLength(0);
+    expect(questions).toHaveLength(1);
+    expect(questions[0].type).toBe("MATCHING");
+    expect(questions[0].options).toEqual({
+      pairs: [
+        { left: "Italia", right: "Roma" },
+        { left: "Francia", right: "Parigi" },
+        { left: "Spagna", right: "Madrid" },
+      ],
+    });
+  });
+
+  it("rejects MATCHING with fewer than 2 pairs", async () => {
+    const buf = await buildWorkbook("Abbinamenti", MATCH_HEADERS, [
+      ["Solo una coppia", 30, 1000, "N", "Italia", "Roma", "", "", "", "", "", ""],
+    ]);
+    const { questions, errors } = await parseExcelQuiz(buf);
+
+    expect(questions).toHaveLength(0);
+    expect(errors).toHaveLength(1);
+    expect(errors[0].message).toContain("2 coppie");
+  });
+
+  it("reports error for incomplete MATCHING pair", async () => {
+    const buf = await buildWorkbook("Abbinamenti", MATCH_HEADERS, [
+      ["Coppia incompleta", 30, 1000, "N", "Italia", "Roma", "Francia", "", "", "", "", ""],
+    ]);
+    const { questions, errors } = await parseExcelQuiz(buf);
+
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0].message).toContain("incompleta");
   });
 
   it("skips empty rows (no errors, no questions)", async () => {

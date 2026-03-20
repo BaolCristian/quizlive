@@ -91,6 +91,34 @@ export const SHEETS = [
       "milioni",
     ],
   },
+  {
+    name: "Abbinamenti",
+    headers: [
+      ...COMMON_HEADERS,
+      "Sinistra1",
+      "Destra1",
+      "Sinistra2",
+      "Destra2",
+      "Sinistra3",
+      "Destra3",
+      "Sinistra4",
+      "Destra4",
+    ],
+    example: [
+      "Abbina ogni paese alla sua capitale",
+      30,
+      1000,
+      "N",
+      "Italia",
+      "Roma",
+      "Francia",
+      "Parigi",
+      "Spagna",
+      "Madrid",
+      "",
+      "",
+    ],
+  },
 ] as const;
 
 const HEADER_FILL: ExcelJS.Fill = {
