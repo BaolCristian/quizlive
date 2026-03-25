@@ -255,6 +255,7 @@ export function HostView({ session }: Props) {
     };
 
     const handlePlayerReconnected = (data: { playerName: string; playerCount: number; playerAvatar?: string }) => {
+      if (data.playerName === "__host__") return;
       // Re-add to the list if they were removed (grace period expired)
       setPlayers((prev) => {
         if (prev.some((p) => p.name === data.playerName)) return prev;
