@@ -5,7 +5,6 @@ import { generateQuizTemplate } from "@/lib/excel/template";
 export async function GET() {
   const gate = await requireTeacher();
   if (!gate.ok) return gate.response;
-  const session = gate.session;
 
   const buffer = await generateQuizTemplate();
 

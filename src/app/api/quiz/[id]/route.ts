@@ -10,7 +10,6 @@ export async function GET(
 ) {
   const gate = await requireTeacher();
   if (!gate.ok) return gate.response;
-  const session = gate.session;
 
   const { id } = await params;
   const quiz = await prisma.quiz.findUnique({

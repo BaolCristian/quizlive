@@ -23,7 +23,6 @@ const EXT_MAP: Record<string, string> = {
 export async function POST(req: NextRequest) {
   const gate = await requireTeacher();
   if (!gate.ok) return gate.response;
-  const session = gate.session;
 
   const formData = await req.formData();
   const file = formData.get("file");

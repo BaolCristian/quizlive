@@ -5,7 +5,7 @@ const token = async () => "tok";
 
 function fetchReturning(pages: Array<{ groups?: unknown[]; nextPageToken?: string; error?: unknown }>, status = 200) {
   let i = 0;
-  return vi.fn(async (url: string | URL | Request) => {
+  return vi.fn(async () => {
     const body = pages[Math.min(i, pages.length - 1)];
     i += 1;
     return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });

@@ -15,7 +15,6 @@ export default function LoginPage() {
 
   const [errorKey, setErrorKey] = useState<"errorNotAllowed" | "errorGroupCheckFailed" | "errorGeneric" | null>(null);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     // Letto da window per non richiedere un boundary Suspense (useSearchParams).
     const err = new URLSearchParams(window.location.search).get("error");
