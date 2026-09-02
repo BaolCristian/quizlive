@@ -148,7 +148,7 @@ interventi manuali.
   `/api/hub/practice/**`, `/api/hub/oauth/token` e `/api/hub/oauth/revoke`
   (server-to-server con client credentials, nessuna sessione utente),
   Socket.io `joinSession`/`rejoinSession`.
-- Pagine pubbliche (`/join`, `/practice/[quizId]`, legali, landing) invariate.
+- Pagine pubbliche (`/play` (e la home `/`), `/practice/[quizId]`, legali, landing) invariate.
 - Login: `callbackUrl` resta `/dashboard`; il layout della dashboard reindirizza
   lo studente a `/studente`. La pagina di login mostra i due nuovi messaggi di
   errore (`NotAllowed`, `GroupCheckFailed`) in italiano e inglese.
