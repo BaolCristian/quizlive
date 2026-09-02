@@ -20,9 +20,11 @@
   una stringa URL verso cui reindirizzare.
 - Il join a un quiz live via PIN (`joinSession` su Socket.io) è anonimo e non
   richiede login. Non si tocca.
-- La scuola ha un **gruppo Google studenti generico**, un gruppo docenti, e **un
-  gruppo per ogni classe** (3A, 3B, ...). Il gruppo docenti resta opzionale
-  nella configurazione.
+- La scuola ha **un gruppo Google per ogni classe**, con email che inizia con
+  `allievi.`: esempio reale `allievi.2sia4.0@paolosarpi.edu.it` per la classe
+  2SIA4.0. Tutti gli studenti stanno in un gruppo `allievi.*`. Esistono anche
+  un gruppo studenti generico e un gruppo docenti, entrambi opzionali nella
+  configurazione.
 
 ## Obiettivo
 
@@ -40,16 +42,17 @@
 
 | Variabile | Obbligatoria | Significato |
 |---|---|---|
-| `STUDENT_GROUP_EMAIL` | attiva la funzione | email del gruppo Google degli studenti |
+| `STUDENT_GROUP_EMAIL` | almeno una tra questa e `CLASS_GROUP_PATTERN` | email del gruppo Google generico degli studenti |
 | `TEACHER_GROUP_EMAIL` | no | email del gruppo docenti; se assente, chi non è studente è docente (comportamento attuale) |
-| `CLASS_GROUP_PATTERN` | no | espressione regolare sull'email del gruppo che identifica un gruppo di classe, con un gruppo di cattura `name` per il nome della classe. Esempio: `^classe-(?<name>[1-5][a-z])@scuola\.edu\.it$` |
+| `CLASS_GROUP_PATTERN` | almeno una tra questa e `STUDENT_GROUP_EMAIL` | espressione regolare sull'email del gruppo che identifica un gruppo di classe, con un gruppo di cattura `name` per il nome della classe. Per Paolo Sarpi: `^allievi\.(?<name>[^@]+)@paolosarpi\.edu\.it$` |
 | `GOOGLE_SA_KEY_FILE` | sì se attiva | percorso del JSON del service account (in Docker: secret montato in `/run/secrets/`) |
 | `GOOGLE_ADMIN_IMPERSONATE` | sì se attiva | email di un account del Workspace con ruolo "Lettore gruppi" da impersonare |
 
 - Modulo `src/lib/config/student-gate.ts`: legge e valida le variabili una volta;
-  espone `isStudentGateEnabled()` e la configurazione tipizzata. Se
-  `STUDENT_GROUP_EMAIL` è impostata e mancano chiave o admin: **errore
-  all'avvio** con messaggio esplicito (fail loud).
+  espone `isStudentGateEnabled()` e la configurazione tipizzata. Il cancello è
+  attivo se è impostata `STUDENT_GROUP_EMAIL` **o** `CLASS_GROUP_PATTERN`. Se è
+  attivo e mancano chiave o admin, o il pattern non compila o non ha la cattura
+  `name`: **errore all'avvio** con messaggio esplicito (fail loud).
 - In modalità hub (`SAVINT_MODE=hub`) il cancello è sempre disattivo.
 
 ## Componenti
@@ -84,8 +87,10 @@ resolveRole({ existingRole, isStudent, isTeacher, teacherGroupConfigured })
 
 `classifyGroups`: `isTeacher` se tra i gruppi c'è `TEACHER_GROUP_EMAIL`;
 `classGroups` sono i gruppi la cui email corrisponde a `CLASS_GROUP_PATTERN`
-(nome = cattura `name`, in maiuscolo); `isStudent` se c'è
-`STUDENT_GROUP_EMAIL` **oppure** almeno un gruppo di classe.
+(nome = cattura `name` in maiuscolo, quindi `2sia4.0` → `2SIA4.0`; anno di corso
+= prima cifra del nome se è tra 1 e 5, altrimenti assente); `isStudent` se c'è
+`STUDENT_GROUP_EMAIL` **oppure** almeno un gruppo di classe. Con i gruppi
+`allievi.*` il gruppo generico non è necessario.
 
 `resolveRole`, regole in ordine:
 1. `existingRole === "ADMIN"` → `ADMIN` (mai retrocesso automaticamente).
@@ -109,7 +114,7 @@ interventi manuali.
   (log di warning); utente **nuovo** viene rimandato a `/login?error=GroupCheckFailed`
   (fail closed: nessun nuovo docente creato senza verifica).
 - A ogni login riuscito salva su `User.classGroups` i gruppi di classe trovati
-  (email e nome), anche per i docenti: il sotto-progetto 4 li usa per creare le
+  (email, nome, anno di corso), anche per i docenti: il sotto-progetto 4 li usa per creare le
   classi, iscrivere gli studenti e proporre al docente le sue classi. In questo
   sotto-progetto il dato viene solo salvato.
 - `events.createUser`: imposta `User.role` e `User.classGroups` con i valori in
@@ -173,8 +178,9 @@ interventi manuali.
 
 ## Test
 
-- **Unit**: `classifyGroups` (gruppo studenti, solo gruppo di classe, docente
-  anche in una classe, pattern assente, pattern non valido) e `resolveRole` a
+- **Unit**: `classifyGroups` (gruppo studenti generico, solo gruppo di classe
+  `allievi.2sia4.0`, docente anche in una classe, pattern assente, pattern non
+  valido, nome senza cifra iniziale) e `resolveRole` a
   tabella (tutte le combinazioni); validazione della configurazione (attiva,
   incompleta, assente, hub); client gruppi con `fetch` simulato (lista,
   paginazione, vuota, errore, timeout, cache).

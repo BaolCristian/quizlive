@@ -41,8 +41,10 @@ Requisiti espliciti dell'utente:
    Admin SDK Directory API (service account con delega a livello di dominio,
    chiamata `hasMember`). Il login OAuth resta com'è. L'alternativa SAML è
    scartata perché SAVINT non ha SAML.
-5. **Classi create in automatico dai gruppi Google di classe.** La scuola ha,
-   oltre al gruppo studenti generico, un gruppo per ogni classe (3A, 3B, ...).
+5. **Classi create in automatico dai gruppi Google di classe.** La scuola ha un
+   gruppo per ogni classe, con email `allievi.<classe>@paolosarpi.edu.it`
+   (esempio: `allievi.2sia4.0` per la 2SIA4.0), oltre a un gruppo studenti
+   generico e uno docenti.
    Al login SAVINT legge i gruppi dell'utente: le classi nascono da sole e lo
    studente risulta iscritto senza codici né elenchi. Il docente sceglie le
    classi che segue dall'elenco. Le classi create a mano con codice di
@@ -125,11 +127,12 @@ src/components/esercizi/editor/       editor React (usa il motore per anteprima 
 ```
 enum Role { TEACHER ADMIN STUDENT }
 
-Classe            id, name, schoolYear, source GOOGLE_GROUP|MANUAL, googleGroupEmail? @unique,
+Classe            id, name, yearLevel? 1..5 (dalla prima cifra del nome, modificabile), schoolYear,
+                  source GOOGLE_GROUP|MANUAL, googleGroupEmail? @unique,
                   joinCode? @unique (solo MANUAL), archivedAt?, createdAt
 ClasseDocente     classeId, teacherId → User, createdAt        @@unique([classeId, teacherId])
 ClasseStudente    classeId, studentId → User, joinedAt         @@unique([classeId, studentId])
-User.classGroups  Json? — gruppi di classe letti da Google all'ultimo login (email, nome)
+User.classGroups  Json? — gruppi di classe letti da Google all'ultimo login (email, nome, anno)
 Esercizio         id, title, description?, authorId, yearLevel 1..5, topic (slug), tags[], createdAt, updatedAt
 EsercizioVersione id, esercizioId, version, content Json (formato SAVINT), hash, createdAt   @@unique([esercizioId, version])
 Compito           id, esercizioId, classeId, assignedById, dueAt?, closedAt?, createdAt       (dueAt null = palestra)
