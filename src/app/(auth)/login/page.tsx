@@ -4,7 +4,7 @@ import { signIn, getProviders } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { withBasePath } from "@/lib/base-path";
 import { useTranslations } from "next-intl";
-import { Lock, Mail, ArrowRight } from "lucide-react";
+import { Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
   const t = useTranslations("login");
@@ -12,6 +12,19 @@ export default function LoginPage() {
 
   const [googleEnabled, setGoogleEnabled] = useState(false);
   const [devLoginEnabled, setDevLoginEnabled] = useState(false);
+
+  const [errorKey, setErrorKey] = useState<"errorNotAllowed" | "errorGroupCheckFailed" | "errorGeneric" | null>(null);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    // Letto da window per non richiedere un boundary Suspense (useSearchParams).
+    const err = new URLSearchParams(window.location.search).get("error");
+    if (!err) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (err === "NotAllowed" || err === "AccessDenied") setErrorKey("errorNotAllowed");
+    else if (err === "GroupCheckFailed") setErrorKey("errorGroupCheckFailed");
+    else setErrorKey("errorGeneric");
+  }, []);
 
   useEffect(() => {
     getProviders()
@@ -75,6 +88,16 @@ export default function LoginPage() {
             {t("loginWithSchoolAccount")}
           </p>
         </div>
+
+        {errorKey && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-left text-sm text-red-800"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>{t(errorKey)}</p>
+          </div>
+        )}
 
         {/* Google Sign In Button */}
         {googleEnabled && (

@@ -45,7 +45,10 @@
     "loginWithGoogle": "Sign in with Google",
     "demoLogin": "Demo Login",
     "emailPlaceholder": "teacher@school.com",
-    "enterAsTeacher": "Enter as teacher"
+    "enterAsTeacher": "Enter as teacher",
+    "errorNotAllowed": "Your account is not enabled: it is not in the school's groups. Ask the office to check your group.",
+    "errorGroupCheckFailed": "We could not verify your account with Google. Please try again in a few minutes.",
+    "errorGeneric": "Sign-in failed. Please try again."
   },
   "dashboard": {
     "title": "Dashboard",

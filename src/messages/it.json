@@ -45,7 +45,10 @@
     "loginWithGoogle": "Accedi con Google",
     "demoLogin": "Demo Login",
     "emailPlaceholder": "docente@scuola.it",
-    "enterAsTeacher": "Entra come docente"
+    "enterAsTeacher": "Entra come docente",
+    "errorNotAllowed": "Il tuo account non è abilitato: non risulta nei gruppi della scuola. Chiedi alla segreteria di controllare il tuo gruppo.",
+    "errorGroupCheckFailed": "Non siamo riusciti a verificare il tuo account con Google. Riprova tra qualche minuto.",
+    "errorGeneric": "Accesso non riuscito. Riprova."
   },
   "dashboard": {
     "title": "Dashboard",
