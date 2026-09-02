@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 import { buildQlz } from "@/lib/hub/qlz-builder";
 
@@ -7,13 +7,9 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
 
   const { id } = await params;
   const quiz = await prisma.quiz.findUnique({

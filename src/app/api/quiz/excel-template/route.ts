@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 import { generateQuizTemplate } from "@/lib/excel/template";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
 
   const buffer = await generateQuizTemplate();
 

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 import { parseMoodleXml } from "@/lib/moodle/parser";
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
