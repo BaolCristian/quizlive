@@ -50,6 +50,13 @@
     "errorGroupCheckFailed": "Non siamo riusciti a verificare il tuo account con Google. Riprova tra qualche minuto.",
     "errorGeneric": "Accesso non riuscito. Riprova."
   },
+  "student": {
+    "areaTitle": "Area studente",
+    "greeting": "Ciao, {name}",
+    "comingSoonTitle": "Qui troverai i tuoi esercizi",
+    "comingSoonBody": "Stiamo preparando la palestra di matematica. Quando il tuo docente assegnerà i primi esercizi, li vedrai in questa pagina.",
+    "logout": "Esci"
+  },
   "dashboard": {
     "title": "Dashboard",
     "browseRepository": "Sfoglia repository savint.it",

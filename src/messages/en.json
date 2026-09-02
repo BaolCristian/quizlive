@@ -50,6 +50,13 @@
     "errorGroupCheckFailed": "We could not verify your account with Google. Please try again in a few minutes.",
     "errorGeneric": "Sign-in failed. Please try again."
   },
+  "student": {
+    "areaTitle": "Student area",
+    "greeting": "Hi, {name}",
+    "comingSoonTitle": "Your exercises will appear here",
+    "comingSoonBody": "We are setting up the maths practice area. When your teacher assigns the first exercises, you will see them on this page.",
+    "logout": "Sign out"
+  },
   "dashboard": {
     "title": "Dashboard",
     "browseRepository": "Browse savint.it repository",
