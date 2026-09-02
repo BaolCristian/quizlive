@@ -110,7 +110,7 @@ interventi manuali.
 - Route API da proteggere con `requireTeacher()` (sostituisce il pattern
   `auth()` + controllo id, senza cambiare altro):
   `/api/quiz/**`, `/api/session/**`, `/api/stats/**`, `/api/upload`,
-  `/api/dashboard/**`, `/api/hub/oauth/start|link|revoke`, `/api/hub/quiz/**`,
+  `/api/dashboard/**`, `/api/hub/oauth/start|callback|link|revoke`, `/api/hub/quiz/**`,
   `/api/installation/**`, `/api/consent/**`, `/api/report`, `/api/image-search`.
   `/api/admin/**` resta con `assertAdmin()`.
 - Route che restano pubbliche, senza modifiche: `/api/public/**`, `/api/emoticons`,
@@ -130,6 +130,9 @@ interventi manuali.
   brand. È un segnaposto che il sotto-progetto 4 sostituisce.
 - Uno studente che apre `/dashboard`, `/dashboard/*` o l'editor viene rimandato
   qui.
+- `prisma/seed.ts` aggiunge uno studente demo (`studente@scuola.it`, ruolo
+  `STUDENT`) così in sviluppo e in demo, dove il login è per email senza gruppo
+  Google, l'area studente e l'enforcement si provano subito.
 
 ### 6. Documentazione e deploy
 
