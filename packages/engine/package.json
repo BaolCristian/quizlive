@@ -1,0 +1,12 @@
+{
+  "name": "@savint/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "description": "Motore matematico di SAVINT Esercizi: porting in TypeScript del runtime Numbas (Apache 2.0).",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run ../../packages/engine"
+  }
+}

@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@savint/engine": ["./packages/engine/src/index.ts"]
     }
   },
   "include": [

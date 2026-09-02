@@ -67,3 +67,6 @@ docs/plans/
 
 # git worktrees
 .worktrees/
+
+# upstream Numbas source (script: scripts/engine/fetch-upstream.sh)
+.numbas-upstream/

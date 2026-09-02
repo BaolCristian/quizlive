@@ -8,11 +8,12 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
-    exclude: ["tests/e2e/**", "**/node_modules/**", ".worktrees/**", ".claire/**"],
+    exclude: ["tests/e2e/**", "**/node_modules/**", ".worktrees/**", ".claire/**", ".numbas-upstream/**"],
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@savint/engine": path.resolve(__dirname, "./packages/engine/src/index.ts"),
     },
   },
 });
