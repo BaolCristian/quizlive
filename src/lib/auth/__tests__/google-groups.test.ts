@@ -47,6 +47,20 @@ describe("listUserGroups", () => {
     await expect(listUserGroups("mario@x.it", { fetchImpl, tokenProvider: token })).rejects.toBeInstanceOf(GroupCheckError);
   });
 
+  it("404 throws GroupCheckError with notFound=true", async () => {
+    const fetchImpl = fetchReturning([{ error: { message: "Resource Not Found: userKey" } }], 404);
+    const err = await listUserGroups("ghost@x.it", { fetchImpl, tokenProvider: token }).catch((e) => e);
+    expect(err).toBeInstanceOf(GroupCheckError);
+    expect((err as GroupCheckError).notFound).toBe(true);
+    expect((err as GroupCheckError).message).toContain("ghost@x.it");
+  });
+
+  it("keeps notFound=false on other errors", async () => {
+    const fetchImpl = fetchReturning([{ error: { message: "nope" } }], 403);
+    const err = await listUserGroups("mario@x.it", { fetchImpl, tokenProvider: token }).catch((e) => e);
+    expect((err as GroupCheckError).notFound).toBe(false);
+  });
+
   it("throws GroupCheckError when fetch rejects (network)", async () => {
     const fetchImpl = vi.fn(async () => { throw new Error("ECONNRESET"); }) as unknown as typeof fetch;
     await expect(listUserGroups("mario@x.it", { fetchImpl, tokenProvider: token })).rejects.toBeInstanceOf(GroupCheckError);

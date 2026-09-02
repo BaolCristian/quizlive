@@ -12,10 +12,13 @@ const DEFAULT_TIMEOUT_MS = 5000;
 
 export class GroupCheckError extends Error {
   readonly cause?: unknown;
-  constructor(message: string, cause?: unknown) {
+  /** true quando l'Admin SDK non conosce l'utente (404): account fuori dal Workspace. */
+  readonly notFound: boolean;
+  constructor(message: string, cause?: unknown, notFound = false) {
     super(message);
     this.name = "GroupCheckError";
     this.cause = cause;
+    this.notFound = notFound;
   }
 }
 
@@ -78,6 +81,9 @@ export async function listUserGroups(userEmail: string, opts: ListUserGroupsOpti
         headers: { authorization: `Bearer ${token}` },
         signal: controller.signal,
       });
+      if (res.status === 404) {
+        throw new GroupCheckError(`Utente non trovato nel Workspace: ${userEmail}`, undefined, true);
+      }
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new GroupCheckError(`Admin SDK ha risposto ${res.status}: ${text.slice(0, 200)}`);

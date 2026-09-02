@@ -57,7 +57,9 @@ export async function onUserCreated(args: { id: string; email: string | null | u
     where: { id: args.id },
     data: {
       role: decision.role,
-      classGroups: (decision.classGroups ?? []) as unknown as Prisma.InputJsonValue,
+      ...(decision.classGroups !== undefined
+        ? { classGroups: decision.classGroups as unknown as Prisma.InputJsonValue }
+        : {}),
     },
   });
 }

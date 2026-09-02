@@ -99,6 +99,12 @@ describe("onUserCreated", () => {
     expect(mockUser.update).toHaveBeenCalledWith({ where: { id: "u9" }, data: { role: "STUDENT", classGroups: [] } });
   });
 
+  it("does not touch classGroups when the decision has none", async () => {
+    takeMock.mockReturnValue({ allowed: true, role: "TEACHER" });
+    await onUserCreated({ id: "u9", email: "n@x.it" });
+    expect(mockUser.update).toHaveBeenCalledWith({ where: { id: "u9" }, data: { role: "TEACHER" } });
+  });
+
   it("does nothing without a cached decision or when the gate is disabled", async () => {
     takeMock.mockReturnValue(undefined);
     await onUserCreated({ id: "u9", email: "n@x.it" });

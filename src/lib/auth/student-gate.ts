@@ -13,28 +13,42 @@ export type GateDecision =
   | { allowed: false; reason: "NotAllowed" | "GroupCheckFailed" };
 
 const TTL_MS = 60_000;
-const cache = new Map<string, { decision: GateDecision; expiresAt: number }>();
+const cache = new Map<string, { decision: GateDecision; expiresAt: number; existingRole: ExistingRole }>();
 
-function remember(email: string, decision: GateDecision): void {
-  cache.set(email, { decision, expiresAt: Date.now() + TTL_MS });
+/** `mario@x.it` → `m***@x.it`, per non scrivere email in chiaro nei log. */
+function maskEmail(email: string): string {
+  const at = email.indexOf("@");
+  if (at <= 0) return "***";
+  return `${email[0]}***${email.slice(at)}`;
 }
 
-function peek(email: string): GateDecision | undefined {
+function remember(email: string, existingRole: ExistingRole, decision: GateDecision): void {
+  cache.set(email, { decision, expiresAt: Date.now() + TTL_MS, existingRole });
+}
+
+/** La decisione dipende anche dal ruolo in DB: un cambio di ruolo salta la cache. */
+function peek(email: string, existingRole: ExistingRole): GateDecision | undefined {
   const hit = cache.get(email);
   if (!hit) return undefined;
   if (hit.expiresAt < Date.now()) {
     cache.delete(email);
     return undefined;
   }
+  if (hit.existingRole !== existingRole) return undefined;
   return hit.decision;
 }
 
-/** Legge la decisione per l'email e la rimuove dalla cache. */
+/**
+ * Legge la decisione per l'email e la rimuove dalla cache. Usata da
+ * events.createUser, cioè per utenti nuovi: il ruolo in DB non esisteva ancora,
+ * quindi la voce è letta qualunque fosse il ruolo con cui è stata prodotta.
+ */
 export function takeDecision(email: string): GateDecision | undefined {
   const key = email.toLowerCase();
-  const d = peek(key);
+  const hit = cache.get(key);
   cache.delete(key);
-  return d;
+  if (!hit || hit.expiresAt < Date.now()) return undefined;
+  return hit.decision;
 }
 
 export function resetDecisionCacheForTests(): void {
@@ -47,14 +61,11 @@ export async function evaluateLogin(
   deps: { listGroups?: typeof listUserGroups } = {},
 ): Promise<GateDecision> {
   const key = email.toLowerCase();
-  const cached = peek(key);
+  const cached = peek(key, existingRole);
   if (cached) return cached;
 
   const cfg = getStudentGateConfig();
-  if (!cfg) {
-    const d: GateDecision = { allowed: true, role: existingRole ?? "TEACHER" };
-    return d;
-  }
+  if (!cfg) return { allowed: true, role: existingRole ?? "TEACHER" };
 
   const listGroups = deps.listGroups ?? listUserGroups;
   let decision: GateDecision;
@@ -70,10 +81,15 @@ export async function evaluateLogin(
     decision = role === "DENY" ? { allowed: false, reason: "NotAllowed" } : { allowed: true, role, classGroups: c.classGroups };
   } catch (e) {
     if (!(e instanceof GroupCheckError)) throw e;
-    console.warn(`[student-gate] verifica gruppi fallita per ${key}: ${e.message}`);
-    decision = existingRole ? { allowed: true, role: existingRole } : { allowed: false, reason: "GroupCheckFailed" };
+    console.warn(`[student-gate] verifica gruppi fallita per ${maskEmail(key)}: ${e.message}`);
+    if (e.notFound) {
+      // Account fuori dal Workspace: non è un guasto di Google, non entra.
+      decision = { allowed: false, reason: "NotAllowed" };
+    } else {
+      decision = existingRole ? { allowed: true, role: existingRole } : { allowed: false, reason: "GroupCheckFailed" };
+    }
   }
 
-  remember(key, decision);
+  remember(key, existingRole, decision);
   return decision;
 }
