@@ -122,7 +122,9 @@
     "templateExcel": "Excel Template",
     "downloadError": "Download error",
     "publicBadge": "Public",
-    "privateBadge": "Private"
+    "privateBadge": "Private",
+    "publicQuiz": "Public quiz in the library",
+    "privateQuiz": "Private quiz, visible only to you and the people you share it with"
   },
   "editor": {
     "titleRequired": "Quiz title is required",

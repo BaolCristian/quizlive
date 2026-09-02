@@ -122,7 +122,9 @@
     "templateExcel": "Template Excel",
     "downloadError": "Errore nel download",
     "publicBadge": "Pubblico",
-    "privateBadge": "Privato"
+    "privateBadge": "Privato",
+    "publicQuiz": "Quiz pubblico nella libreria",
+    "privateQuiz": "Quiz privato, visibile solo a te e a chi lo condividi"
   },
   "editor": {
     "titleRequired": "Il titolo del quiz è obbligatorio",
