@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth/config";
+import { redirectUnlessTeacher } from "@/lib/auth/require-role";
 import { DashboardThemeProvider } from "@/components/dashboard/theme-provider";
 import { TermsGuard } from "@/components/legal/terms-guard";
 
@@ -8,8 +7,7 @@ export default async function EditorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  await redirectUnlessTeacher();
 
   return (
     <DashboardThemeProvider>

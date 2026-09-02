@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { auth } from "@/lib/auth/config";
+import { redirectUnlessTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 import { getHubOAuthConfig } from "@/lib/hub/oauth-config";
 import Link from "next/link";
@@ -8,8 +7,7 @@ import { RevokeButton } from "./revoke-button";
 import { SetupCodeForm } from "./setup-code-form";
 
 export default async function HubLinkPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  const session = await redirectUnlessTeacher();
 
   const t = await getTranslations("hub.link");
 

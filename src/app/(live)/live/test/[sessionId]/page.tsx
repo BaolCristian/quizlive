@@ -1,5 +1,5 @@
-import { notFound, redirect } from "next/navigation";
-import { auth } from "@/lib/auth/config";
+import { notFound } from "next/navigation";
+import { redirectUnlessTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 import { TestView } from "@/components/live/test-view";
 
@@ -8,10 +8,7 @@ export default async function TestSessionPage({
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
+  const session = await redirectUnlessTeacher();
 
   const { sessionId } = await params;
 
