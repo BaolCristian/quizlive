@@ -9,6 +9,7 @@ import { isHubMode } from "@/lib/config/savint-mode";
 import { verifyHubCredentials } from "@/lib/auth/hub-credentials";
 import { hubAccountAdapter } from "@/lib/auth/hub-adapter";
 import { BASE_PATH } from "@/lib/base-path";
+import { signInWithGate, onUserCreated } from "@/lib/auth/gate-callbacks";
 
 const hub = isHubMode();
 
@@ -127,6 +128,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   session: { strategy: sessionStrategy },
   callbacks: {
+    async signIn({ user, account }) {
+      if (hub) return true;
+      return signInWithGate({ email: user.email, provider: account?.provider });
+    },
     async jwt({ token, user }) {
       if (user) {
         if (hub) {
@@ -158,13 +163,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             where: { id: user.id },
             select: { role: true },
           });
-          session.user.role = (dbUser?.role as "TEACHER" | "ADMIN") ?? "TEACHER";
+          session.user.role = (dbUser?.role as "TEACHER" | "ADMIN" | "STUDENT") ?? "TEACHER";
         } else {
           // JWT session
-          session.user.role = (token.role as "TEACHER" | "ADMIN") ?? "TEACHER";
+          session.user.role = (token.role as "TEACHER" | "ADMIN" | "STUDENT") ?? "TEACHER";
         }
       }
       return session;
+    },
+  },
+  events: {
+    async createUser({ user }) {
+      if (hub) return;
+      await onUserCreated({ id: user.id!, email: user.email });
     },
   },
   pages: {
