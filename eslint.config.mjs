@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Workspace locali e strumenti: non sono sorgenti del repo.
+    ".worktrees/**",
+    ".claire/**",
   ]),
 ]);
 
