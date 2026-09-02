@@ -10,8 +10,8 @@
   controllo di dominio né lista di ammessi. `User.role` ha default `TEACHER`.
   **Chiunque entri con Google diventa docente.** Gli studenti hanno account nello
   stesso Workspace della scuola, quindi oggi possono aprire l'editor.
-- `src/app/(dashboard)/layout.tsx`, `src/app/(editor)/layout.tsx` e le 24 route
-  API che chiamano `auth()` controllano solo che esista una sessione, mai il
+- `src/app/(dashboard)/layout.tsx`, `src/app/(editor)/layout.tsx` e le 23 route
+  API docente che chiamano `auth()` controllano solo che esista una sessione, mai il
   ruolo. Solo `/api/admin/*` usa `assertAdmin()`.
 - Strategia sessione: `database` in produzione, `jwt` in dev/demo/hub. Con le
   sessioni su database il middleware non può leggere il ruolo: l'enforcement va
@@ -137,12 +137,14 @@ interventi manuali.
 - Route API da proteggere con `requireTeacher()` (sostituisce il pattern
   `auth()` + controllo id, senza cambiare altro):
   `/api/quiz/**`, `/api/session/**`, `/api/stats/**`, `/api/upload`,
-  `/api/dashboard/**`, `/api/hub/oauth/start|callback|link|revoke`, `/api/hub/quiz/**`,
+  `/api/dashboard/**`, `/api/hub/oauth/start|callback|link`, `/api/hub/quiz/**`,
   `/api/installation/**`, `/api/consent/**`, `/api/report`, `/api/image-search`.
   `/api/admin/**` resta con `assertAdmin()`.
 - Route che restano pubbliche, senza modifiche: `/api/public/**`, `/api/emoticons`,
   `/api/locale`, `/api/image-proxy`, `/api/uploads/**`, `/api/auth/**`,
-  `/api/hub/practice/**`, Socket.io `joinSession`/`rejoinSession`.
+  `/api/hub/practice/**`, `/api/hub/oauth/token` e `/api/hub/oauth/revoke`
+  (server-to-server con client credentials, nessuna sessione utente),
+  Socket.io `joinSession`/`rejoinSession`.
 - Pagine pubbliche (`/join`, `/practice/[quizId]`, legali, landing) invariate.
 - Login: `callbackUrl` resta `/dashboard`; il layout della dashboard reindirizza
   lo studente a `/studente`. La pagina di login mostra i due nuovi messaggi di
