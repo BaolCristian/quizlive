@@ -176,3 +176,33 @@ export function parseBool(b: unknown): boolean {
   const s = String(b).toLowerCase();
   return s == "true" || s == "yes";
 }
+
+// util.js:441-457 — aggiunta nello Step 3: dipende da `cleanNumber`
+// (format.ts), non disponibile nello Step 2. Import qui sotto invece che in
+// testa al file, per marcare esplicitamente questa dipendenza "in arrivo".
+import { cleanNumber } from "./format";
+
+/** `n` è un numero valido, "infinity" o (se richiesto) una frazione,
+ * opzionalmente secondo uno stile di notazione? */
+export function isNumber(
+  n: number | string,
+  allowFractions?: boolean,
+  styles?: string | string[],
+  strictStyle?: boolean
+): boolean {
+  if (n === undefined || n === null) {
+    return false;
+  }
+  if (allowFractions && re_fraction.test(String(n))) {
+    return true;
+  }
+  const cleaned = cleanNumber(String(n), styles, strictStyle);
+  if (!isNaN(Number(cleaned))) {
+    return true;
+  }
+  if (/-?infinity/i.test(cleaned)) {
+    return true;
+  } else {
+    return false;
+  }
+}

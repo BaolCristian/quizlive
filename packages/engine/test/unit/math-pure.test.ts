@@ -13,9 +13,14 @@
 //   (2253-2265), 'niceComplexDecimal' (2267-2282), 'Number notation styles'
 //   (2315-2431).
 
-import Decimal from "decimal.js";
 import { describe, it, expect } from "vitest";
 import * as math from "../../src/math";
+// Non `decimal.js` direttamente: il modulo `math/` usa un `Decimal` clonato
+// con `precision:40`/`toExpPos:1000`/`toExpNeg:-1000` (math.js:23-28, portato
+// in complex-decimal.ts per non mutare la classe globale — vedi il file). I
+// test devono costruire i `Decimal` con la stessa classe configurata,
+// altrimenti vedono la precisione di default (20) di decimal.js.
+const { Decimal } = math;
 
 describe("Evaluating > Numbas.math", () => {
   it("math.countSigFigs('1.10')==3", () => {
@@ -380,7 +385,10 @@ describe("Display > Number notation styles", () => {
         if (isNaN(value)) {
           expect(isNaN(v), `parse ${style} ${input}`).toBe(true);
         } else {
-          expect(v, `parse ${style} ${input}`).toBe(value);
+          // upstream: `assert.equal` usa `==` (non `Object.is`), quindi
+          // `-0 == 0` è vero lì — `toBe` di vitest distinguerebbe -0 da 0.
+          // eslint-disable-next-line eqeqeq -- replica `assert.equal` upstream
+          expect(v == value, `parse ${style} ${input}`).toBe(true);
           const formatted = formatted3 === undefined ? input : formatted3;
           expect(math.niceNumber(value, { style }), `format ${style} ${value}`).toBe(formatted);
         }

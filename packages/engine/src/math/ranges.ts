@@ -3,7 +3,7 @@
 
 // math.js:1146-1152, 2071-2210 — intervalli numerici `[min,max,step]`.
 
-import Decimal from "decimal.js";
+import { Decimal } from "./complex-decimal";
 import type { NumbasNumber, Range } from "./types";
 import { isComplex } from "./types";
 import { isclose } from "./compare";
