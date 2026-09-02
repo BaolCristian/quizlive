@@ -55,7 +55,17 @@ export function classifyGroups(groups: GoogleGroupRef[], rules: GroupRules): Gro
 export type ExistingRole = "ADMIN" | "TEACHER" | "STUDENT" | null;
 export type ResolvedRole = "ADMIN" | "TEACHER" | "STUDENT" | "DENY";
 
-/** Regole della spec, in ordine. */
+/**
+ * Regole della spec, in ordine:
+ * 1. existingRole === "ADMIN" → ADMIN (mai retrocesso automaticamente).
+ * 2. isTeacher → TEACHER (il gruppo docenti vince su quello studenti).
+ * 3. existingRole === "STUDENT" senza più gruppi → DENY se il gruppo docenti è
+ *    configurato, altrimenti STUDENT: uno studente uscito dai gruppi non deve
+ *    diventare docente per la regola di default.
+ * 4. isStudent → STUDENT.
+ * 5. teacherGroupConfigured → DENY (non è in nessun gruppo).
+ * 6. altrimenti → TEACHER (comportamento senza gruppo docenti configurato).
+ */
 export function resolveRole(input: {
   existingRole: ExistingRole;
   isStudent: boolean;
@@ -64,6 +74,9 @@ export function resolveRole(input: {
 }): ResolvedRole {
   if (input.existingRole === "ADMIN") return "ADMIN";
   if (input.isTeacher) return "TEACHER";
+  if (input.existingRole === "STUDENT" && !input.isStudent) {
+    return input.teacherGroupConfigured ? "DENY" : "STUDENT";
+  }
   if (input.isStudent) return "STUDENT";
   if (input.teacherGroupConfigured) return "DENY";
   return "TEACHER";

@@ -95,9 +95,12 @@ resolveRole({ existingRole, isStudent, isTeacher, teacherGroupConfigured })
 `resolveRole`, regole in ordine:
 1. `existingRole === "ADMIN"` → `ADMIN` (mai retrocesso automaticamente).
 2. `isTeacher` → `TEACHER` (il gruppo docenti vince su quello studenti).
-3. `isStudent` → `STUDENT`.
-4. `teacherGroupConfigured` → `DENY` (non è in nessun gruppo).
-5. altrimenti → `TEACHER` (comportamento attuale quando il gruppo docenti non è configurato).
+3. `existingRole === "STUDENT"` e `!isStudent` → `DENY` se il gruppo docenti è
+   configurato, altrimenti `STUDENT`: uno studente uscito dai gruppi non deve
+   diventare docente per il default.
+4. `isStudent` → `STUDENT`.
+5. `teacherGroupConfigured` → `DENY` (non è in nessun gruppo).
+6. altrimenti → `TEACHER` (comportamento attuale quando il gruppo docenti non è configurato).
 
 Il controllo si ripete **a ogni login**: chi cambia gruppo cambia ruolo senza
 interventi manuali.

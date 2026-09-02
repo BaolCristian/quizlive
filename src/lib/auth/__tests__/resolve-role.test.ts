@@ -55,7 +55,9 @@ describe("resolveRole", () => {
     [{ existingRole: null, isStudent: false, isTeacher: false, teacherGroupConfigured: true }, "DENY"],
     [{ existingRole: "TEACHER", isStudent: false, isTeacher: false, teacherGroupConfigured: true }, "DENY"],
     [{ existingRole: null, isStudent: false, isTeacher: false, teacherGroupConfigured: false }, "TEACHER"],
-    [{ existingRole: "STUDENT", isStudent: false, isTeacher: false, teacherGroupConfigured: false }, "TEACHER"],
+    [{ existingRole: "STUDENT", isStudent: false, isTeacher: false, teacherGroupConfigured: false }, "STUDENT"],
+    [{ existingRole: "STUDENT", isStudent: false, isTeacher: false, teacherGroupConfigured: true }, "DENY"],
+    [{ existingRole: "STUDENT", isStudent: false, isTeacher: true, teacherGroupConfigured: false }, "TEACHER"],
   ];
   it.each(cases)("resolveRole(%o) → %s", (input, expected) => {
     expect(resolveRole(input)).toBe(expected);
