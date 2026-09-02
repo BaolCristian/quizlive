@@ -4,11 +4,15 @@ import next from "next";
 import { Server as SocketIOServer } from "socket.io";
 import { setupSocketHandlers } from "./lib/socket/server";
 import type { ServerToClientEvents, ClientToServerEvents } from "./types";
+import { assertStudentGateConfig } from "./lib/config/student-gate";
 
 const dev = process.env.NODE_ENV !== "production";
 const basePath = process.env.BASE_PATH || "";
 const app = next({ dev });
 const handle = app.getRequestHandler();
+
+// Fail loud: una configurazione incoerente del cancello studenti ferma l'avvio.
+assertStudentGateConfig();
 
 app.prepare().then(() => {
   const httpServer = createServer((req, res) => {
