@@ -1,15 +1,18 @@
 // src/app/api/__tests__/teacher-only-routes.test.ts
 // @vitest-environment node
 /**
- * Ogni route docente deve rispondere 403 a uno STUDENT prima di toccare il DB.
- * prisma è un proxy che lancia: se una route lo tocca prima del controllo del
- * ruolo, il test fallisce con un messaggio chiaro.
+ * Ogni route docente deve rispondere 403 a uno STUDENT prima di toccare il DB
+ * e lasciar passare un TEACHER. prisma è un proxy che lancia: se una route lo
+ * tocca prima del controllo del ruolo, il test fallisce con un messaggio
+ * chiaro; con il TEACHER quel lancio significa "controllo del ruolo passato".
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
+const authState = vi.hoisted(() => ({ role: "STUDENT" as "STUDENT" | "TEACHER" }));
+
 vi.mock("@/lib/auth/config", () => ({
-  auth: vi.fn(async () => ({ user: { id: "s1", role: "STUDENT", name: "S", email: "s@x.it" } })),
+  auth: vi.fn(async () => ({ user: { id: "s1", role: authState.role, name: "S", email: "s@x.it" } })),
 }));
 vi.mock("@/lib/db/client", () => ({
   prisma: new Proxy({}, { get: (_t, prop) => { throw new Error(`prisma.${String(prop)} toccato prima del controllo del ruolo`); } }),
@@ -44,16 +47,59 @@ const routes: Entry[] = [
   { name: "installation/hub/connect", load: () => import("@/app/api/installation/hub/connect/route"), methods: ["POST"] },
 ];
 
+function requestFor(r: Entry, m: string): NextRequest {
+  return new NextRequest(`http://localhost/api/${r.name}?q=x&sessionId=x`, { method: m });
+}
+
+async function handlerOf(r: Entry, m: string): Promise<Handler> {
+  const mod = await r.load();
+  const handler = mod[m] as Handler;
+  expect(typeof handler, `handler ${m} mancante in ${r.name}`).toBe("function");
+  return handler;
+}
+
 describe("teacher-only routes reject STUDENT with 403", () => {
+  beforeEach(() => {
+    authState.role = "STUDENT";
+  });
+
   for (const r of routes) {
     for (const m of r.methods) {
       it(`${m} /api/${r.name}`, async () => {
-        const mod = await r.load();
-        const handler = mod[m] as Handler;
-        expect(typeof handler, `handler ${m} mancante in ${r.name}`).toBe("function");
-        const req = new NextRequest(`http://localhost/api/${r.name}?q=x&sessionId=x`, { method: m });
-        const res = await handler(req, { params: Promise.resolve({ id: "x", sessionId: "x" }) });
+        const handler = await handlerOf(r, m);
+        const res = await handler(requestFor(r, m), { params: Promise.resolve({ id: "x", sessionId: "x" }) });
         expect(res.status).toBe(403);
+      });
+    }
+  }
+});
+
+describe("teacher-only routes let TEACHER through the role check", () => {
+  beforeEach(() => {
+    authState.role = "TEACHER";
+    // Nessuna chiamata di rete vera dai test: le route che escono (Pixabay,
+    // hub) devono fallire subito, non raggiungere internet.
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("rete non disponibile nei test"); }));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  for (const r of routes) {
+    for (const m of r.methods) {
+      it(`${m} /api/${r.name}`, async () => {
+        const handler = await handlerOf(r, m);
+        // Superato il controllo del ruolo la route tocca il proxy di prisma (o
+        // un body assente) e lancia: qualunque esito diverso da 401/403 va bene.
+        let status: number | "threw";
+        try {
+          status = (await handler(requestFor(r, m), { params: Promise.resolve({ id: "x", sessionId: "x" }) })).status;
+        } catch {
+          status = "threw";
+        }
+        expect(status, `${m} /api/${r.name} non ha superato il controllo del ruolo`).not.toBe(403);
+        expect(status, `${m} /api/${r.name} non ha superato il controllo del ruolo`).not.toBe(401);
       });
     }
   }
