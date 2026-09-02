@@ -21,8 +21,8 @@ describe("quiz-dashboard translations", () => {
   });
 
   it.each([
-    ["it", it_ as Record<string, Record<string, unknown>>],
-    ["en", en as Record<string, Record<string, unknown>>],
+    ["it", it_ as unknown as Record<string, Record<string, unknown>>],
+    ["en", en as unknown as Record<string, Record<string, unknown>>],
   ])("every quiz.* key exists in %s.json", (_locale, messages) => {
     const quiz = messages.quiz;
     const missing = usedKeys.filter((k) => !(k.split(".")[0] in quiz));
