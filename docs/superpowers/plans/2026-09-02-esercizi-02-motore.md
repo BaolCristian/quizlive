@@ -467,7 +467,7 @@ git commit -m "feat(engine/math): test diretti dei blocchi evaluate e divergenze
 
 **Files:**
 - Create: `packages/engine/src/i18n/index.ts`, `i18n/it.ts`, `i18n/en.ts`
-- Create: `packages/engine/src/jme/errors.ts`, `tokens.ts` (jme.js:3623-4407, 4544-4658, 5821-6280: le 24 classi `T*`, `registerType`, `getNameInfo`), `funcobj.ts` (4520-4543, 1161-1176, 2470-2490: `FuncObj`, `signature`, `parseSignature`, `describeSignature`, `converseOps`), `tokenizer.ts` (1177-1245, 1450-1642, 1782-2036), `unicode.ts` (da `runtime/scripts/unicode-mappings.js`: 7 tabelle, 1591 voci, dato puro consumato solo dal tokenizer; si porta anche `punctuation`), `parser.ts` (64-183, 282-345, 2038-2466), `scope.ts` (2491-2557, 2576-3319 senza `expandJuxtapositions`), `juxtapositions.ts` (3320-3620), `evaluate.ts` (214-281, 730-1159, 4807-4936: `evaluate`, `substituteTree`, coercizione `isType/castToType/findCompatibleType/wrapValue/unwrapValue`, `findvars`), `compare.ts` (346-405, 4671-4998, 5010-5279: `compare`, `checkingFunctions`, `resultsEqual`, `randoms`, `varsUsed`, `compareTokens*`, `treesSame`, `compareTrees`), `infer.ts` (5280-5608: `inferVariableTypes`, `inferExpressionType`, `makeFast`), `subvars.ts` (399-594: `contentsubvars`, `texsplit`, `subvars`, `tokenToDisplayString`, `typeToDisplayString`, con hook verso display), `index.ts`
+- Create: `packages/engine/src/jme/errors.ts`, `tokens.ts` (jme.js:3623-4407, 4544-4658, 5821-6280: le 24 classi `T*`, `registerType`, `getNameInfo`), `funcobj.ts` (4520-4543, 1161-1176, 2470-2490: `FuncObj`, `signature`, `parseSignature`, `describeSignature`, `converseOps`), `tokenizer.ts` (1177-1245, 1450-1642, 1782-2036), `unicode.ts` (da `runtime/scripts/unicode-mappings.js`: 7 tabelle, 1591 voci, dato puro consumato solo dal tokenizer; si porta anche `punctuation`), `parser.ts` (64-183, 282-345, 2038-2466), `scope.ts` (2491-2557, 2576-3319 senza `expandJuxtapositions`), `juxtapositions.ts` (3320-3620), `evaluate.ts` (214-281, 730-1159, 4807-4936: `evaluate`, `substituteTree`, coercizione `isType/castToType/findCompatibleType/wrapValue/unwrapValue`, `findvars`), `compare.ts` (346-405, 4671-4998, 5010-5279: `compare`, `checkingFunctions`, `resultsEqual`, `randoms`, `varsUsed`, `compareTokens*`, `treesSame`, `compareTrees`), `equality.ts` (da `util.js:150-346`: `eq`, `neq`, `equalityTests`, `except`, `distinct`, `contains` su token JME, rinviati dal Task 1; `equalityTests` per `matrix`/`vector`/`set` usa `math.matrixmath.eq` ecc.), `infer.ts` (5280-5608: `inferVariableTypes`, `inferExpressionType`, `makeFast`), `subvars.ts` (399-594: `contentsubvars`, `texsplit`, `subvars`, `tokenToDisplayString`, `typeToDisplayString`, con hook verso display), `index.ts`
 - Create: `packages/engine/test/unit/jme-helpers.ts`, `jme-compiling.test.ts`, `jme-scopes.test.ts`, `jme-evaluating-core.test.ts`, `jme-coercion.test.ts`, `i18n.test.ts`
 - Modify: `packages/engine/src/index.ts`, `packages/engine/DIVERGENCES.md`
 
@@ -553,6 +553,11 @@ export const checkingFunctions: Record<"absdiff"|"reldiff"|"dp"|"sigfig", (r1: N
 export function resultsEqual(r1: Token, r2: Token, checkingFunction, checkingAccuracy: number, scope: Scope): boolean;
 export function compare(tree1: Tree, tree2: Tree, settings: CompareSettings, scope: Scope): boolean;
 export function treesSame(a: Tree, b: Tree, scope: Scope): boolean; export function compareTrees(a: Tree, b: Tree): -1 | 0 | 1; export function varsUsed(tree: Tree): string[];
+
+// jme/equality.ts (util.js:150-346)
+export function eq(a: Token, b: Token, scope: Scope): boolean; export function neq(a: Token, b: Token, scope: Scope): boolean;
+export const equalityTests: Record<string, (a: Token, b: Token, scope: Scope) => boolean>;
+export function except<T extends Token>(list: T[], exclude: Token | Token[], scope: Scope): T[]; export function distinct<T extends Token>(list: T[], scope: Scope): T[]; export function contains(list: Token[], value: Token, scope: Scope): boolean;
 
 // jme/subvars.ts
 export function contentsubvars(str: string, scope: Scope, sub_tex?: boolean): string;
@@ -898,7 +903,7 @@ git commit -m "feat(engine/jme): display LaTeX e JME degli alberi"
 **Inventario da leggere prima:** `inventory/inventory-04-display-notations-unicode-variables.md` §5 (jme-variables.js: layout, superficie, algoritmo §5.3, DOM vs puro §5.4), §9 (determinismo), §10. Righe citate: `.numbas-upstream/runtime/scripts/jme-variables.js`.
 
 **Files:**
-- Create: `packages/engine/src/variables/generate.ts` (191-245 `computeVariable`, 328-398 `splitVariableNames`/`makeVariables`, 482-526 `remakeVariables`, 613-687 `variableDependants`), `variables/functions.ts` (51-182), `variables/rulesets.ts` (536-576), `variables/constants.ts` (585-605), `variables/note-script.ts` (795-939 `re_note`, `ScriptNote`, `noteScriptConstructor`), `variables/subvars.ts` (parte pura di `DOMsubvars` 708-774 → `substituteHtml`), `variables/index.ts`
+- Create: `packages/engine/src/variables/generate.ts` (191-245 `computeVariable`, 328-398 `splitVariableNames`/`makeVariables`, 482-526 `remakeVariables`, 613-687 `variableDependants`), `variables/functions.ts` (51-182), `variables/rulesets.ts` (536-576), `variables/constants.ts` (585-605), `variables/note-script.ts` (795-939 `re_note`, `ScriptNote`, `noteScriptConstructor`), `variables/subvars.ts` (parte pura di `DOMsubvars` 708-774 → `substituteHtml`), `variables/builtins.ts` (registra il builtin `make_variables`, jme-builtins.js tema `jme`, rinviato dal Task 4b: `registerVariablesBuiltins(scope)`; `variables/index.ts` lo chiama su `builtinScope` all'import), `variables/index.ts`
 - Create: `packages/engine/test/unit/variables.test.ts`, `variables-note-script.test.ts`
 - Modify: `packages/engine/src/index.ts`, `DIVERGENCES.md`, `i18n/it.ts`, `i18n/en.ts` (chiavi `jme.variables.*`, `ruleset.*`)
 
@@ -1076,9 +1081,9 @@ describe("finaliseState", () => {
     const r = finaliseState([f.set_credit(0.5, "incorrect", "a"), f.add_credit(0.25, "b")]);
     expect(r.credit).toBe(0.75); expect(r.valid).toBe(true);
   });
-  it("tre add_credit da 1/3 danno esattamente 1 (Fraction, non float)", () => {
+  it("tre add_credit da 1/3 danno 1 (via Fraction.fromFloat, come upstream)", () => {
     const r = finaliseState([f.add_credit(1 / 3), f.add_credit(1 / 3), f.add_credit(1 / 3)]);
-    expect(r.credit).toBe(1);
+    expect(r.credit).toBeCloseTo(1, 12);   // esatto se upstream usa fromFloat (approssimazione razionale); leggi marking.js:620-690 e, se è esatto, usa toBe(1)
   });
   it("end(true) rende invalido e azzera", () => {
     const r = finaliseState([f.set_credit(1), f.end(true)]);
@@ -1171,7 +1176,7 @@ export function createPartFromJSON(index: number, data: PartJSON, path: string, 
 5. `equal_states` upstream è morto (§9): i test tradotti confrontano davvero `states` proiettati su `{op, credit, reason, message}` (senza `scope`).
 6. `apply_marking_script`, `pre_submit`, `store`, `display`, `signals`/`events`, XML, `resume` non si portano.
 7. `gapfill.marks` è sempre la somma dei gap (§11.7): il campo JSON è ignorato, documentato in `types.ts`.
-8. `multipleresponse`: `maxAnswers=0` = illimitato; trasposizione della matrice solo se `!flipped`; `deal(numChoices)` **prima** di `deal(numAnswers)` con `scope.rng` (§9); `m_n_x` accetta `boolean[][]` `[scelta][risposta]`.
+8. `multipleresponse`: `maxAnswers=0` = illimitato; trasposizione della matrice solo se `!flipped`; `deal(numChoices)` **prima** di `deal(numAnswers)` con `scope.rng` (§9); `m_n_x` accetta `boolean[][]` `[scelta][risposta]`. `storeAnswer` dei tre tipi accetta **sia** la forma pubblica (`number` / `boolean[]` / `boolean[][]`) **sia** la matrice `ticks` upstream (`boolean[][]`, riconosciuta dalla forma), così i fixture `unitTests` (`answer.value` = ticks) girano invariati.
 9. `numberentry`: la precisione effettiva usa quella **rilevata** nella risposta (§9); `allowFractions` forzato `false` se `precisionType != "none"`.
 10. `jme`: rilevamento "formula" `nome = espressione` (§9), `answerSimplification` solo sulla risposta corretta, `checkVariableNames` con `caseSensitive`.
 11. `customMarkingAlgorithm` + `extendBaseMarkingAlgorithm` si portano (base = script incorporato del tipo).
