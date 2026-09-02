@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
 
   const { id } = await params;
 
@@ -31,9 +31,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
 
   const { id } = await params;
 

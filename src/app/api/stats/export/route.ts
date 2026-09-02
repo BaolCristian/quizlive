@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 import Papa from "papaparse";
 
@@ -12,10 +12,9 @@ const questionTypeLabel: Record<string, string> = {
 };
 
 export async function GET(req: NextRequest) {
-  const authSession = await auth();
-  if (!authSession?.user?.id) {
-    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
-  }
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const authSession = gate.session;
 
   const { searchParams } = req.nextUrl;
   const sessionId = searchParams.get("sessionId");

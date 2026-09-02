@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 
 function generatePin(): string {
@@ -20,8 +20,9 @@ async function uniquePin(): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
 
   const { quizId, isTest } = await req.json();
   if (!quizId) return NextResponse.json({ error: "quizId required" }, { status: 400 });
@@ -52,8 +53,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
 
   const sessions = await prisma.session.findMany({
     where: { hostId: session.user.id, isTest: false },

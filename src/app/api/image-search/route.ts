@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 
 const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
 
   const q = req.nextUrl.searchParams.get("q")?.trim();
   if (!q) return NextResponse.json({ hits: [] });
