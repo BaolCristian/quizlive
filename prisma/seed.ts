@@ -31,6 +31,22 @@ async function main() {
 
   console.log("Created admin:", admin.email);
 
+  // Demo student: in dev/demo (login per email senza gruppo Google) permette di
+  // provare l'area studente e l'enforcement senza configurare il Workspace.
+  const student = await prisma.user.upsert({
+    where: { email: "studente@scuola.it" },
+    update: { role: Role.STUDENT },
+    create: {
+      email: "studente@scuola.it",
+      name: "Studente Demo",
+      role: Role.STUDENT,
+      googleId: "demo-student-google-id",
+      classGroups: [{ email: "allievi.2sia4.0@scuola.it", name: "2SIA4.0", yearLevel: 2 }],
+    },
+  });
+
+  console.log("Created student:", student.email);
+
   // Create demo quiz 1: Geografia (full metadata)
   const quiz1 = await prisma.quiz.create({
     data: {

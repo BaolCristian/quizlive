@@ -10,6 +10,7 @@ datasource db {
 enum Role {
   TEACHER
   ADMIN
+  STUDENT
 }
 
 enum QuestionType {
@@ -107,6 +108,10 @@ model User {
   googleId      String?   @unique
   avatarUrl     String?
   createdAt     DateTime  @default(now())
+
+  // Gruppi Google di classe letti all'ultimo login (vedi spec Esercizi 01).
+  // Array di { email, name, yearLevel } — null se il cancello non è attivo.
+  classGroups   Json?
 
   quizzes         Quiz[]
   hostedSessions  Session[]
