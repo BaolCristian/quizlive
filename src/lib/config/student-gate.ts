@@ -35,7 +35,7 @@ export function readStudentGateConfig(env: Env = process.env): StudentGateConfig
   const serviceAccountKeyFile = clean(env.GOOGLE_SA_KEY_FILE);
   if (!serviceAccountKeyFile) {
     throw new Error(
-      "Cancello studenti attivo ma GOOGLE_SA_KEY_FILE non è impostata: serve il percorso del JSON del service account (vedi DEPLOY-GUIDA.md, sezione 'Riconoscimento studenti e classi').",
+      "Cancello studenti attivo ma GOOGLE_SA_KEY_FILE non è impostata: serve il percorso del JSON del service account (vedi docs/SETUP.md, sezione 2.1 'Riconoscimento studenti e classi').",
     );
   }
   const adminImpersonate = clean(env.GOOGLE_ADMIN_IMPERSONATE)?.toLowerCase();

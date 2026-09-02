@@ -6,6 +6,7 @@ Questa guida e pensata per il tecnico IT della scuola che deve installare e conf
 
 1. [Prerequisiti](#1-prerequisiti)
 2. [Configurazione Google OAuth](#2-configurazione-google-oauth)
+   - [2.1 Riconoscimento studenti e classi (Google Workspace)](#21-riconoscimento-studenti-e-classi-google-workspace)
 3. [Configurazione Pixabay (ricerca immagini)](#3-configurazione-pixabay-ricerca-immagini)
 4. [Installazione sul server](#4-installazione-sul-server)
 5. [Primo avvio](#5-primo-avvio)
@@ -88,6 +89,61 @@ SAVINT usa Google per l'autenticazione dei docenti. Serve un progetto su Google 
 7. Copia il **Client ID** e il **Client Secret** — ti serviranno nel passo successivo
 
 > Se non hai un dominio, usa `http://INDIRIZZO-IP-SERVER:3000` come origine e `http://INDIRIZZO-IP-SERVER:3000/api/auth/callback/google` come redirect.
+
+### 2.1 Riconoscimento studenti e classi (Google Workspace)
+
+Serve solo se vuoi far entrare gli **studenti** (modulo Esercizi). Senza questa
+configurazione tutto resta come prima: chi entra con Google è un docente.
+
+Come funziona: al login SAVINT chiede a Google l'elenco dei gruppi di cui
+l'utente è membro diretto. Chi è nel gruppo docenti è docente; chi è nel
+gruppo studenti o in un gruppo di classe è studente e viene rimandato all'area
+studente; chi non è in nessun gruppo non entra (se il gruppo docenti è
+configurato). I gruppi di classe (es. `allievi.2sia4.0@scuola.edu.it`) vengono
+salvati per creare le classi in automatico.
+
+Nella **Google Cloud Console**, nello stesso progetto usato per OAuth:
+1. "API e servizi" > "Libreria": abilita **Admin SDK API**.
+2. "IAM e amministrazione" > "Account di servizio": crea un account di servizio
+   (es. `savint-groups`), poi "Chiavi" > "Aggiungi chiave" > JSON. Scarica il
+   file: è un segreto.
+3. Nella scheda "Dettagli" dell'account di servizio copia l'**ID cliente**
+   (numero lungo).
+
+Nella **Console di amministrazione Google Workspace** (admin.google.com):
+4. "Sicurezza" > "Controlli API" > "Delega a livello di dominio" > "Aggiungi":
+   incolla l'ID cliente e questo unico ambito:
+   ```
+   https://www.googleapis.com/auth/admin.directory.group.readonly
+   ```
+5. "Account" > "Ruoli amministratore": assegna il ruolo **Lettore gruppi** (o
+   crea un ruolo con la sola lettura dei gruppi) a un account che SAVINT
+   impersonerà, es. `savint-reader@scuola.edu.it`.
+6. Crea i gruppi: uno per i docenti, uno per gli studenti e/o uno per ogni
+   classe. I gruppi di classe devono seguire una convenzione di nome che
+   `CLASS_GROUP_PATTERN` riconosca, es. `allievi.<classe>@scuola.edu.it`.
+
+Nel `.env` di SAVINT:
+```bash
+TEACHER_GROUP_EMAIL=docenti@scuola.edu.it
+STUDENT_GROUP_EMAIL=studenti@scuola.edu.it        # facoltativo se usi i gruppi di classe
+CLASS_GROUP_PATTERN=^allievi\.(?<name>[^@]+)@scuola\.edu\.it$
+GOOGLE_ADMIN_IMPERSONATE=savint-reader@scuola.edu.it
+GOOGLE_SA_KEY_FILE=/etc/savint/google-sa-key.json   # con Docker: /run/secrets/google-sa-key.json
+```
+Con Docker copia il JSON in `docker/secrets/google-sa-key.json` (la cartella è
+esclusa da git).
+
+Se la configurazione è incompleta SAVINT **non parte** e stampa quale
+variabile manca.
+
+Checklist di verifica dopo il deploy:
+- [ ] Login con un account **studente**: atterra su `/studente`, non vede la dashboard.
+- [ ] Lo studente digita `/dashboard` o `/dashboard/quiz/new`: torna a `/studente`.
+- [ ] Lo studente apre `/api/quiz`: risposta `403`.
+- [ ] Login con un account **docente**: dashboard come prima.
+- [ ] Account fuori da ogni gruppo: pagina di login con "Il tuo account non è abilitato".
+- [ ] Nei log all'avvio compare `Cancello studenti attivo`.
 
 ---
 
