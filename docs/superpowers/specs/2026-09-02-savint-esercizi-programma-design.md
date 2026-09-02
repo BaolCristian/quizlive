@@ -41,8 +41,12 @@ Requisiti espliciti dell'utente:
    Admin SDK Directory API (service account con delega a livello di dominio,
    chiamata `hasMember`). Il login OAuth resta com'è. L'alternativa SAML è
    scartata perché SAVINT non ha SAML.
-5. **Classi create dal docente**, iscrizione dello studente con codice. La scuola
-   ha un solo gruppo studenti generico, non uno per classe.
+5. **Classi create in automatico dai gruppi Google di classe.** La scuola ha,
+   oltre al gruppo studenti generico, un gruppo per ogni classe (3A, 3B, ...).
+   Al login SAVINT legge i gruppi dell'utente: le classi nascono da sole e lo
+   studente risulta iscritto senza codici né elenchi. Il docente sceglie le
+   classi che segue dall'elenco. Le classi create a mano con codice di
+   iscrizione restano come alternativa per scuole senza gruppi di classe.
 6. **Niente GeoGebra** (uso commerciale a pagamento). Figure con **JSXGraph**
    (LGPL/MIT).
 7. **Licenze.** Il motore è opera derivata di Numbas: attribuzione Apache
@@ -121,8 +125,11 @@ src/components/esercizi/editor/       editor React (usa il motore per anteprima 
 ```
 enum Role { TEACHER ADMIN STUDENT }
 
-Classe            id, name, schoolYear, ownerId → User, joinCode @unique, archivedAt?, createdAt
-ClasseStudente    classeId, studentId → User, joinedAt        @@unique([classeId, studentId])
+Classe            id, name, schoolYear, source GOOGLE_GROUP|MANUAL, googleGroupEmail? @unique,
+                  joinCode? @unique (solo MANUAL), archivedAt?, createdAt
+ClasseDocente     classeId, teacherId → User, createdAt        @@unique([classeId, teacherId])
+ClasseStudente    classeId, studentId → User, joinedAt         @@unique([classeId, studentId])
+User.classGroups  Json? — gruppi di classe letti da Google all'ultimo login (email, nome)
 Esercizio         id, title, description?, authorId, yearLevel 1..5, topic (slug), tags[], createdAt, updatedAt
 EsercizioVersione id, esercizioId, version, content Json (formato SAVINT), hash, createdAt   @@unique([esercizioId, version])
 Compito           id, esercizioId, classeId, assignedById, dueAt?, closedAt?, createdAt       (dueAt null = palestra)
@@ -135,6 +142,9 @@ TentativoDomanda  tentativoId, questionIndex, score, maxScore, answered   @@uniq
 - Argomenti: lista curata per anno in `src/lib/esercizi/topics.ts` (dalle
   indicazioni nazionali) più tag liberi. La lista fissa serve perché "progressi
   per argomento" funziona solo se tutti taggano allo stesso modo.
+- Classi da gruppo: a ogni login dello studente si allineano le iscrizioni
+  (entra nelle classi nuove, esce da quelle che non ha più). Il docente che è
+  membro di un gruppo di classe viene proposto come docente di quella classe.
 - Tentativi illimitati, nessuna classifica tra studenti.
 
 ## Porting del motore: metodo
@@ -164,10 +174,10 @@ TentativoDomanda  tentativoId, questionIndex, score, maxScore, answered   @@uniq
 
 | # | Sotto-progetto | Dipende da | Settimane |
 |---|---|---|---|
-| 1 | Cancello e ruoli (gruppo Google, ruolo STUDENT, enforcement, area studente minima) | — | 1 |
+| 1 | Cancello e ruoli (gruppi Google, ruolo STUDENT, gruppi di classe letti al login, enforcement, area studente minima) | — | 1 |
 | 2 | Porting motore (`packages/engine`) | — | 8–12 |
 | 3 | Player React, tentativi, salvataggio e ripresa | 1, 2 (parti) | 4–5 |
-| 4 | Classi, compiti, progressi studente e docente | 1 | 3–4 |
+| 4 | Classi (da gruppi Google e manuali), compiti, progressi studente e docente | 1 | 3–4 |
 | 5 | Editor esercizi, formato SAVINT, importatore Numbas, modelli pronti | 2, 3 | 6–8 |
 | 6 | Hub esercizi (pubblica/scarica su savint.it) | 4, 5 | 2 |
 

@@ -20,8 +20,9 @@
   una stringa URL verso cui reindirizzare.
 - Il join a un quiz live via PIN (`joinSession` su Socket.io) è anonimo e non
   richiede login. Non si tocca.
-- La scuola ha un **gruppo Google studenti generico**; il gruppo docenti esiste
-  ma resta opzionale nella configurazione.
+- La scuola ha un **gruppo Google studenti generico**, un gruppo docenti, e **un
+  gruppo per ogni classe** (3A, 3B, ...). Il gruppo docenti resta opzionale
+  nella configurazione.
 
 ## Obiettivo
 
@@ -30,8 +31,10 @@
 2. Impedire a uno studente **qualsiasi** accesso a dashboard, editor, statistiche,
    sessioni live come host, API docente: sia via interfaccia sia chiamando le API
    direttamente.
-3. Dare allo studente un'area propria minima su cui atterrare.
-4. Non cambiare nulla per le installazioni che non configurano il gruppo.
+3. Leggere al login i **gruppi di classe** dell'utente e salvarli, così il
+   sotto-progetto 4 crea le classi e le iscrizioni senza codici né elenchi.
+4. Dare allo studente un'area propria minima su cui atterrare.
+5. Non cambiare nulla per le installazioni che non configurano il gruppo.
 
 ## Configurazione
 
@@ -39,6 +42,7 @@
 |---|---|---|
 | `STUDENT_GROUP_EMAIL` | attiva la funzione | email del gruppo Google degli studenti |
 | `TEACHER_GROUP_EMAIL` | no | email del gruppo docenti; se assente, chi non è studente è docente (comportamento attuale) |
+| `CLASS_GROUP_PATTERN` | no | espressione regolare sull'email del gruppo che identifica un gruppo di classe, con un gruppo di cattura `name` per il nome della classe. Esempio: `^classe-(?<name>[1-5][a-z])@scuola\.edu\.it$` |
 | `GOOGLE_SA_KEY_FILE` | sì se attiva | percorso del JSON del service account (in Docker: secret montato in `/run/secrets/`) |
 | `GOOGLE_ADMIN_IMPERSONATE` | sì se attiva | email di un account del Workspace con ruolo "Lettore gruppi" da impersonare |
 
@@ -54,24 +58,36 @@
 
 - Dipendenza nuova: `google-auth-library` (ufficiale, MIT), client JWT con
   `subject` = admin impersonato, scope
-  `https://www.googleapis.com/auth/admin.directory.group.member.readonly`.
-- `isMember(groupEmail, userEmail): Promise<boolean>` chiama
-  `GET /admin/directory/v1/groups/{group}/hasMember/{user}` (copre i gruppi
-  annidati). Timeout 5 s. Errori tipizzati: `GroupCheckError` con causa.
-- Cache in memoria per email con TTL 60 s, così un login fa al massimo una
-  chiamata per gruppo e il ruolo calcolato in `signIn` è disponibile in
-  `createUser` senza richiamare Google.
+  `https://www.googleapis.com/auth/admin.directory.group.readonly`.
+- `listUserGroups(userEmail): Promise<{ email, name }[]>` chiama
+  `GET /admin/directory/v1/groups?userKey={user}` (paginata) e restituisce i
+  gruppi di cui l'utente è **membro diretto**. Una sola chiamata per login,
+  da cui si ricavano ruolo e classi. Timeout 5 s. Errori tipizzati:
+  `GroupCheckError` con causa.
+- I gruppi annidati non compaiono: studenti e docenti devono essere membri
+  diretti del proprio gruppo di ruolo **oppure** di un gruppo di classe (uno
+  studente in `classe-3a` è studente anche se il gruppo studenti generico lo
+  contiene solo per annidamento).
+- Cache in memoria per email con TTL 60 s, così il risultato calcolato in
+  `signIn` è disponibile in `createUser` senza richiamare Google.
 
 ### 2. Regola del ruolo — `src/lib/auth/resolve-role.ts`
 
 Funzione pura, senza I/O, coperta da test a tabella:
 
 ```
+classifyGroups(groups, config)
+  → { isStudent, isTeacher, classGroups: { email, name }[] }
 resolveRole({ existingRole, isStudent, isTeacher, teacherGroupConfigured })
   → "ADMIN" | "TEACHER" | "STUDENT" | "DENY"
 ```
 
-Regole, in ordine:
+`classifyGroups`: `isTeacher` se tra i gruppi c'è `TEACHER_GROUP_EMAIL`;
+`classGroups` sono i gruppi la cui email corrisponde a `CLASS_GROUP_PATTERN`
+(nome = cattura `name`, in maiuscolo); `isStudent` se c'è
+`STUDENT_GROUP_EMAIL` **oppure** almeno un gruppo di classe.
+
+`resolveRole`, regole in ordine:
 1. `existingRole === "ADMIN"` → `ADMIN` (mai retrocesso automaticamente).
 2. `isTeacher` → `TEACHER` (il gruppo docenti vince su quello studenti).
 3. `isStudent` → `STUDENT`.
@@ -92,10 +108,16 @@ interventi manuali.
 - Errore transitorio di Google: utente **esistente** entra con il ruolo salvato
   (log di warning); utente **nuovo** viene rimandato a `/login?error=GroupCheckFailed`
   (fail closed: nessun nuovo docente creato senza verifica).
-- `events.createUser`: imposta `User.role` con il valore in cache per l'email.
+- A ogni login riuscito salva su `User.classGroups` i gruppi di classe trovati
+  (email e nome), anche per i docenti: il sotto-progetto 4 li usa per creare le
+  classi, iscrivere gli studenti e proporre al docente le sue classi. In questo
+  sotto-progetto il dato viene solo salvato.
+- `events.createUser`: imposta `User.role` e `User.classGroups` con i valori in
+  cache per l'email.
 - I callback `jwt` e `session` propagano `STUDENT`; `src/types/next-auth.d.ts`
   estende il tipo del ruolo.
-- Prisma: `enum Role { TEACHER ADMIN STUDENT }` con migrazione.
+- Prisma: `enum Role { TEACHER ADMIN STUDENT }` e `User.classGroups Json?`, con
+  migrazione.
 
 ### 4. Enforcement — `src/lib/auth/require-role.ts`
 
@@ -136,13 +158,14 @@ interventi manuali.
 
 ### 6. Documentazione e deploy
 
-- `DEPLOY-GUIDA.md`: nuova sezione "Riconoscimento studenti (Google Workspace)"
-  con i passi nella console Google Cloud e nella console Admin: creare il
-  service account nel progetto già usato per OAuth, abilitare l'Admin SDK
-  API, attivare la delega a livello di dominio con il solo scope di lettura
-  membri, assegnare all'account impersonato il ruolo "Lettore gruppi", creare i
-  gruppi.
-- `.env.example`: le quattro variabili commentate.
+- `DEPLOY-GUIDA.md`: nuova sezione "Riconoscimento studenti e classi (Google
+  Workspace)" con i passi nella console Google Cloud e nella console Admin:
+  creare il service account nel progetto già usato per OAuth, abilitare l'Admin
+  SDK API, attivare la delega a livello di dominio con il solo scope di lettura
+  gruppi, assegnare all'account impersonato il ruolo "Lettore gruppi", creare i
+  gruppi di ruolo e di classe con una convenzione di nome che il pattern possa
+  riconoscere.
+- `.env.example`: le cinque variabili commentate.
 - `docker/docker-compose.yml`: le tre variabili d'ambiente più il secret
   file-based `google_sa_key` montato in `/run/secrets/google_sa_key`;
   `docker/setup.sh` e `docker/README.md` aggiornati.
@@ -150,12 +173,15 @@ interventi manuali.
 
 ## Test
 
-- **Unit**: `resolveRole` a tabella (tutte le combinazioni); validazione della
-  configurazione (attiva, incompleta, assente, hub); client gruppi con `fetch`
-  simulato (membro, non membro, errore, timeout, cache).
-- **Integrazione**: callback `signIn` con `isMember` simulato: nuovo studente,
-  nuovo docente, retrocessione docente→studente, DENY, errore Google con utente
-  esistente e con utente nuovo.
+- **Unit**: `classifyGroups` (gruppo studenti, solo gruppo di classe, docente
+  anche in una classe, pattern assente, pattern non valido) e `resolveRole` a
+  tabella (tutte le combinazioni); validazione della configurazione (attiva,
+  incompleta, assente, hub); client gruppi con `fetch` simulato (lista,
+  paginazione, vuota, errore, timeout, cache).
+- **Integrazione**: callback `signIn` con `listUserGroups` simulato: nuovo
+  studente con classe, nuovo docente, retrocessione docente→studente, cambio di
+  classe tra due login, DENY, errore Google con utente esistente e con utente
+  nuovo.
 - **Enforcement a tabella**: per ogni route protetta, con sessione `STUDENT` la
   risposta è 403; con `TEACHER` non è 403. Un test per i due layout.
 - **Manuale**, con il Workspace reale: checklist in fondo alla sezione della
@@ -175,7 +201,12 @@ interventi manuali.
 
 ## Rischi
 
-- Latenza dell'Admin SDK al login: una o due chiamate, timeout 5 s, cache.
+- Latenza dell'Admin SDK al login: una chiamata paginata, timeout 5 s, cache.
+- Solo membri diretti: se la scuola mette gli studenti nei gruppi di classe e
+  annida le classi nel gruppo studenti, funziona grazie al pattern. Se invece
+  annida senza gruppi di classe riconoscibili, lo studente non viene
+  riconosciuto: il messaggio di errore al login lo dice e la guida spiega la
+  convenzione.
 - Docente per errore anche nel gruppo studenti: vince il gruppo docenti se
   configurato; altrimenti diventa studente e il problema si vede subito.
 - Chiave del service account: è un segreto con potere di lettura sui gruppi.
