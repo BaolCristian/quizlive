@@ -24,7 +24,12 @@ export async function signInWithGate(args: {
   const email = args.email?.trim().toLowerCase();
   if (!email) return loginError("NotAllowed");
 
-  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true, role: true } });
+  // findFirst + mode "insensitive": l'email arriva già in minuscolo da Google,
+  // ma in DB può essere salvata con maiuscole (utenti creati prima del cancello).
+  const existing = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+    select: { id: true, role: true },
+  });
   const decision = await evaluateLogin(email, existing?.role ?? null);
   if (!decision.allowed) return loginError(decision.reason);
 

@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // blocks; Vitest's hoisting transform relocates those (as dynamic imports)
 // above a plain const, which would read mockUser before initialization when
 // the "@/lib/db/client" mock factory below runs.
-const mockUser = vi.hoisted(() => ({ findUnique: vi.fn(), update: vi.fn() }));
+const mockUser = vi.hoisted(() => ({ findFirst: vi.fn(), update: vi.fn() }));
 vi.mock("@/lib/db/client", () => ({ prisma: { user: mockUser } }));
 vi.mock("@/lib/config/student-gate", () => ({ isStudentGateEnabled: vi.fn() }));
 vi.mock("@/lib/auth/student-gate", () => ({ evaluateLogin: vi.fn(), takeDecision: vi.fn() }));
@@ -20,7 +20,7 @@ const evalMock = evaluateLogin as ReturnType<typeof vi.fn>;
 const takeMock = takeDecision as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
-  mockUser.findUnique.mockReset();
+  mockUser.findFirst.mockReset();
   mockUser.update.mockReset();
   enabled.mockReturnValue(true);
   evalMock.mockReset();
@@ -44,7 +44,7 @@ describe("signInWithGate", () => {
   });
 
   it("updates role and classGroups of an existing user", async () => {
-    mockUser.findUnique.mockResolvedValue({ id: "u1", role: "TEACHER" });
+    mockUser.findFirst.mockResolvedValue({ id: "u1", role: "TEACHER" });
     evalMock.mockResolvedValue({ allowed: true, role: "STUDENT", classGroups: [{ email: "allievi.3a@x.it", name: "3A", yearLevel: 3 }] });
     expect(await signInWithGate({ email: "M@x.it", provider: "google" })).toBe(true);
     expect(evalMock).toHaveBeenCalledWith("m@x.it", "TEACHER");
@@ -54,15 +54,30 @@ describe("signInWithGate", () => {
     });
   });
 
+  it("existing user stored with mixed-case email is found and keeps ADMIN", async () => {
+    mockUser.findFirst.mockResolvedValue({ id: "u1", role: "ADMIN" });
+    evalMock.mockResolvedValue({ allowed: true, role: "ADMIN", classGroups: [] });
+    expect(await signInWithGate({ email: "M@x.it", provider: "google" })).toBe(true);
+    expect(mockUser.findFirst).toHaveBeenCalledWith({
+      where: { email: { equals: "m@x.it", mode: "insensitive" } },
+      select: { id: true, role: true },
+    });
+    expect(evalMock).toHaveBeenCalledWith("m@x.it", "ADMIN");
+    expect(mockUser.update).toHaveBeenCalledWith({
+      where: { id: "u1" },
+      data: { role: "ADMIN", classGroups: [] },
+    });
+  });
+
   it("does not touch classGroups when the decision has none (Google error, existing user)", async () => {
-    mockUser.findUnique.mockResolvedValue({ id: "u1", role: "TEACHER" });
+    mockUser.findFirst.mockResolvedValue({ id: "u1", role: "TEACHER" });
     evalMock.mockResolvedValue({ allowed: true, role: "TEACHER" });
     await signInWithGate({ email: "m@x.it", provider: "google" });
     expect(mockUser.update).toHaveBeenCalledWith({ where: { id: "u1" }, data: { role: "TEACHER" } });
   });
 
   it("does not call update for a new user (createUser will)", async () => {
-    mockUser.findUnique.mockResolvedValue(null);
+    mockUser.findFirst.mockResolvedValue(null);
     evalMock.mockResolvedValue({ allowed: true, role: "STUDENT", classGroups: [] });
     expect(await signInWithGate({ email: "n@x.it", provider: "google" })).toBe(true);
     expect(evalMock).toHaveBeenCalledWith("n@x.it", null);
@@ -70,7 +85,7 @@ describe("signInWithGate", () => {
   });
 
   it("redirects with the deny reason", async () => {
-    mockUser.findUnique.mockResolvedValue(null);
+    mockUser.findFirst.mockResolvedValue(null);
     evalMock.mockResolvedValue({ allowed: false, reason: "GroupCheckFailed" });
     expect(await signInWithGate({ email: "n@x.it", provider: "google" })).toBe("/savint/login?error=GroupCheckFailed");
   });
