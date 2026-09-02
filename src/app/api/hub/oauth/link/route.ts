@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth/config";
+import { requireTeacher } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db/client";
 import { decryptToken } from "@/lib/hub/token-crypto";
 import { getHubOAuthConfig } from "@/lib/hub/oauth-config";
 
 export async function DELETE() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
+  const gate = await requireTeacher();
+  if (!gate.ok) return gate.response;
+  const session = gate.session;
   const link = await prisma.hubLink.findUnique({ where: { userId: session.user.id } });
   if (!link) return NextResponse.json({ ok: true });
 

@@ -43,7 +43,7 @@ describe("POST /api/installation/hub/connect", () => {
     const res = await POST(makeReq({ setupCode: "code123" }));
     expect(res.status).toBe(401);
     const body = await res.json();
-    expect(body.error).toBe("unauthorized");
+    expect(body.error).toBe("Unauthorized");
   });
 
   it("403 quando utente non è ADMIN", async () => {
