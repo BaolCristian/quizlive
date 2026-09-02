@@ -14,7 +14,7 @@ import { isInt } from "./predicates";
  * *entrambi* gli argomenti erano già `bigint`. */
 export function productRange(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
   const use_bigint = typeof a == "bigint" && typeof b == "bigint";
-  let ab = ensure_bigint(a as bigint | number);
+  const ab = ensure_bigint(a as bigint | number);
   const bb = ensure_bigint(b as bigint | number);
   if (ab > bb) {
     return 1n;
@@ -33,7 +33,7 @@ export function combinations(n: NumbasNumber, k: NumbasNumber): NumbasNumber {
   if (isComplex(n) || isComplex(k)) {
     throw new Error("math.combinations.complex");
   }
-  let nb = ensure_bigint(n as bigint | number);
+  const nb = ensure_bigint(n as bigint | number);
   let kb = ensure_bigint(k as bigint | number);
   if (nb < 0n) {
     throw new Error("math.combinations.n less than zero");
@@ -134,8 +134,8 @@ export function lcm(...args: NumbasNumber[]): NumbasNumber {
   } else if (args.length == 1) {
     return args[0]!;
   }
-  let a = args[0]!;
-  let b = args[1]!;
+  const a = args[0]!;
+  const b = args[1]!;
   if (isComplex(a) || isComplex(b)) {
     throw new Error("math.lcm.complex");
   }
@@ -289,7 +289,7 @@ export const primes_bigints: bigint[] = [
 // math.js:2222-2239
 /** Tutti i divisori di `n` (inclusi 1 e n). */
 export function divisors(n: NumbasNumber): bigint[] {
-  let nb = abs(ensure_bigint(n as bigint | number)) as bigint;
+  const nb = abs(ensure_bigint(n as bigint | number)) as bigint;
 
   if (nb < 1n) {
     return [];
@@ -319,7 +319,7 @@ export function proper_divisors(n: NumbasNumber): bigint[] {
 /** Fattorizza `n`: se `n=2^(a1)*3^(a2)*5^(a3)*...`, ritorna gli esponenti `[a1,a2,a3,...]`. */
 export function factorise(n: NumbasNumber): number[] | bigint[] {
   const use_bigint = typeof n == "bigint";
-  let nb = abs(n) as NumbasNumber;
+  const nb = abs(n) as NumbasNumber;
   let nn: bigint;
   if (typeof nb != "bigint") {
     nn = BigInt(Math.floor(nb as number));
@@ -349,7 +349,7 @@ export function factorise(n: NumbasNumber): number[] | bigint[] {
 /** Il più grande fattore quadrato perfetto di `n`. */
 export function largest_square_factor(n: NumbasNumber): NumbasNumber {
   const use_bigint = typeof n == "bigint";
-  let nb = abs(n) as NumbasNumber;
+  const nb = abs(n) as NumbasNumber;
   let nn: bigint;
   if (typeof nb != "bigint") {
     nn = BigInt(Math.floor(nb as number));

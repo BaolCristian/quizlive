@@ -3,12 +3,12 @@
 
 // util.js:749-1076 (slugify..hashCode) + util.js:1392-1394 (caselessCompare)
 // + util.js:1619-1671 (contentsplitbrackets, con le sue variabili di modulo
-// private endDelimiters/re_startMaths a util.js:1599-1605). Non portati
-// (§4 dell'inventario, fuori ambito per il motore puro): `formatTime`
-// (792-813, non usata da nessun consumatore incluso — vedi nota upstream
-// "no urgenza"; qui si omette comunque perché usa `Date`, irrilevante per
-// generazione/correzione di esercizi), `nicePartName` (Task 8),
-// `debounce`/`b64encode`/`b64decode`/`prefix_css_selectors` (fuori ambito).
+// private endDelimiters/re_startMaths a util.js:1599-1605). `formatTime`
+// (807-813) è nell'elenco esatto del brief (Interfaces) quindi è portata,
+// nonostante l'inventario noti che non ha consumatori nel runtime incluso.
+// Non portati (§4 dell'inventario, fuori ambito per il motore puro, e NON
+// nell'elenco del brief): `nicePartName` (Task 8),
+// `debounce`/`b64encode`/`b64decode`/`prefix_css_selectors`.
 
 import { precround } from "./rounding";
 import { niceRealNumber, parseNumber } from "./format";
@@ -61,6 +61,15 @@ export function formatString(str: string, ...values: string[]): string {
     str = str.replace(/%s/, values[i]!);
   }
   return str;
+}
+
+// util.js:807-813
+/** Rappresentazione testuale di una data/ora, formato `"Www Mmm dd yyyy HH:MM:SS"`. */
+export function formatTime(t: Date): string {
+  const h = t.getHours();
+  const m = t.getMinutes();
+  const s = t.getSeconds();
+  return t.toDateString() + " " + lpad(h, 2, "0") + ":" + lpad(m, 2, "0") + ":" + lpad(s, 2, "0");
 }
 
 // util.js:824-843

@@ -33,7 +33,7 @@ export function piDegree(n: NumbasNumber, allowFractions?: boolean): number {
     allowFractions = true;
   }
 
-  let nn = Math.abs(n as number);
+  const nn = Math.abs(n as number);
   if (nn > 10000) {
     // so big numbers don't get rounded to a power of pi accidentally
     return 0;
@@ -103,7 +103,7 @@ export function precround(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
   if (isComplex(a)) {
     return complex(precround(a.re, b) as number, precround(a.im, b) as number);
   } else {
-    let bn = Math.min(b as number, MAX_FLOAT_PRECISION);
+    const bn = Math.min(b as number, MAX_FLOAT_PRECISION);
     const an = a as number;
     const be = Math.pow(10, bn);
     let fracPart = an % 1;

@@ -114,6 +114,10 @@ export class RealInterval {
 
   /** L'unione di due intervalli. Ritorna uno o due intervalli. */
   union(b: RealInterval): RealInterval[] {
+    // upstream: `const a = this;` (math.js:3952) — alias voluto per leggere
+    // il metodo come una funzione simmetrica in a/b; regola eslint disattivata
+    // localmente invece di riscrivere la logica.
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const a: RealInterval = this;
     // if they don't overlap at all, return both intervals
     if (a.end < b.start || a.start > b.end) {
