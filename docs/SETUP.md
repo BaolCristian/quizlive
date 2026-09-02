@@ -138,6 +138,11 @@ esclusa da git).
 Se la configurazione è incompleta SAVINT **non parte** e stampa quale
 variabile manca.
 
+Il controllo avviene solo al login: chi viene tolto dai gruppi mantiene la
+sessione già aperta fino alla sua scadenza. Nota: la pagina host dei quiz live è
+riservata ai docenti, ma il canale Socket.io riconosce ancora l'host dal nome
+riservato e non dalla sessione; è un intervento separato già pianificato.
+
 Checklist di verifica dopo il deploy:
 - [ ] Login con un account **studente**: atterra su `/studente`, non vede la dashboard.
 - [ ] Lo studente digita `/dashboard` o `/dashboard/quiz/new`: torna a `/studente`.
