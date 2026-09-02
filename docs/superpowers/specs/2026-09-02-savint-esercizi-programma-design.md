@@ -58,6 +58,16 @@ Requisiti espliciti dell'utente:
 8. **Formato esercizio proprio** (JSON SAVINT, validato con zod) più un
    **importatore dal formato Numbas `.exam`**, per riusare esercizi pubblici
    CC BY e per i test di parità del motore.
+9. **Bacino di esercizi e test a pesca casuale** (aggiunto il 2026-09-02). Il
+   docente costruisce un bacino di esercizi **categorizzato** (anno di corso,
+   argomento dalla lista curata, tag liberi, difficoltà) e poi crea un
+   **test** con regole di pesca: "3 esercizi da Equazioni di 2° grado, 2 da
+   Disequazioni, difficoltà media". La pesca avviene **per studente**, con un
+   seed fissato per tentativo, così due studenti vicini hanno esercizi
+   diversi e il docente può comunque rivedere esattamente ciò che ciascuno ha
+   avuto; in alternativa il docente può scegliere "stessa pesca per tutta la
+   classe". Il bacino è della scuola: gli esercizi sono visibili ai colleghi
+   dell'installazione (come i quiz condivisi), il test è del docente.
 
 ## Fatti verificati sul codice Numbas (2 settembre 2026)
 
@@ -133,18 +143,31 @@ Classe            id, name, yearLevel? 1..5 (dalla prima cifra del nome, modific
 ClasseDocente     classeId, teacherId → User, createdAt        @@unique([classeId, teacherId])
 ClasseStudente    classeId, studentId → User, joinedAt         @@unique([classeId, studentId])
 User.classGroups  Json? — gruppi di classe letti da Google all'ultimo login (email, nome, anno)
-Esercizio         id, title, description?, authorId, yearLevel 1..5, topic (slug), tags[], createdAt, updatedAt
+Esercizio         id, title, description?, authorId, yearLevel 1..5, topic (slug), tags[], difficulty 1..3,
+                  createdAt, updatedAt                                   (il "bacino" è l'insieme degli esercizi dell'installazione)
 EsercizioVersione id, esercizioId, version, content Json (formato SAVINT), hash, createdAt   @@unique([esercizioId, version])
-Compito           id, esercizioId, classeId, assignedById, dueAt?, closedAt?, createdAt       (dueAt null = palestra)
-Tentativo         id, compitoId?, esercizioVersioneId, studentId, status IN_PROGRESS|COMPLETED,
-                  seed, state Json, score, maxScore, startedAt, completedAt?, lastActivityAt
-TentativoDomanda  tentativoId, questionIndex, score, maxScore, answered   @@unique([tentativoId, questionIndex])
+Compito           id, title, classeId, assignedById, dueAt?, closedAt?, createdAt          (dueAt null = palestra)
+                  drawMode PER_STUDENT|SAME_FOR_CLASS, drawSeed?
+CompitoRegola     compitoId, order, count, yearLevel?, topic?, tags[]?, difficulty?     (regola di pesca; un compito
+                  con una sola regola "count=1, esercizio fisso" è l'assegnazione diretta di un esercizio)
+CompitoRegolaFissa compitoRegolaId, esercizioId                                        (esercizi scelti a mano invece che pescati)
+Tentativo         id, compitoId, studentId, status IN_PROGRESS|COMPLETED, seed,
+                  drawnVersionIds String[] (gli esercizi pescati per questo tentativo, in ordine),
+                  state Json, score, maxScore, startedAt, completedAt?, lastActivityAt
+TentativoDomanda  tentativoId, position, esercizioVersioneId, questionIndex, score, maxScore, answered
+                  @@unique([tentativoId, position, questionIndex])
 ```
 
 - Conservazione: `TENTATIVI_RETENTION_DAYS`, stessa meccanica delle sessioni live.
 - Argomenti: lista curata per anno in `src/lib/esercizi/topics.ts` (dalle
   indicazioni nazionali) più tag liberi. La lista fissa serve perché "progressi
   per argomento" funziona solo se tutti taggano allo stesso modo.
+- Pesca: alla creazione di un tentativo SAVINT applica le regole del compito
+  al bacino (filtri per anno, argomento, tag, difficoltà), pesca `count`
+  esercizi con il seed del tentativo (o `drawSeed` del compito se "stessa
+  pesca per tutta la classe"), e salva gli id delle versioni pescate: la
+  lista non cambia più, anche se il bacino cambia. Se il bacino non basta per
+  una regola, il docente lo vede al salvataggio del compito.
 - Classi da gruppo: a ogni login dello studente si allineano le iscrizioni
   (entra nelle classi nuove, esce da quelle che non ha più). Il docente che è
   membro di un gruppo di classe viene proposto come docente di quella classe.
@@ -180,7 +203,7 @@ TentativoDomanda  tentativoId, questionIndex, score, maxScore, answered   @@uniq
 | 1 | Cancello e ruoli (gruppi Google, ruolo STUDENT, gruppi di classe letti al login, enforcement, area studente minima) | — | 1 |
 | 2 | Porting motore (`packages/engine`) | — | 8–12 |
 | 3 | Player React, tentativi, salvataggio e ripresa | 1, 2 (parti) | 4–5 |
-| 4 | Classi (da gruppi Google e manuali), compiti, progressi studente e docente | 1 | 3–4 |
+| 4 | Classi (da gruppi Google e manuali), bacino categorizzato, compiti con regole di pesca, progressi studente e docente | 1 | 4–5 |
 | 5 | Editor esercizi, formato SAVINT, importatore Numbas, modelli pronti | 2, 3 | 6–8 |
 | 6 | Hub esercizi (pubblica/scarica su savint.it) | 4, 5 | 2 |
 

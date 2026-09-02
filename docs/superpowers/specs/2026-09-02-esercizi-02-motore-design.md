@@ -74,8 +74,9 @@ sotto-progetto 5 (editor) produce il JSON che questo motore legge.
 ## Non-obiettivi
 
 - Esame (`exam.js`): navigazione, timer, sospensione SCORM, modalità
-  diagnostica. Portiamo la domanda; l'aggregazione in "esercizio" (più domande)
-  la fa il dominio SAVINT nel sotto-progetto 3.
+  diagnostica, gruppi di domande con pesca casuale. Portiamo la domanda;
+  l'aggregazione in "esercizio" e la **pesca casuale dal bacino** (decisione 9
+  del programma) le fa il dominio SAVINT nei sotto-progetti 3 e 4.
 - XML, compilatore Python, formato `.exam`, temi, display, storage, `csv`,
   `download`, `controls`, `schedule`, `timing`.
 - Tipi di parte fuori ambito (vedi decisione 3).
