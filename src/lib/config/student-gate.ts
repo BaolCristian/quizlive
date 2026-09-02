@@ -4,8 +4,9 @@
  *
  * Il cancello è attivo solo in modalità installazione e solo se è impostata
  * STUDENT_GROUP_EMAIL oppure CLASS_GROUP_PATTERN. Se attivo, chiave del service
- * account e admin da impersonare sono obbligatori: in caso contrario si lancia
- * un errore, così un'installazione mal configurata non parte.
+ * account e admin da impersonare sono obbligatori, e DEMO_MODE deve essere
+ * spento (il login demo aggira il cancello): in caso contrario si lancia un
+ * errore, così un'installazione mal configurata non parte.
  */
 
 export interface StudentGateConfig {
@@ -31,6 +32,14 @@ export function readStudentGateConfig(env: Env = process.env): StudentGateConfig
   const patternSource = clean(env.CLASS_GROUP_PATTERN);
 
   if (!studentGroupEmail && !patternSource) return null;
+
+  // Il login demo entra senza password e senza passare dal cancello: le due
+  // configurazioni insieme sono una porta aperta, quindi il server non parte.
+  if (env.DEMO_MODE === "true" && env.NODE_ENV !== "development") {
+    throw new Error(
+      "Cancello studenti attivo con DEMO_MODE=true: il login demo senza password aggira il cancello. Imposta DEMO_MODE=false (oppure NODE_ENV=development solo in locale).",
+    );
+  }
 
   const serviceAccountKeyFile = clean(env.GOOGLE_SA_KEY_FILE);
   if (!serviceAccountKeyFile) {

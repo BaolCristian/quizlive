@@ -47,6 +47,27 @@ describe("readStudentGateConfig", () => {
     ).toThrow(/GOOGLE_ADMIN_IMPERSONATE/);
   });
 
+  it("throws when the gate is on together with DEMO_MODE outside development", () => {
+    expect(() =>
+      readStudentGateConfig({
+        ...base,
+        STUDENT_GROUP_EMAIL: "studenti@scuola.edu.it",
+        DEMO_MODE: "true",
+        NODE_ENV: "production",
+      }),
+    ).toThrow(/DEMO_MODE/);
+  });
+
+  it("allows DEMO_MODE in development", () => {
+    const cfg = readStudentGateConfig({
+      ...base,
+      STUDENT_GROUP_EMAIL: "studenti@scuola.edu.it",
+      DEMO_MODE: "true",
+      NODE_ENV: "development",
+    });
+    expect(cfg!.studentGroupEmail).toBe("studenti@scuola.edu.it");
+  });
+
   it("throws when the pattern does not compile", () => {
     expect(() => readStudentGateConfig({ ...base, CLASS_GROUP_PATTERN: "(?<name>" })).toThrow(/CLASS_GROUP_PATTERN/);
   });

@@ -74,6 +74,8 @@ Per far entrare gli studenti nel modulo Esercizi, imposta nel `.env` le variabil
 `STUDENT_GROUP_EMAIL` / `CLASS_GROUP_PATTERN`, `TEACHER_GROUP_EMAIL`,
 `GOOGLE_ADMIN_IMPERSONATE` e `GOOGLE_SA_KEY_FILE=/run/secrets/google-sa-key.json`,
 e copia il JSON del service account in `docker/secrets/google-sa-key.json`.
+Imposta anche `DEMO_MODE=false`: con il login demo attivo il cancello non ha
+effetto e il server si rifiuta di partire.
 I passi nella console Google sono in `docs/SETUP.md`, sezione 2.1
 "Riconoscimento studenti e classi".
 

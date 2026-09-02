@@ -130,6 +130,7 @@ STUDENT_GROUP_EMAIL=studenti@scuola.edu.it        # facoltativo se usi i gruppi 
 CLASS_GROUP_PATTERN=^allievi\.(?<name>[^@]+)@scuola\.edu\.it$
 GOOGLE_ADMIN_IMPERSONATE=savint-reader@scuola.edu.it
 GOOGLE_SA_KEY_FILE=/etc/savint/google-sa-key.json   # con Docker: /run/secrets/google-sa-key.json
+DEMO_MODE=false                                     # obbligatorio con il cancello attivo
 ```
 Con Docker copia il JSON in `docker/secrets/google-sa-key.json` (la cartella è
 esclusa da git).
@@ -144,6 +145,7 @@ Checklist di verifica dopo il deploy:
 - [ ] Login con un account **docente**: dashboard come prima.
 - [ ] Account fuori da ogni gruppo: pagina di login con "Il tuo account non è abilitato".
 - [ ] Nei log all'avvio compare `Cancello studenti attivo`.
+- [ ] `DEMO_MODE=false` nel .env (il server non parte altrimenti).
 
 ---
 
