@@ -45,6 +45,7 @@ Teachers create quizzes, project them on the interactive whiteboard and students
 - **Image upload**: upload images in questions or use external URLs
 - **Custom emoticons**: custom avatars for students (just add PNGs to the `public/emoticons/` folder)
 - **Authentication**: login with school Google Workspace
+- **Students recognised from Google groups**: members of the student group or of a class group sign in as students, with no access to the editor or dashboard; classes are read from the groups (foundation of the upcoming Exercises module)
 - **Multilingual**: Italian (default) and English, with automatic browser language detection and easy extensibility
 - **Player reconnection**: players who switch apps or lose connection can automatically rejoin within 2 minutes
 - **Session management**: teachers can rejoin active sessions and terminate them from the dashboard; sessions auto-expire after a configurable timeout (default 2 hours)

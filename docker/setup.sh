@@ -20,7 +20,7 @@ POSTGRES_PASSWORD=$(openssl rand -hex 16)
 sed "s|^NEXTAUTH_SECRET=.*|NEXTAUTH_SECRET=${NEXTAUTH_SECRET}|" .env > .env.tmp && mv .env.tmp .env
 sed "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${POSTGRES_PASSWORD}|" .env > .env.tmp && mv .env.tmp .env
 
-mkdir -p certs
+mkdir -p certs secrets
 
 echo "File .env creato con secret generati."
 echo "Ora avvia SAVINT con:  docker compose up -d"

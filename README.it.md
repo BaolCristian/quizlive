@@ -45,6 +45,7 @@ Il docente crea quiz, li proietta sulla LIM e gli studenti rispondono in tempo r
 - **Upload immagini**: carica immagini nelle domande o usa URL esterni
 - **Emoticon personalizzate**: avatar custom per gli studenti (basta aggiungere PNG nella cartella `public/emoticons/`)
 - **Autenticazione**: login con Google Workspace scolastico
+- **Studenti riconosciuti dai gruppi Google**: chi è nel gruppo studenti o in un gruppo di classe entra come studente, senza vedere editor e dashboard; le classi vengono lette dai gruppi (base del modulo Esercizi, in arrivo)
 - **Multilingua**: italiano (default) e inglese, con rilevamento automatico della lingua del browser e facile estensibilita'
 - **Riconnessione giocatori**: gli studenti che cambiano app o perdono la connessione possono rientrare automaticamente entro 2 minuti
 - **Gestione sessioni**: i docenti possono rientrare nelle sessioni attive e terminarle dalla dashboard; le sessioni scadono automaticamente dopo un timeout configurabile (default 2 ore)

@@ -68,6 +68,15 @@ Per un uso reale configura Google OAuth:
 Nota: il pulsante del login demo resta visibile nella pagina di login
 (è compilato nell'immagine), ma con `DEMO_MODE=false` non funziona.
 
+### Studenti e classi dai gruppi Google (opzionale)
+
+Per far entrare gli studenti nel modulo Esercizi, imposta nel `.env` le variabili
+`STUDENT_GROUP_EMAIL` / `CLASS_GROUP_PATTERN`, `TEACHER_GROUP_EMAIL`,
+`GOOGLE_ADMIN_IMPERSONATE` e `GOOGLE_SA_KEY_FILE=/run/secrets/google-sa-key.json`,
+e copia il JSON del service account in `docker/secrets/google-sa-key.json`.
+I passi nella console Google sono in `DEPLOY-GUIDA.md`, sezione
+"Riconoscimento studenti e classi".
+
 ## Backup del database
 
 ```bash
