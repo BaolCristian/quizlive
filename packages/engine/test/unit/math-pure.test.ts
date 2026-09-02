@@ -85,24 +85,31 @@ describe("Evaluating > Is scalar multiple", () => {
   });
 });
 
+// `matrixmath.*` ritorna `Matrix` (array con proprietà extra `rows`/
+// `columns`, §6.8 dell'inventario): `toEqual` di vitest confronta anche le
+// proprietà extra sugli array (a differenza di `assert.deepEqual` di QUnit,
+// che upstream usa e che le ignora), quindi si confronta il solo contenuto
+// numerico, spacchettando prima in array semplici.
+const plainMatrix = (m: readonly (readonly number[])[]): number[][] => m.map((row) => [...row]);
+
 describe("Evaluating > Vector and Matrix operations (assert dirette, non mutazione dell'input)", () => {
   it("combine_vertically: input not mutated", () => {
     const m1 = math.makeMatrix([[1]]);
     const mv = math.matrixmath.combine_vertically(m1, m1);
     m1[0]![0] = 2;
-    expect(mv).toEqual([[1], [1]]);
+    expect(plainMatrix(mv as number[][])).toEqual([[1], [1]]);
   });
   it("combine_horizontally: input not mutated", () => {
     const m1 = math.makeMatrix([[1]]);
     const mh = math.matrixmath.combine_horizontally(m1, m1);
     m1[0]![0] = 2;
-    expect(mh).toEqual([[1, 1]]);
+    expect(plainMatrix(mh as number[][])).toEqual([[1, 1]]);
   });
   it("combine_diagonally: input not mutated", () => {
     const m1 = math.makeMatrix([[1]]);
     const md = math.matrixmath.combine_diagonally(m1, m1);
     m1[0]![0] = 2;
-    expect(md).toEqual([
+    expect(plainMatrix(md as number[][])).toEqual([
       [1, 0],
       [0, 1],
     ]);
@@ -152,7 +159,8 @@ describe("Evaluating > Gauss-jordan elimination", () => {
 
     tests.forEach(({ input, out }) => {
       const m = math.makeMatrix(input);
-      expect(math.matrixmath.gauss_jordan_elimination(m), JSON.stringify(input)).toEqual(out);
+      const result = plainMatrix(math.matrixmath.gauss_jordan_elimination(m) as number[][]);
+      expect(result, JSON.stringify(input)).toEqual(out);
     });
   });
 });
