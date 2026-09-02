@@ -9,13 +9,17 @@ import DecimalJs from "decimal.js";
 import type { NumbasNumber } from "./types";
 import { isComplex } from "./types";
 
-// math.js:23-28 — upstream muta la configurazione GLOBALE della classe
+// upstream (math.js:23-28): muta la configurazione GLOBALE della classe
 // `Decimal` al caricamento del modulo (`Decimal.set({...})`). Qui invece si
 // clona un costruttore locale (`Decimal.clone`) con la stessa
 // configurazione, per non mutare uno stato condiviso con eventuali altri
 // usi di `decimal.js` nell'app ospite (§4 dell'inventario: "da non portare
-// come side-effect a livello di import"). Tutti i file di `math/` che
-// servono `Decimal` importano da qui, non direttamente da `decimal.js`.
+// come side-effect a livello di import") — divergenza voluta, vedi
+// DIVERGENCES.md: `new Decimal(...)` da `decimal.js` "nudo" e da questo
+// modulo si comportano diversamente (precisione/notazione), a differenza
+// di upstream dove sono la stessa classe globale mutata. Tutti i file di
+// `math/` che servono `Decimal` importano da qui, non direttamente da
+// `decimal.js`.
 export const Decimal = DecimalJs.clone({
   precision: 40,
   modulo: DecimalJs.EUCLID,

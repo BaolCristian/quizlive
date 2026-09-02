@@ -251,15 +251,16 @@ export class Fraction {
     return new Fraction(approx[0]!.toNumber(), approx[1]!.toNumber());
   }
 
-  // math.js:2561-2570 — upstream chiama `math.lcm(d, f.denominator)` dove
+  // upstream (math.js:2561-2570): chiama `math.lcm(d, f.denominator)` dove
   // `f.denominator` è il getter (un `number`): dalla prima iterazione in poi
   // `lcm` degrada silenziosamente a calcolare in floating point (perché uno
-  // dei due argomenti non è più bigint), un dettaglio implicito non voluto.
-  // Qui si passa `BigInt(f.denominator)` per restare in bigint per tutto il
-  // calcolo del denominatore comune — risultato equivalente per denominatori
-  // ragionevoli, più robusto per quelli grandi; non cambia la precisione
-  // finale dei numeratori/denominatori restituiti, che passano comunque dai
-  // getter lossy `f.numerator`/`f.denominator` come upstream.
+  // dei due argomenti non è più bigint) — divergenza voluta, vedi
+  // DIVERGENCES.md. Qui si passa `BigInt(f.denominator)` per restare in
+  // bigint per tutto il calcolo del denominatore comune — risultato
+  // equivalente per denominatori ragionevoli, più robusto per quelli
+  // grandi; non cambia la precisione finale dei numeratori/denominatori
+  // restituiti, che passano comunque dai getter lossy
+  // `f.numerator`/`f.denominator` come upstream.
   static common_denominator(fractions: readonly Fraction[]): Fraction[] {
     let d = 1n;
     fractions.forEach((f) => {

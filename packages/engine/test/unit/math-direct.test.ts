@@ -452,6 +452,17 @@ describe("Number theory/combinatorics", () => {
   it("factorise(210) = [1,1,1,1] (2*3*5*7)", () => {
     expect(math.factorise(210).map(Number)).toEqual([1, 1, 1, 1]);
   });
+
+  // Fix round 1, issue 1: `divisors` deve fattorizzare lo stesso valore
+  // normalizzato usato per la guardia (`ensure_bigint`, che arrotonda),
+  // non l'argomento originale rifattorizzato con `Math.floor` — i due
+  // arrotondamenti divergono per input non interi (math.js:2222-2231).
+  it("divisors(10.5) = [1n, 11n] (ensure_bigint arrotonda 10.5 a 11, non a 10)", () => {
+    expect(math.divisors(10.5)).toEqual([1n, 11n]);
+  });
+  it("divisors(1.5) = [1n, 2n] (ensure_bigint arrotonda 1.5 a 2, non a 1)", () => {
+    expect(math.divisors(1.5)).toEqual([1n, 2n]);
+  });
 });
 
 describe("Exponentials", () => {
@@ -706,5 +717,148 @@ describe("Range operations (rangeToList, rangeSize)", () => {
     ranges.forEach((r) => {
       expect(math.rangeSize(r), JSON.stringify(r)).toBe(math.rangeToList(r).length);
     });
+  });
+});
+
+// Fix round 1 (review), issue 3: le tre divergenze annotate in
+// DIVERGENCES.md/§6.9 dell'inventario per `Fraction`, `setmath` e
+// `row_echelon_form`/`reduced_row_echelon_form` non avevano copertura
+// diretta — nessuna di queste è un porting di un blocco QUnit upstream
+// (Fraction/setmath a valori grezzi non sono mai testati isolatamente in
+// jme-tests.mjs, e la non-mutazione delle due funzioni di riduzione era
+// coperta solo indirettamente tramite `matrixmath.gauss_jordan_elimination`
+// in math-pure.test.ts). Le sezioni sotto colmano il vuoto.
+
+describe("Fraction (classe, math.js:2364-2596)", () => {
+  it("new Fraction(NaN) lancia RangeError (denominatore di default è bigint: il loop di raddoppio non parte, ma ensure_bigint(NaN) fallisce comunque)", () => {
+    expect(() => new math.Fraction(NaN)).toThrow(RangeError);
+  });
+  it("new Fraction(NaN, 1) lancia il RangeError del limite di 64 raddoppi (entrambi gli argomenti sono number, il loop upstream sarebbe infinito)", () => {
+    expect(() => new math.Fraction(NaN, 1)).toThrow(
+      "Fraction: numeratore o denominatore non convertibile a intero"
+    );
+  });
+
+  it("new Fraction(1,3).add(new Fraction(1,6)) == 1/2", () => {
+    const sum = new math.Fraction(1, 3).add(new math.Fraction(1, 6));
+    expect(sum.numerator).toBe(1);
+    expect(sum.denominator).toBe(2);
+  });
+  it("new Fraction(2,3).multiply(new Fraction(3,4)) == 1/2", () => {
+    const prod = new math.Fraction(2, 3).multiply(new math.Fraction(3, 4));
+    expect(prod.numerator).toBe(1);
+    expect(prod.denominator).toBe(2);
+  });
+  it("new Fraction(1,2).subtract(new Fraction(1,3)) == 1/6", () => {
+    const diff = new math.Fraction(1, 2).subtract(new math.Fraction(1, 3));
+    expect(diff.numerator).toBe(1);
+    expect(diff.denominator).toBe(6);
+  });
+
+  it("Fraction.common_denominator([1/2, 1/3]) riscrive entrambe su denominatore 6", () => {
+    const [a, b] = math.Fraction.common_denominator([new math.Fraction(1, 2), new math.Fraction(1, 3)]);
+    expect(a!.denominator).toBe(6);
+    expect(a!.numerator).toBe(3);
+    expect(b!.denominator).toBe(6);
+    expect(b!.numerator).toBe(2);
+    // Le frazioni originali non sono ridotte da common_denominator, ma il
+    // valore rappresentato deve restare lo stesso di 1/2 e 1/3.
+    expect(a!.toFloat()).toBeCloseTo(1 / 2, 12);
+    expect(b!.toFloat()).toBeCloseTo(1 / 3, 12);
+  });
+});
+
+describe("setmath (set.ts, math.js:3759-3834, a valori grezzi con eq iniettabile)", () => {
+  it("contains su numeri", () => {
+    expect(math.setmath.contains([1, 2, 3], 2)).toBe(true);
+    expect(math.setmath.contains([1, 2, 3], 4)).toBe(false);
+  });
+  it("contains su array annidati (objects_equal di default confronta in profondità)", () => {
+    expect(
+      math.setmath.contains(
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        [1, 2]
+      )
+    ).toBe(true);
+    expect(
+      math.setmath.contains(
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        [1, 3]
+      )
+    ).toBe(false);
+  });
+
+  it("union su numeri (dedup preservando l'ordine di a poi i nuovi di b)", () => {
+    expect(math.setmath.union([1, 2], [2, 3])).toEqual([1, 2, 3]);
+  });
+  it("union su array annidati", () => {
+    expect(math.setmath.union([[1, 2]], [[1, 2], [3, 4]])).toEqual([[1, 2], [3, 4]]);
+  });
+
+  it("intersection su numeri", () => {
+    expect(math.setmath.intersection([1, 2, 3], [2, 3, 4])).toEqual([2, 3]);
+  });
+  it("intersection su array annidati", () => {
+    expect(math.setmath.intersection([[1, 2], [3, 4]], [[3, 4], [5, 6]])).toEqual([[3, 4]]);
+  });
+
+  it("minus su numeri", () => {
+    expect(math.setmath.minus([1, 2, 3], [2])).toEqual([1, 3]);
+  });
+  it("minus su array annidati", () => {
+    expect(math.setmath.minus([[1, 2], [3, 4]], [[1, 2]])).toEqual([[3, 4]]);
+  });
+
+  it("eq: stessa lunghezza e stessa intersezione", () => {
+    expect(math.setmath.eq([1, 2], [2, 1])).toBe(true);
+    expect(math.setmath.eq([1, 2], [1, 3])).toBe(false);
+    expect(math.setmath.eq([1, 2, 2], [1, 2])).toBe(false);
+  });
+
+  it("size", () => {
+    expect(math.setmath.size([1, 2, 3])).toBe(3);
+    expect(math.setmath.size([])).toBe(0);
+  });
+
+  it("eq iniettabile: confronto case-insensitive su stringhe", () => {
+    const caseInsensitiveEq = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+    expect(math.setmath.contains(["Alice", "Bob"], "ALICE", caseInsensitiveEq)).toBe(true);
+    expect(math.setmath.contains(["Alice", "Bob"], "alice")).toBe(false); // default eq: case-sensitive
+    expect(math.setmath.union(["Alice"], ["ALICE", "Bob"], caseInsensitiveEq)).toEqual(["Alice", "Bob"]);
+    expect(math.setmath.eq(["Alice", "Bob"], ["ALICE", "BOB"], caseInsensitiveEq)).toBe(true);
+  });
+});
+
+describe("matrixmath.row_echelon_form/reduced_row_echelon_form non mutano l'input", () => {
+  it("row_echelon_form non muta la fraction_matrix passata", () => {
+    const m = math.makeMatrix([
+      [0, 0, 0],
+      [1, 0, 0],
+      [0, 0, 1],
+    ]);
+    const fm = math.matrixmath.fraction_matrix(m);
+    const before = fm.map((row) => row.map((c) => c.toString()));
+    math.matrixmath.row_echelon_form(fm);
+    const after = fm.map((row) => row.map((c) => c.toString()));
+    expect(after).toEqual(before);
+  });
+
+  it("reduced_row_echelon_form non muta la fraction_matrix passata", () => {
+    const m = math.makeMatrix([
+      [1, 0],
+      [0, 1],
+      [2, 3],
+    ]);
+    const fm = math.matrixmath.fraction_matrix(m);
+    const before = fm.map((row) => row.map((c) => c.toString()));
+    math.matrixmath.reduced_row_echelon_form(fm);
+    const after = fm.map((row) => row.map((c) => c.toString()));
+    expect(after).toEqual(before);
   });
 });

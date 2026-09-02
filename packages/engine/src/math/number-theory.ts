@@ -296,7 +296,13 @@ export function divisors(n: NumbasNumber): bigint[] {
   }
 
   let divisor_arr: bigint[] = [1n];
-  const exponents = factorise(n) as bigint[] | number[];
+  // upstream (math.js:2222-2231): `n = math.abs(math.ensure_bigint(n))` viene
+  // riassegnato PRIMA di chiamare `math.factorise(n)` — bisogna fattorizzare
+  // lo stesso valore normalizzato usato per la guardia sopra (`nb`), non
+  // l'argomento originale. `ensure_bigint` arrotonda (Math.round,
+  // complex.ts) mentre `factorise` tronca (Math.floor, sotto): per un `n`
+  // non intero le due normalizzazioni divergono (fix round 1, issue 1).
+  const exponents = factorise(nb) as bigint[] | number[];
   for (let i = 0; i < exponents.length; i++) {
     let divisor_arr_copy: bigint[] = [];
     const exp_i = ensure_bigint(exponents[i] as bigint | number);
