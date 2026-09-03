@@ -26,7 +26,7 @@ import { builtinScope } from "./jme/builtins";
 import { exprToLaTeX } from "./jme/display";
 import { unwrapValue, wrapValue } from "./jme/evaluate";
 import { Scope } from "./jme/scope";
-import { setLocale } from "./i18n";
+import { getLocale, setLocale } from "./i18n";
 import type { Locale } from "./i18n";
 import type { Token } from "./jme/tokens";
 import type { JMEValue } from "./question/types";
@@ -38,6 +38,7 @@ import type { JMEValue } from "./question/types";
 export { loadQuestion, restoreQuestion, Question, questionErrorKeys } from "./question";
 export { setLocale, getLocale, t } from "./i18n";
 export { JmeError } from "./jme/errors";
+export { partErrorKeys } from "./parts";
 
 export type {
   NumbasQuestionJSON,
@@ -76,10 +77,19 @@ export interface RenderLatexOptions {
  * ```
  */
 export function renderLatex(expr: string, opts?: RenderLatexOptions): string {
-  if (opts?.locale !== undefined) {
-    setLocale(opts.locale);
+  const locale = opts?.locale;
+  if (locale === undefined) {
+    return exprToLaTeX(expr, opts?.ruleset ?? "all", builtinScope);
   }
-  return exprToLaTeX(expr, opts?.ruleset ?? "all", builtinScope);
+  // la lingua corrente è globale al motore: renderla in inglese non deve
+  // cambiare la lingua delle correzioni successive.
+  const previous = getLocale();
+  setLocale(locale);
+  try {
+    return exprToLaTeX(expr, opts?.ruleset ?? "all", builtinScope);
+  } finally {
+    setLocale(previous);
+  }
 }
 
 /** Valuta un'espressione JME, con le variabili date.

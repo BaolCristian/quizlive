@@ -9,7 +9,9 @@
 import { afterEach, describe, expect, it } from "vitest";
 import {
   ENGINE_VERSION,
+  UPSTREAM_COMMIT,
   evaluate,
+  getLocale,
   loadQuestion,
   renderLatex,
   restoreQuestion,
@@ -39,6 +41,17 @@ describe("renderLatex", () => {
 
   it("un'espressione vuota rende una stringa vuota", () => {
     expect(renderLatex("")).toBe("");
+  });
+
+  it("`locale` non lascia la lingua cambiata", () => {
+    // la lingua corrente è globale al motore: renderne una in inglese non deve
+    // spostare la lingua delle correzioni successive.
+    setLocale("it");
+    renderLatex("x^2/2", { locale: "en" });
+    expect(getLocale()).toBe("it");
+    setLocale("en");
+    renderLatex("x^2/2", { locale: "it" });
+    expect(getLocale()).toBe("en");
   });
 });
 
@@ -98,6 +111,7 @@ describe("localizzazione dei messaggi di correzione", () => {
 describe("superficie esportata", () => {
   it("esporta la versione del motore e il commit upstream", () => {
     expect(typeof ENGINE_VERSION).toBe("string");
+    expect(UPSTREAM_COMMIT, "il commit dell'oracolo, in esadecimale").toMatch(/^[0-9a-f]{40}$/);
   });
 
   it("`loadQuestion` restituisce una `Question`", () => {

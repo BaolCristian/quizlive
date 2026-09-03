@@ -5,9 +5,10 @@
 // JSON, il ciclo `variablesTest` e la finalizzazione dello scope (`flatten`,
 // `local_definitions`, `unwrappedVariables`).
 //
-// Upstream il ciclo è `async` solo per poter attendere le funzioni JavaScript
-// che restituiscono una `Promise` (inventario 06 §8): quelle sono rifiutate al
+// upstream: il ciclo è `async` solo per poter attendere le funzioni JavaScript
+// che restituiscono una `Promise` (inventario 06 §8); quelle sono rifiutate al
 // caricamento (decisione 4 del brief), quindi qui è sincrono.
+// Vedi DIVERGENCES.md.
 
 import { findvars, unwrapValue } from "../jme/evaluate";
 import { compile } from "../jme/parser";

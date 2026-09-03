@@ -27,8 +27,8 @@ export interface ParsedQuestion {
   customName: string;
   /** L'autore ha dato un nome proprio alla domanda?
    *
-   * upstream il percorso JSON non calcola MAI `hasCustomName` (lo fa solo il
-   * percorso XML, question.js:280-283): qui è derivato da `customName`
+   * upstream: il percorso JSON non calcola MAI `hasCustomName` (lo fa solo il
+   * percorso XML, question.js:280-283); qui è derivato da `customName`
    * (decisione 10 del brief, inventario 06 §8 ultimo punto). */
   hasCustomName: boolean;
   /** L'enunciato grezzo, in HTML. */
@@ -59,27 +59,33 @@ export interface ParsedQuestion {
 /** Legge i campi di una domanda dal JSON, rifiutando quel che non è
  * supportato. */
 export function parseQuestionJSON(data: NumbasQuestionJSON, opts: LoadOptions): ParsedQuestion {
-  // decisione 1: la modalità "explore" è fuori ambito. Con essa cadono anche
-  // `objectives`, `penalties`, `maxMarks` e `showAllParts`, che il port legge
-  // e ignora.
+  // upstream: `partsMode` sceglie fra `'all'` e `'explore'` (question.js:197,
+  // 638-642) e la modalità "explore" genera le parti a richiesta con
+  // `addExtraPart` (426-458). Decisione 1 del brief: è fuori ambito. Con essa
+  // cadono anche `objectives`, `penalties`, `maxMarks` e `showAllParts`, che il
+  // port legge e ignora. Vedi DIVERGENCES.md.
   const partsMode = data.partsMode ?? "all";
   if (partsMode !== "all") {
     throw new JmeError("question.parts mode not supported", { mode: String(partsMode) });
   }
 
-  // decisione 3: il motore non ha un meccanismo di estensioni. Fallire subito
-  // è meglio che fallire più tardi su una funzione JME sconosciuta
-  // (inventario 06 §8).
+  // upstream: `useExtension`/`addExtensionScopes` (question.js:508-513,
+  // 647-671) aggiungono lo scope di ogni estensione registrata. Decisione 3 del
+  // brief: il motore non ha un meccanismo di estensioni, e fallire subito è
+  // meglio che fallire più tardi su una funzione JME sconosciuta (inventario 06
+  // §8). Vedi DIVERGENCES.md.
   const extensions = data.extensions ?? [];
   if (extensions.length > 0) {
-    // upstream la chiave è `question.required extension not available` con il
+    // upstream: la chiave è `question.required extension not available` con il
     // parametro `extension` (question.js:664).
     throw new JmeError("question.required extension not available", { extension: String(extensions[0]) });
   }
 
-  // decisione 2: `preamble.js` è JavaScript arbitrario con accesso completo
-  // all'oggetto domanda (question.js:1183-1201, `new Function`). Non si
-  // esegue: nel modulo `question/` non c'è nessun `new Function`.
+  // upstream: `runPreamble` esegue `preamble.js` con
+  // `new Function(['question'], js)` (question.js:1183-1201), cioè JavaScript
+  // arbitrario con accesso completo all'oggetto domanda. Decisione 2 del brief:
+  // non si esegue, e nel modulo `question/` non c'è nessun `new Function`.
+  // Vedi DIVERGENCES.md.
   const preambleJs = String(data.preamble?.js ?? "").trim();
   if (preambleJs !== "") {
     if (!opts.ignorePreamble) {
@@ -125,9 +131,12 @@ export function parseQuestionJSON(data: NumbasQuestionJSON, opts: LoadOptions): 
 function parseFunctions(functions: NonNullable<NumbasQuestionJSON["functions"]>): FunctionDef[] {
   return Object.keys(functions).map((name) => {
     const fd = functions[name] as NonNullable<(typeof functions)[string]>;
-    // decisione 4: una funzione JavaScript asincrona (`type: "promise"`)
-    // richiederebbe un motore `async` (inventario 06 §8). Si rifiuta al
+    // upstream: una funzione JavaScript con `type: "promise"` ritorna un
+    // `TPromise` che `makeVariablesPromise` attende (jme-variables.js:308-312) —
+    // è il motivo per cui tutta la generazione delle variabili è `async`.
+    // Decisione 4 del brief: qui il motore è sincrono, quindi si rifiuta al
     // caricamento invece di dare risultati diversi dall'oracolo.
+    // Vedi DIVERGENCES.md.
     if (fd.language === "javascript" && fd.type === "promise") {
       throw new JmeError("question.function.async not supported", { name: name });
     }
@@ -162,9 +171,9 @@ function parseBuiltinConstants(builtin_constants: NumbasQuestionJSON["builtin_co
  * alla correzione adattiva (`mark_part`/`submit_part` risolvono i percorsi
  * delle parti attraverso di esso). */
 export function buildQuestionScope(parsed: ParsedQuestion, opts: LoadOptions, question: unknown): Scope {
-  // upstream `new jme.Scope(gscope)` con `gscope = Numbas.jme.builtinScope`.
-  // Il generatore casuale seminato è la sola aggiunta del port: upstream la
-  // casualità viene da `Math.random` (DIVERGENCES.md).
+  // upstream: `new jme.Scope(gscope)` con `gscope = Numbas.jme.builtinScope`
+  // (question.js:85-86). Il generatore casuale seminato è la sola aggiunta del
+  // port: upstream la casualità viene da `Math.random`. Vedi DIVERGENCES.md.
   let scope = new Scope([builtinScope, { rng: makeRng(opts.seed) }]);
   scope.question = question;
 

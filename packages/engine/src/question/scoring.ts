@@ -3,8 +3,14 @@
 
 // question.js:1291-1447 — `validate` (1297-1316), `isDirty` (1321-1331),
 // `calculateScore` (1350-1408), `submit` (1413-1431), `updateScore`
-// (1437-1447), senza gli agganci a `display`/`store` e senza il ramo
-// `partsMode: 'explore'` (decisione 1 del brief).
+// (1437-1447).
+//
+// upstream: `validate` e `calculateScore` hanno un secondo ramo per
+// `partsMode: 'explore'` (question.js:1303-1315 e 1363-1401, che sommano per
+// obiettivo e sottraggono le penalità), e `updateScore`/`submit` notificano
+// `exam`, `display` e `store`. Niente di tutto questo è portato: la modalità
+// "explore" è rifiutata al caricamento (decisione 1 del brief) e non c'è né
+// display né storage. Vedi DIVERGENCES.md.
 
 import type { PartBase } from "../parts";
 

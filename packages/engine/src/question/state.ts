@@ -41,7 +41,8 @@ export interface StatefulQuestion {
 
 /** La risposta da registrare nello stato, se ce n'è una.
  *
- * Non basta guardare `stagedAnswer`: ogni tipo di parte lo inizializza al
+ * upstream: `storage.js:463-530` salva sempre `student_answer`. Qui non basta
+ * guardare `stagedAnswer`, perché ogni tipo di parte lo inizializza al
  * proprio valore vuoto (`""` per `numberentry`/`jme`, numberentry.js:77;
  * `[]` per le scelte multiple, multipleresponse.js:346), quindi una parte mai
  * toccata avrebbe comunque una "risposta". Si registra solo se lo studente ha
@@ -117,6 +118,21 @@ function restoreAnswers(part: PartBase, state: PartState): void {
  * vanno in coda nell'ordine originale, e sarà la correzione a segnalarlo
  * (`part.gapfill.cyclic adaptive marking`). */
 export function orderPartsForResubmission(parts: PartBase[]): PartBase[] {
+  // upstream: `part_submit_promises` è indicizzata su TUTTE le parti
+  // (question.js:986-991, `q.allParts()` — quindi anche sui gap), ma
+  // `submit_part` è chiamata solo su quelle di primo livello e la promessa di
+  // un gap è risolta insieme a quella della parte che lo contiene
+  // (question.js:1024-1030). Una sostituzione che nomina un gap fa quindi
+  // aspettare la PARTE MADRE di quel gap: senza questa mappa, un percorso come
+  // `p1g0` non combacerebbe con nessuna parte di primo livello e la dipendenza
+  // risulterebbe già soddisfatta.
+  const ownerOf = new Map<string, PartBase>();
+  for (const p of parts) {
+    ownerOf.set(p.path, p);
+    for (const g of p.gaps) {
+      ownerOf.set(g.path, p);
+    }
+  }
   const remaining = parts.slice();
   const done = new Set<string>();
   const out: PartBase[] = [];
@@ -125,8 +141,10 @@ export function orderPartsForResubmission(parts: PartBase[]): PartBase[] {
     progress = false;
     for (let i = 0; i < remaining.length; ) {
       const p = remaining[i] as PartBase;
-      const deps = p.getErrorCarriedForwardReplacements().map((r) => r.part);
-      const ready = deps.every((path) => done.has(path) || !parts.some((p2) => p2.path === path));
+      // una dipendenza fuori dall'insieme da rinviare è già soddisfatta: quella
+      // parte non verrà inviata affatto.
+      const owners = p.getErrorCarriedForwardReplacements().map((r) => ownerOf.get(r.part));
+      const ready = owners.every((owner) => owner === undefined || done.has(owner.path));
       if (ready) {
         out.push(p);
         done.add(p.path);

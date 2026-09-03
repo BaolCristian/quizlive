@@ -113,6 +113,10 @@ describe("generazione delle variabili", () => {
     expect(q.variables["a"]).toBe(2);
   });
 
+  // upstream (question.js:877) fa `Object.keys(q.functionsTodo)` su un array e
+  // ottiene gli indici `"0"`, `"1"`, ... invece dei nomi: qui ci sono i nomi
+  // veri, così `scope.unset(local_definitions)` cancella davvero le funzioni
+  // della domanda (v. DIVERGENCES.md).
   it("`local_definitions` elenca variabili, funzioni e ruleset della domanda", () => {
     const q = loadQuestion(
       {

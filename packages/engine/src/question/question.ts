@@ -5,14 +5,15 @@
 // (`finaliseLoad`, senza display/storage), 1202-1213 (`getPart`), 1237-1290
 // (`getAdvice`, `lock`, `revealAnswer`), 1409-1447 (`submit`, `updateScore`).
 //
-// L'orchestrazione a signal di upstream (`Numbas.schedule.SignalBox`, un grafo
-// di Promise) è sostituita da una sequenza sincrona nello stesso ordine di
-// dipendenza — inventario 06 §8: preambolo → costanti → funzioni → ruleset →
-// `variablesTodo` → generazione → scope finale → parti → punteggio.
+// upstream: l'orchestrazione passa da `Numbas.schedule.SignalBox`, un grafo di
+// Promise cablato in `finaliseLoad`. Qui è una sequenza sincrona nello stesso
+// ordine di dipendenza — inventario 06 §8: preambolo → costanti → funzioni →
+// ruleset → `variablesTodo` → generazione → scope finale → parti → punteggio.
+// Vedi DIVERGENCES.md.
 //
-// `regenerate(seed)` non ha un equivalente upstream (inventario 06 §3 punto 5):
-// upstream si ricrea la domanda da zero perché `Math.random` non è seminato
-// per domanda. Qui è la stessa cosa, ma con un seme esplicito.
+// upstream: `regenerate(seed)` non ha un equivalente (inventario 06 §3 punto 5)
+// — si ricrea la domanda da zero, perché `Math.random` non è seminato per
+// domanda. Qui è la stessa cosa, ma con un seme esplicito.
 
 import { JmeError } from "../jme/errors";
 import { setLocale, t } from "../i18n";
@@ -102,8 +103,10 @@ export class Question {
   private currentScore: QuestionScore = { score: 0, marks: 0 };
 
   constructor(json: NumbasQuestionJSON, opts: LoadOptions) {
-    // decisione 11: la lingua va scelta prima di costruire qualunque cosa —
-    // i messaggi di feedback delle parti sono calcolati al caricamento.
+    // upstream: la lingua è quella globale di `Numbas.locale`, scelta dall'esame.
+    // Decisione 11 del brief: la sceglie chi carica la domanda, e va scelta
+    // prima di costruire qualunque cosa perché i messaggi delle parti sono
+    // calcolati durante il caricamento.
     setLocale(opts.locale ?? "it");
     this.json = json;
     this.options = opts;
@@ -129,6 +132,14 @@ export class Question {
     this.variables = finalised.unwrappedVariables;
     this.local_definitions = {
       variables: parsed.variableDefinitions.map((d) => d.name).filter((n) => n.trim() !== ""),
+      // upstream: `functions: Object.keys(q.functionsTodo)` (question.js:877).
+      // `functionsTodo` è un ARRAY (question.js:566), quindi `Object.keys` dà
+      // gli indici `"0"`, `"1"`, ... — nomi che non esistono. Chi legge
+      // `local_definitions.functions` se ne accorge: `scope.unset(...)`
+      // (parts/jme-part.ts) cancella per nome e quindi upstream non cancella
+      // NIENTE, e il valore `question_definitions` passato agli algoritmi di
+      // correzione personalizzati (parts/mark.ts) elenca indici. Qui ci vanno i
+      // nomi veri. Vedi DIVERGENCES.md.
       functions: parsed.functionsTodo.map((f) => f.name),
       rulesets: Object.keys(parsed.rulesets),
     };
@@ -136,8 +147,10 @@ export class Question {
     // question.js:887-889 — il nome passa per la sostituzione delle variabili
     // (testo semplice: upstream chiama `contentsubvars` senza `sub_tex`).
     this.name = contentsubvars(parsed.name, this.scope);
-    // decisione 8: enunciato e aiuto passano per `substituteHtml`; le formule
-    // restano LaTeX dentro `\(...\)`/`\[...\]`, senza MathJax.
+    // upstream: enunciato e aiuto restano grezzi sulla domanda e li sostituisce
+    // il tema mentre costruisce l'HTML. Decisione 8 del brief: qui passano per
+    // `substituteHtml` una volta sola, e le formule restano LaTeX dentro
+    // `\(...\)`/`\[...\]`, senza MathJax. Vedi DIVERGENCES.md.
     this.statementHtml = substituteHtml(parsed.statement, this.scope);
     this.adviceHtml = substituteHtml(parsed.advice, this.scope);
 
@@ -172,7 +185,7 @@ export class Question {
       throw originalError;
     }
     const nmessage = t(message, args);
-    // upstream (question.js:255-258) vorrebbe conservare la catena
+    // upstream: question.js:255-258 vorrebbe conservare la catena
     // (`[message].concat(originalError.originalMessages || [])`) ma riassegna
     // `originalError` a un `Error` nuovo la riga prima, quindi la catena si
     // ferma sempre a due chiavi. Qui la catena è conservata davvero: la chiave
@@ -187,9 +200,9 @@ export class Question {
   // question.js:1202-1213
   /** La parte al percorso dato, o `undefined`.
    *
-   * upstream lancia `question.no such part`; il contratto delle parti (Task 8)
-   * vuole invece `undefined`, perché i rami di errore della correzione
-   * adattiva ci contano. Vedi DIVERGENCES.md. */
+   * upstream: lancia `question.no such part` (question.js:1209-1211). Il
+   * contratto delle parti (Task 8) vuole invece `undefined`, perché i rami di
+   * errore della correzione adattiva ci contano. Vedi DIVERGENCES.md. */
   getPart(path: string): PartBase | undefined {
     return this.partDictionary[path];
   }

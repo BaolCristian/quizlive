@@ -5,15 +5,17 @@
 // Traduzione del modulo QUnit "Gapfill" (part-tests.mjs:782-1247), limitata ai
 // casi che usano `createPartFromJSON`.
 //
-// Restano al Task 9 i casi costruiti con `question_test`, che hanno bisogno di
-// una `Question` intera (variabili di domanda, `getPart` su tutte le parti,
-// `submit_part` fra parti sorelle):
+// I casi costruiti con `question_test` hanno bisogno di una `Question` intera
+// (variabili di domanda, `getPart` su tutte le parti, `submit_part` fra parti
+// sorelle) e sono tradotti in `question-parts.test.ts`, nel blocco "Gapfill
+// dentro una domanda":
 // - 'One JME gap with string restrictions' (part-tests.mjs:790-800);
 // - 'A gap-fill is invalid if any of the gaps are invalid' (802-840);
 // - 'Show an error message when a gap relies on an unanswered part' (842-891);
-// - 'Sort answers' (893-925) — qui sotto è coperta la stessa logica senza
+// - 'Sort answers' (893-925) — qui sotto la stessa logica è coperta anche senza
 //   `Question`, con una domanda finta;
-// - 'Adaptive marking order' (955-1043) — idem per il rilevamento dei cicli;
+// - 'Adaptive marking order' (955-1043) — idem, qui sotto solo il rilevamento
+//   dei cicli;
 // - 'Re-evaluate destructured variables after variable replacement' (1045-1096);
 // - 'Adaptive marking error when referenced part doesn't exist' (1098-1128);
 // - le due 'Adaptive marking carries through to gaps' (1131-1246).

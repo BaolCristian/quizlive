@@ -44,7 +44,7 @@ export function setErrorCarriedForwardBackReferences(
 ): void {
   allParts(parts).forEach((p) => {
     p.settings.errorCarriedForwardReplacements.forEach((r) => {
-      // upstream (question.js:695) fa `q.getPart(r.part)` che LANCIA
+      // upstream: question.js:695 fa `q.getPart(r.part)`, che LANCIA
       // `question.no such part` se la parte non esiste: caricare una domanda
       // con un riferimento sbagliato fallirebbe. Qui `getPart` ritorna
       // `undefined` (contratto del Task 8) e il riferimento è ignorato:
@@ -62,10 +62,11 @@ export function setErrorCarriedForwardBackReferences(
 /** Sostituisce le variabili nel `prompt` di ogni parte (gap e alternative
  * comprese).
  *
- * Non ha un equivalente in `question.js`: upstream il `prompt` è sostituito
+ * upstream: non ha un equivalente in `question.js` — il `prompt` è sostituito
  * dal tema al momento di costruire l'HTML (`display/part.js`), con
  * `jme.contentsubvars` sullo scope della parte. Qui la sostituzione avviene
- * una volta sola al caricamento, perché il motore non ha un display. */
+ * una volta sola al caricamento, perché il motore non ha un display.
+ * Vedi DIVERGENCES.md. */
 export function substitutePartPrompts(parts: PartBase[]): void {
   const visit = (p: PartBase): void => {
     if (p.promptHtml) {

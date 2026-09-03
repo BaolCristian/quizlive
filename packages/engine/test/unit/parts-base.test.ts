@@ -8,10 +8,9 @@
 // `marking/note-functions.ts`.
 //
 // Il modulo "Custom marking algorithms" (part-tests.mjs:1248-1262) è coperto
-// qui con `createPartFromJSON` invece che con `question_test`; il suo unico
-// caso upstream ('Error in mark note', che verifica `p.marking_result.answered`
-// dopo un errore nella nota `mark`) resta al Task 9, che costruisce una
-// `Question`.
+// qui con `createPartFromJSON` invece che con `question_test`; l'assert
+// upstream su `p.marking_result.answered` ('Error in mark note') è tradotto in
+// `question-parts.test.ts`, che costruisce una `Question`.
 
 import { describe, it, expect, vi } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";

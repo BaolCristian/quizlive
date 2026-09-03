@@ -5,7 +5,8 @@
 // Traduzione del modulo QUnit "JME" (part-tests.mjs:356-638), una `it` per
 // `assert`.
 //
-// Restano al Task 9 i due casi che costruiscono una `Question` intera:
+// I due casi che costruiscono una `Question` intera sono tradotti in
+// `question-parts.test.ts`, nel blocco "JME dentro una domanda":
 // - `question_test('Variables defined by the question aren't used in
 //   evaluating student's expression')` (part-tests.mjs:521-559);
 // - `question_unit_test('Expression is case-sensitive')` (568-584).

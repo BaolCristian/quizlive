@@ -80,9 +80,17 @@ risultato. La forma della risposta dipende dal tipo di parte:
 | `numberentry`, `patternmatch`, `jme` | `string` |
 | `1_n_2` (scelta singola) | l'indice della scelta (`number`) |
 | `m_n_2` (scelte multiple) | `boolean[]`, una per scelta |
-| `m_n_x` (griglia) | `boolean[][]`, indicizzata `[risposta][scelta]` |
+| `m_n_x` (griglia) | `boolean[][]`: `[scelta][risposta]` oppure `[risposta][scelta]` — v. sotto |
 | `gapfill` | un array con la risposta di ciascun gap |
 | `information` | nessuna |
+
+La griglia di `m_n_x` accetta **entrambe** le orientazioni: la forma "naturale"
+`[scelta][risposta]` e la matrice interna `[risposta][scelta]`, che è quella che
+usa il runtime Numbas. Il motore le distingue dalle dimensioni, quindi la
+distinzione funziona solo se il numero di scelte e quello di risposte sono
+diversi: **con una griglia quadrata la risposta è sempre letta come matrice
+interna** `[risposta][scelta]`. È anche la forma in cui la risposta finisce nello
+stato salvato, qualunque sia quella inviata.
 
 Per un `gapfill` si può inviare la parte madre con l'array di tutte le
 risposte, oppure riempire i gap uno per uno e poi inviare la madre:
@@ -172,8 +180,9 @@ la composizione di un esame (navigazione, timer, SCORM).
 
 Gli errori sono `JmeError` e portano una **chiave** stabile
 (`err.key`, per esempio `"question.preamble not supported"`) oltre al messaggio
-tradotto. `questionErrorKeys(err)` / `partErrorKeys(err)` danno la catena delle
-chiavi, dalla più esterna alla più interna.
+tradotto. `questionErrorKeys(err)` e `partErrorKeys(err)` — entrambe esportate
+dal pacchetto — danno la catena delle chiavi, dalla più esterna alla più
+interna.
 
 ## Sviluppo
 

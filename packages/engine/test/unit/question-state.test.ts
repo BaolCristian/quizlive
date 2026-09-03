@@ -7,7 +7,7 @@
 // valori delle variabili: si rigenerano dal seme.
 
 import { describe, expect, it } from "vitest";
-import { loadQuestion, restoreQuestion } from "../../src/question";
+import { loadQuestion, orderPartsForResubmission, restoreQuestion } from "../../src/question";
 import type { NumbasQuestionJSON, QuestionState } from "../../src/question";
 import type { MarkingResult } from "../../src/parts";
 
@@ -172,6 +172,44 @@ describe("toState / restoreQuestion", () => {
     const q2 = restoreQuestion(json, state);
     expect(q2.getPart("p0")?.credit).toBe(q.getPart("p0")?.credit);
     expect(q2.toState()).toEqual(state);
+  });
+
+  it("l'ordine di rinvio segue anche una dipendenza da un gap", () => {
+    // La sostituzione di `p0` nomina un GAP (`p1g0`), non una parte di primo
+    // livello. upstream la promessa di un gap è risolta insieme a quella della
+    // parte che lo contiene (question.js:1024-1030), quindi `p0` aspetta `p1`.
+    // Senza la mappa gap → parte madre, `p1g0` non combacia con nessuna parte
+    // di primo livello, la dipendenza risulta soddisfatta, `p0` viene rinviata
+    // per prima e fallisce con "devi prima rispondere".
+    const json: NumbasQuestionJSON = {
+      variables: { n: { name: "n", definition: "1" } },
+      parts: [
+        {
+          type: "numberentry",
+          marks: 1,
+          minValue: "2n",
+          maxValue: "2n",
+          variableReplacements: [{ variable: "n", part: "p1g0", must_go_first: true }],
+          variableReplacementStrategy: "alwaysreplace",
+        },
+        {
+          type: "gapfill",
+          prompt: "<p>[[0]]</p>",
+          gaps: [{ type: "numberentry", marks: 1, minValue: "n", maxValue: "n" }],
+        },
+      ],
+    };
+    const q = loadQuestion(json, { seed: "order-gap" });
+    q.getPart("p1g0")?.storeAnswer("3");
+    q.getPart("p1")?.submit();
+    q.getPart("p0")?.submit("6");
+    expect(q.getPart("p0")?.credit, "6 = 2*3 con la sostituzione dal gap").toBe(1);
+
+    const state = q.toState();
+    expect(orderPartsForResubmission(q.parts).map((p) => p.path), "p1 prima di p0").toEqual(["p1", "p0"]);
+    const q2 = restoreQuestion(json, state);
+    expect(q2.getPart("p0")?.credit).toBe(1);
+    expect(q2.score()).toEqual(q.score());
   });
 
   it("l'ordine di rinvio mette le parti sorgente prima di chi le usa", () => {

@@ -29,8 +29,10 @@ export type JMEValue =
 /** Le opzioni di `loadQuestion`. */
 export interface LoadOptions {
   /** Il seme del generatore casuale: due caricamenti con lo stesso seme danno
-   * le stesse variabili. Non ha equivalente upstream, dove `Math.random` non è
-   * seminato per domanda (inventario 06 §3 punto 5). */
+   * le stesse variabili.
+   *
+   * upstream: non ha equivalente — `Math.random` non è seminato per domanda
+   * (inventario 06 §3 punto 5). Vedi DIVERGENCES.md. */
   seed: string;
   /** La lingua dei messaggi. Predefinita `"it"`. */
   locale?: Locale | undefined;
