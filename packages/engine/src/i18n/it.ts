@@ -103,6 +103,44 @@ export const it: Record<string, string> = {
   "jme.variables.syntax error in function definition": "Errore di sintassi nella definizione della funzione",
   "jme.variables.variable not defined": "La variabile {name} non è definita",
   "jme.vector.value not an array of numbers": "Un vettore va costruito da un array di numeri",
+  // marking.js — le chiavi degli errori del motore di correzione. Le due
+  // marcate "nostra" sostituiscono un `TypeError` upstream.
+  "marking.apply.not a list": "Il primo argomento di `apply` deve essere una lista",
+  "marking.no question in scope": "Non c'è nessuna domanda in cui cercare la parte {path}", // nostra
+  "marking.note.error evaluating note": "Errore nel calcolo della nota {name}: {message}",
+  "marking.state function outside marking script":
+    "La funzione {name} si può usare solo dentro uno script di correzione", // nostra
+  // I messaggi mostrati allo studente: quelli chiamati con `R()` da marking.js
+  // e quelli chiamati con `translate(...)` dai 5 script `.jme` in ambito
+  // (inventario 05 §6.4 e §6.5).
+  "part.gapfill.error marking gap": "Errore nella correzione di {name}: {message}",
+  "part.gapfill.feedback header": "<strong>{name}</strong>",
+  "part.jme.answer invalid": "La tua risposta non è un'espressione matematica valida.<br/>{message}.",
+  "part.jme.error checking numerically":
+    "C'è stato un errore nella verifica numerica della tua risposta: {message}",
+  "part.jme.marking.correct": "La tua risposta è numericamente corretta.",
+  "part.jme.must-have bits": '<span class="monospace">{string}</span>',
+  "part.jme.must-have one": "La tua risposta deve contenere: {strings}",
+  "part.jme.must-have several": "La tua risposta deve contenere tutti questi elementi: {strings}",
+  "part.jme.must-match.failed": "La tua risposta non è scritta nella forma richiesta.",
+  "part.jme.must-match.warning": "La tua risposta non è scritta nella forma richiesta: {message}",
+  "part.jme.not-allowed bits": '<span class="monospace">{string}</span>',
+  "part.jme.not-allowed one": "La tua risposta non deve contenere: {strings}",
+  "part.jme.not-allowed several": "La tua risposta non deve contenere nessuno di questi elementi: {strings}",
+  "part.jme.unexpected variable name":
+    "La tua risposta è stata interpretata usando il nome di variabile inatteso <code>{name}</code>.",
+  "part.marking.correct": "La tua risposta è corretta.",
+  "part.marking.incorrect": "La tua risposta non è corretta.",
+  "part.marking.nothing entered": "Non hai inserito una risposta.",
+  "part.marking.partially correct": "La tua risposta è parzialmente corretta.",
+  "part.mcq.correct choice": "Hai scelto una risposta corretta.",
+  "part.mcq.incorrect choice": "Hai scelto una risposta errata.",
+  "part.mcq.wrong number of choices": "Hai scelto il numero sbagliato di opzioni.",
+  "part.numberentry.answer invalid": "Non hai inserito un numero valido.",
+  "part.numberentry.answer not reduced": "La tua risposta non è ridotta ai minimi termini.",
+  "part.patternmatch.correct except case":
+    "La tua risposta è corretta, a meno di maiuscole e minuscole.",
+  "question.can not submit": "Non è possibile inviare la risposta: controlla se ci sono errori.",
   "ruleset.circular reference": "Riferimento circolare nell'insieme di regole {name}",
   "ruleset.set not defined": "L'insieme di regole {name} non è definito",
   "util.equality not defined for type": "Uguaglianza non definita per il tipo {type}",

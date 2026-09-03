@@ -94,6 +94,42 @@ export const en: Record<string, string> = {
   "jme.variables.syntax error in function definition": "Syntax error in the function definition",
   "jme.variables.variable not defined": "Variable {name} is not defined",
   "jme.vector.value not an array of numbers": "A vector must be built from an array of numbers",
+  // marking.js — the marking engine's error keys. The two marked "ours"
+  // replace an upstream `TypeError`.
+  "marking.apply.not a list": "The first argument to `apply` must be a list",
+  "marking.no question in scope": "There is no question in which to look for the part {path}", // ours
+  "marking.note.error evaluating note": "Error evaluating the note {name}: {message}",
+  "marking.state function outside marking script":
+    "The function {name} can only be used inside a marking script", // ours
+  // Messages shown to the student: those called with `R()` from marking.js and
+  // those called with `translate(...)` by the 5 in-scope `.jme` scripts
+  // (inventory 05 §6.4 and §6.5).
+  "part.gapfill.error marking gap": "Error marking {name}: {message}",
+  "part.gapfill.feedback header": "<strong>{name}</strong>",
+  "part.jme.answer invalid": "Your answer is not a valid mathematical expression.<br/>{message}.",
+  "part.jme.error checking numerically": "There was an error numerically checking your answer: {message}",
+  "part.jme.marking.correct": "Your answer is numerically correct.",
+  "part.jme.must-have bits": '<span class="monospace">{string}</span>',
+  "part.jme.must-have one": "Your answer must contain: {strings}",
+  "part.jme.must-have several": "Your answer must contain all of: {strings}",
+  "part.jme.must-match.failed": "Your answer is not in the expected form.",
+  "part.jme.must-match.warning": "Your answer is not in the expected form: {message}",
+  "part.jme.not-allowed bits": '<span class="monospace">{string}</span>',
+  "part.jme.not-allowed one": "Your answer must not contain: {strings}",
+  "part.jme.not-allowed several": "Your answer must not contain any of: {strings}",
+  "part.jme.unexpected variable name":
+    "Your answer was interpreted to use the unexpected variable name <code>{name}</code>.",
+  "part.marking.correct": "Your answer is correct.",
+  "part.marking.incorrect": "Your answer is incorrect.",
+  "part.marking.nothing entered": "You did not enter an answer.",
+  "part.marking.partially correct": "Your answer is partially correct.",
+  "part.mcq.correct choice": "You chose a correct answer.",
+  "part.mcq.incorrect choice": "You chose an incorrect answer.",
+  "part.mcq.wrong number of choices": "You selected the wrong number of choices.",
+  "part.numberentry.answer invalid": "You did not enter a valid number.",
+  "part.numberentry.answer not reduced": "Your answer is not reduced to lowest terms.",
+  "part.patternmatch.correct except case": "Your answer is correct, except for the case.",
+  "question.can not submit": "Can not submit answer - check for errors.",
   "ruleset.circular reference": "Circular reference in the ruleset {name}",
   "ruleset.set not defined": "The ruleset {name} is not defined",
   "util.equality not defined for type": "Equality is not defined for the type {type}",

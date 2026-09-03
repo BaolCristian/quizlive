@@ -8,3 +8,6 @@ export * as jme from "./jme";
 export * as i18n from "./i18n";
 // side-effect: registra il builtin `make_variables` su `builtinScope`.
 export * as variables from "./variables";
+// side-effect: registra `apply` fra le operazioni pigre e installa
+// `substituteTreeOps.apply` (marking.js:307-310).
+export * as marking from "./marking";
