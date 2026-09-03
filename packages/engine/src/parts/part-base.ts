@@ -226,6 +226,14 @@ export abstract class PartBase {
     errorCarriedForwardReplacements: [],
   };
 
+  /** Il testo della consegna, come sta nel JSON.
+   *
+   * upstream `part.js` non legge mai il campo `prompt`: lo usano solo il tema
+   * (che lo passa per `jme.contentsubvars`) e `exam-to-xml.js`. Qui il campo è
+   * conservato grezzo perché l'API pubblica della spec lo prevede; la
+   * sostituzione delle variabili è del Task 9, che ha lo scope della domanda
+   * con le variabili già generate. */
+  promptHtml = "";
   /** Usare `customName` invece del nome generato? */
   useCustomName = false;
   /** Il nome scelto dall'autore. */
@@ -314,6 +322,7 @@ export abstract class PartBase {
       });
     }
     tryLoad(data, "alternativeFeedbackMessage", self);
+    tryLoad(data, "prompt", self, "promptHtml");
     const marking: Record<string, unknown> = {};
     tryLoad(data, ["customMarkingAlgorithm", "extendBaseMarkingAlgorithm"], marking);
     this.setMarkingScript(marking["customMarkingAlgorithm"] as string | undefined, marking["extendBaseMarkingAlgorithm"] === true);

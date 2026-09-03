@@ -6,6 +6,12 @@
 // scope" (211-217), più la copertura della superficie che il Task 7 non poteva
 // esercitare senza una `Part`: `submit_part`, `mark_part` e `getPart` di
 // `marking/note-functions.ts`.
+//
+// Il modulo "Custom marking algorithms" (part-tests.mjs:1248-1262) è coperto
+// qui con `createPartFromJSON` invece che con `question_test`; il suo unico
+// caso upstream ('Error in mark note', che verifica `p.marking_result.answered`
+// dopo un errore nella nota `mark`) resta al Task 9, che costruisce una
+// `Question`.
 
 import { describe, it, expect, vi } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";
@@ -158,6 +164,35 @@ describe("Part", () => {
       extendBaseMarkingAlgorithm: true,
     });
     expect(p.submit("1").credit).toBe(0.5);
+  });
+
+  it("il prompt è conservato grezzo in promptHtml", () => {
+    const p = createPart({ type: "numberentry", marks: 1, minValue: "1", maxValue: "1", prompt: "<p>Quanto fa {a}?</p>" });
+    expect(p.promptHtml).toBe("<p>Quanto fa {a}?</p>");
+  });
+
+  it("un errore in una nota dipendente è registrato in stateErrors senza fermare mark", () => {
+    // part-tests.mjs:1250-1261 ("Error in mark note"): `apply(z)` si riferisce
+    // a una nota che non esiste. Upstream `compute_note` inghiotte l'errore
+    // (`ignore_note_errors`), quindi la nota `mark` viene comunque calcolata e
+    // produce uno stato vuoto: qui si verifica proprio quello. L'asserzione
+    // upstream su `marking_result.answered` passa da `question_test` e resta
+    // al Task 9.
+    const p = createPart({
+      type: "jme",
+      marks: 1,
+      answer: "x",
+      customMarkingAlgorithm: "q:\n  a\n\nmark:\n  apply(z)",
+      extendBaseMarkingAlgorithm: true,
+      valuegenerators: [{ name: "x", value: "" }],
+    });
+    p.storeAnswer("x");
+    p.setStudentAnswer();
+    const res = p.mark_answer(p.rawStudentAnswerAsJME(), p.getScope());
+    expect(Object.keys(res.stateErrors)).toEqual(expect.arrayContaining(["a", "z"]));
+    expect(res.stateValid["mark"]).toBe(true);
+    expect(res.states["mark"]).toEqual([]);
+    expect(p.submit("x").credit).toBe(0);
   });
 
   it("uno script di correzione senza la nota mark è un errore di caricamento", () => {

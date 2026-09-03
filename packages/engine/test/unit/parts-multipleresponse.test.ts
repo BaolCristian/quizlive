@@ -7,11 +7,12 @@
 // (760-781), più i casi della forma pubblica di `Answer` (risoluzione 1 del
 // Task 8: `storeAnswer` accetta sia la matrice `ticks` sia l'indice/la lista).
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
+import { setLocale } from "../../src/i18n";
 import { Scope, makeRng } from "../../src/jme/scope";
 import { builtinScope } from "../../src/jme/builtins";
 import { unwrapValue } from "../../src/jme/evaluate";
-import { createPart, markPart } from "./parts-helpers";
+import { createPart, markPart, runPartUnitTests } from "./parts-helpers";
 import type { MultipleResponsePart } from "../../src/parts/multiple-response-part";
 
 describe("Choose one from a list", () => {
@@ -257,5 +258,78 @@ describe("Multiple response — dettagli di caricamento", () => {
     }) as MultipleResponsePart;
     // `layout[risposta][scelta] = riga > colonna` con riga=scelta, colonna=risposta
     expect(p.settings.matrix.flat().filter((x) => x !== 0)).toHaveLength(1);
+  });
+});
+
+// part-tests.mjs:110-155 + part_unit_tests.mjs — il formato "unit test
+// incorporato nel JSON". Il fixture è copiato verbatim dalla prima parte della
+// domanda "Choose one from a list part"; i messaggi attesi sono in inglese,
+// quindi il caso gira con la locale `en`.
+describe("Part unit tests incorporati", () => {
+  afterEach(() => setLocale("it"));
+
+  it("il fixture 1_n_2 di part_unit_tests.mjs passa", () => {
+    setLocale("en");
+    const p = createPart({
+      type: "1_n_2",
+      useCustomName: false,
+      customName: "",
+      marks: 0,
+      showCorrectAnswer: true,
+      showFeedbackIcon: true,
+      variableReplacements: [],
+      variableReplacementStrategy: "originalfirst",
+      adaptiveMarkingPenalty: 0,
+      customMarkingAlgorithm: "",
+      extendBaseMarkingAlgorithm: true,
+      unitTests: [
+        {
+          variables: [],
+          name: "Correct",
+          answer: { valid: true, value: [[true], [false], [false]], empty: false },
+          notes: [
+            {
+              name: "mark",
+              expected: {
+                value: "nothing",
+                messages: ["You chose a correct answer."],
+                warnings: [],
+                error: "",
+                valid: true,
+                credit: 1,
+              },
+            },
+          ],
+        },
+        {
+          variables: [],
+          name: "Incorrect",
+          answer: { valid: true, value: [[false], [true], [false]], empty: false },
+          notes: [
+            {
+              name: "mark",
+              expected: {
+                value: "nothing",
+                messages: ["You chose an incorrect answer."],
+                warnings: [],
+                error: "",
+                valid: true,
+                credit: 0,
+              },
+            },
+          ],
+        },
+      ],
+      minMarks: 0,
+      maxMarks: 0,
+      shuffleChoices: false,
+      displayType: "radiogroup",
+      displayColumns: 0,
+      showCellAnswerState: true,
+      choices: ["Choice 1", "Choice 2", "Choice 3"],
+      matrix: ["1", 0, 0],
+      distractors: ["", "", ""],
+    });
+    runPartUnitTests(p);
   });
 });
