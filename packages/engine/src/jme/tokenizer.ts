@@ -18,7 +18,8 @@ import type { Parser } from "./parser";
 import type { Token } from "./tokens";
 
 // jme.js:69-77 — normalizzazione dipendente dallo scope, applicata DOPO il
-// parsing. Da non confondere con `Tokeniser.normaliseName`, che è lessicale.
+// parsing. Da non confondere con `Parser.normaliseName` (parser.ts), che è
+// la normalizzazione lessicale dei nomi Unicode.
 /** Normalizza un nome per la ricerca nello scope: minuscolo se lo scope non è
  * sensibile alle maiuscole. */
 export function normaliseName(name: string, settings?: { caseSensitive?: boolean }): string {
@@ -385,10 +386,6 @@ export const initialTables: TokeniserTables = {
   opSynonyms: { ...opSynonyms },
   rightAssociative: { ...rightAssociative },
 };
-
-/**
- * La parte lessicale di `Numbas.jme.Parser` (jme.js:1177-2036).
- */
 
 /** I riconoscitori di token globali, cioè quelli dello `standardParser`.
  * L'array è riempito da parser.ts, che è l'unico a poter costruire i token. */

@@ -6,7 +6,7 @@
 // matematiche Unicode (𝐀, 𝔸, 𝕒, ...) verso la lettera ASCII corrispondente e le
 // annotazioni di stile. Convertita meccanicamente dal file upstream (una riga
 // da 59 KB) mantenendo l'ORDINE delle chiavi, che conta per
-// `Tokeniser.normaliseName` (jme.js:1873-1903).
+// `Parser.normaliseName` (jme.js:1873-1903).
 // Fino a quattro voci per riga per restare sotto le 1000 righe di file.
 
 import type { UnicodeReplacement } from "./unicode";
