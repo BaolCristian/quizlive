@@ -158,6 +158,26 @@ describe("La lingua sta sullo Scope", () => {
     expect(feedbackText(p)).toBe("You must answer a) first.");
   });
 
+  it("anche il messaggio INCASTONATO in un errore segue la lingua della domanda", () => {
+    // `part.jme.answer invalid` è un template tradotto con dentro `{message}`,
+    // e quel messaggio viene dall'errore catturato dal builtin JME `try()`
+    // (jme.jme:30-38). Se il template segue lo scope e la clausola no, lo
+    // studente legge una frase inglese con una subordinata italiana saldata in
+    // fondo — che è peggio del monolingue di partenza.
+    setLocale("it");
+    const json: NumbasQuestionJSON = { parts: [{ type: "jme", marks: 1, answer: "x+1" }] };
+    const q = loadQuestion(json, { seed: "jme", locale: "en" });
+    const p = q.getPart("p0") as PartBase;
+    p.storeAnswer("1+");
+    p.submit();
+
+    const text = feedbackText(p) + "\n" + p.warnings.join("\n");
+    expect(text).toContain("Your answer is not a valid mathematical expression.");
+    expect(text).toContain("Not enough arguments for the operation +.");
+    // nessun frammento italiano: è tutta la frase a dover seguire la domanda
+    expect(text).not.toContain("Argomenti insufficienti");
+  });
+
   it("la parte espone la lingua del proprio scope", () => {
     const q = loadQuestion(numberQuestion, { seed: "p", locale: "en" });
     expect((q.getPart("p0") as PartBase).locale).toBe("en");

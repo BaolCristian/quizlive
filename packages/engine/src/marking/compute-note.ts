@@ -4,6 +4,7 @@
 // marking.js:5 (`ignore_note_errors`), 501-566 (`marking.compute_note`).
 
 import { JmeError } from "../jme/errors";
+import { errorMessageIn } from "../errors";
 import type { Scope } from "../jme/scope";
 import type { Token } from "../jme/tokens";
 import { computeVariable, type VariablesTodo } from "../variables/generate";
@@ -71,7 +72,11 @@ export function computeNote(
       if (invalid_dep || markingOptions.ignoreNoteErrors) {
         stateful_scope.stateValid[name] = false;
       } else {
-        throw new JmeError("marking.note.error evaluating note", { name: name, message: error.message }, e);
+        throw new JmeError(
+          "marking.note.error evaluating note",
+          { name: name, message: errorMessageIn(e, scope.locale) },
+          e,
+        );
       }
     }
     stateful_scope.states[name] = stateful_scope.state.slice().map((s) => {

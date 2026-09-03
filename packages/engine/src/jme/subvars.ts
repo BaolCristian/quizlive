@@ -13,6 +13,7 @@
 
 import * as math from "../math";
 import { JmeError } from "./errors";
+import { errorMessageIn } from "../errors";
 import type { Scope } from "./scope";
 // import di solo tipo: nessun ciclo a runtime
 import type { Ruleset, RulesetSpec } from "./rules-ruleset";
@@ -151,7 +152,7 @@ export function subvars(str: string, scope: Scope, display?: boolean): string {
       } catch (e) {
         throw new JmeError(
           "jme.subvars.error compiling",
-          { message: (e as Error).message, expression: bits[i] as string },
+          { message: errorMessageIn(e, scope.locale), expression: bits[i] as string },
           e,
         );
       }

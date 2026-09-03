@@ -14,6 +14,7 @@
 // (Task 6) è solo sincrono (decisione 1).
 
 import { JmeError } from "../jme/errors";
+import { errorMessageIn } from "../errors";
 import { evaluate, findvars, findvarsOps, unwrapValue, wrapValue } from "../jme/evaluate";
 import { FuncObj } from "../jme/funcobj";
 import { compile } from "../jme/parser";
@@ -177,7 +178,7 @@ function makeJavascriptFunction(
       if (e instanceof JmeError && e.key === "jme.variables.async function not supported") {
         throw e;
       }
-      const message = e instanceof Error ? e.message : String(e);
+      const message = errorMessageIn(e, callScope.locale);
       throw new JmeError("jme.user javascript.error", { name: fn.name, message: message });
     }
   };
@@ -224,7 +225,7 @@ export function makeFunction(
         throw new JmeError("jme.variables.invalid function language", { language: def.language });
     }
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessageIn(e, scope.locale);
     throw new JmeError("jme.variables.error making function", { name: fn.name, message: message });
   }
   return fn;

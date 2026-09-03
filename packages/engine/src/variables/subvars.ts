@@ -28,6 +28,7 @@
 
 import * as math from "../math";
 import { JmeError } from "../jme/errors";
+import { errorMessageIn } from "../errors";
 import { castToType, isType } from "../jme/evaluate";
 import { compile } from "../jme/parser";
 import type { Scope } from "../jme/scope";
@@ -96,7 +97,7 @@ function substituteTextBits(str: string, scope: Scope): string {
       try {
         tree = compile(expr);
       } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
+        const message = errorMessageIn(e, scope.locale);
         throw new JmeError("jme.subvars.error compiling", { message: message, expression: expr }, e);
       }
       const v = scope.evaluate(tree as Tree);

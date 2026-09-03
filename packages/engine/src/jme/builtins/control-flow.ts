@@ -10,6 +10,7 @@
 // perché legano nomi che il walker delle variabili libere deve escludere.
 
 import { JmeError } from "../errors";
+import { errorMessageIn } from "../../errors";
 import { signature as sig } from "../funcobj";
 import { Scope, type Scope as ScopeType } from "../scope";
 import { TBool, TList, TName, type Token, type Tree } from "../tokens";
@@ -216,7 +217,11 @@ export function registerControlFlow(scope: ScopeType): void {
         return s.evaluate(trees[0] as Tree) as Token;
       } catch (e) {
         const variables: Record<string, unknown> = {};
-        variables[((trees[1] as Tree).tok as TName).name] = (e as Error).message;
+        // il messaggio finisce in una variabile JME che gli script di
+        // correzione incastonano in un testo tradotto (`jme.jme:36-37`,
+        // `:208-209`): va reso nella lingua dello scope, non in quella
+        // predefinita del processo con cui `JmeError` traduce al lancio.
+        variables[((trees[1] as Tree).tok as TName).name] = errorMessageIn(e, s.locale);
         return s.evaluate(trees[2] as Tree, variables) as Token;
       }
     },

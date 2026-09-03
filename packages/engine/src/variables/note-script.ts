@@ -8,6 +8,7 @@
 
 import { t } from "../i18n";
 import { JmeError } from "../jme/errors";
+import { errorMessageIn } from "../errors";
 import { compile } from "../jme/parser";
 import { findvars } from "../jme/evaluate";
 import { builtinScope } from "../jme/builtins";
@@ -59,7 +60,7 @@ export class ScriptNote {
     try {
       tree = compile(this.expr);
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+      const message = errorMessageIn(e, scope.locale);
       throw new JmeError("jme.script.note.compilation error", { name: this.name, message: message });
     }
     this.tree = tree as Tree;
@@ -127,7 +128,7 @@ export function noteScriptConstructor<TResult>(
           });
         }
       } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
+        const message = errorMessageIn(e, buildScope.locale);
         throw new JmeError("jme.script.error parsing notes", { message: message });
       }
       this.notes = todo;

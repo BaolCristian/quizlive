@@ -14,6 +14,7 @@
 // dei draw casuali a parità di seme.
 
 import { JmeError } from "../jme/errors";
+import { errorMessageIn } from "../errors";
 import { evaluate, castToType, findvars } from "../jme/evaluate";
 import { compile } from "../jme/parser";
 import { Scope } from "../jme/scope";
@@ -99,7 +100,7 @@ export function computeVariable(
         ) {
           throw e;
         } else {
-          const message = e instanceof Error ? e.message : String(e);
+          const message = errorMessageIn(e, scope.locale);
           throw new JmeError("jme.variables.error computing dependency", { name: x, message: message }, e);
         }
       }
@@ -116,7 +117,7 @@ export function computeVariable(
     }
     scope.setVariable(name, value);
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const message = errorMessageIn(e, scope.locale);
     throw new JmeError("jme.variables.error evaluating variable", { name: originalName, message: message }, e);
   }
   return value;
