@@ -5,7 +5,8 @@
 // Casi presi da `marking.js:608-693` (`finalise_state`), letti riga per riga.
 
 import { describe, it, expect } from "vitest";
-import { finaliseState } from "../../src/marking";
+// dettagli interni: non sono nella superficie pubblica di `marking/`.
+import { finaliseState } from "../../src/marking/finalise-state";
 import { feedback as f } from "../../src/marking/feedback";
 
 describe("finaliseState", () => {

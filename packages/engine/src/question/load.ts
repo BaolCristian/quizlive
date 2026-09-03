@@ -15,7 +15,13 @@ import { JmeError } from "../jme/errors";
 import { builtinConstants, builtinScope } from "../jme/builtins";
 import { makeRng, Scope, type ScopeExtras } from "../jme/scope";
 import { getLocale } from "../i18n";
-import { makeConstants, makeFunctions, makeRulesets, type FunctionDef } from "../variables";
+// passi interni del caricamento: si importano dai loro moduli, non
+// dall'indice (che pubblica solo la superficie di `variables/`). L'indice va
+// comunque importato per il suo side effect, il builtin `make_variables`.
+import "../variables";
+import { makeConstants } from "../variables/constants";
+import { makeFunctions, type FunctionDef } from "../variables/functions";
+import { makeRulesets } from "../variables/rulesets";
 import type { PartJSON } from "../parts";
 import type { LoadOptions, NumbasQuestionJSON, QuestionConstantJSON, QuestionVariableJSON } from "./types";
 

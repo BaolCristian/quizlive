@@ -7,7 +7,9 @@
 // valori delle variabili: si rigenerano dal seme.
 
 import { describe, expect, it } from "vitest";
-import { loadQuestion, orderPartsForResubmission, restoreQuestion } from "../../src/question";
+import { loadQuestion, restoreQuestion } from "../../src/question";
+// dettaglio interno: non è nella superficie pubblica di `question/`.
+import { orderPartsForResubmission } from "../../src/question/state";
 import type { NumbasQuestionJSON, QuestionState } from "../../src/question";
 import type { MarkingResult } from "../../src/parts";
 

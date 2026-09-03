@@ -6,7 +6,11 @@ import { describe, it, expect } from "vitest";
 import { builtinScope } from "../../src/jme";
 import { wrapValue } from "../../src/jme/evaluate";
 import { THTML, TString, type Token } from "../../src/jme/tokens";
-import { MarkingScript, finaliseState, makeMarkingScope, markingScripts } from "../../src/marking";
+import { MarkingScript } from "../../src/marking";
+// dettagli interni: non sono nella superficie pubblica di `marking/`.
+import { finaliseState } from "../../src/marking/finalise-state";
+import { makeMarkingScope } from "../../src/marking/note-functions";
+import { markingScripts } from "../../src/marking/scripts";
 
 /** I parametri della lista in inventario §3.1 per `numberentry.jme`. */
 function numberEntrySettings(over?: Record<string, unknown>): Token {

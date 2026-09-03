@@ -10,7 +10,9 @@
 import { describe, it, expect } from "vitest";
 import { Scope, TNum } from "../../src/jme";
 import { builtinScope } from "../../src/jme/builtins";
-import { noteScriptConstructor, type MakeVariablesResult } from "../../src/variables";
+import type { MakeVariablesResult } from "../../src/variables";
+// dettaglio interno: non è nella superficie pubblica di `variables/`.
+import { noteScriptConstructor } from "../../src/variables/note-script";
 import { JmeError } from "../../src/jme/errors";
 
 const Script = noteScriptConstructor<MakeVariablesResult>(

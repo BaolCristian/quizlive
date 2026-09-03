@@ -20,15 +20,71 @@ export * from "./tokens";
 export * from "./funcobj";
 export * from "./util";
 export * as unicode from "./unicode";
-export * from "./tokenizer";
-export * from "./parser";
-export * from "./scope";
+// upstream: `Numbas.jme` espone anche `globalTables`, `initialTables` e
+// `globalTokeniserTypes`. Qui restano interni: sono le tabelle CONDIVISE dallo
+// `standardParser` dopo `adoptGlobalTables`, quindi mutarle cambia il parsing
+// JME di ogni domanda del processo. Le singole tabelle (`ops`, `precedence`,
+// ...) restano esposte come upstream, perché servono a leggere la grammatica.
+export {
+  normaliseName,
+  ops,
+  prefixForm,
+  postfixForm,
+  arity,
+  precedence,
+  relations,
+  commutative,
+  associative,
+  funcSynonyms,
+  opSynonyms,
+  synonyms,
+  rightAssociative,
+  converseOps,
+  unicode_annotations,
+  superscript_replacements,
+  default_re,
+  re,
+  adoptGlobalTables,
+  type TokeniserOptions,
+  type OperatorOptions,
+  type TokeniserMatch,
+  type TokeniserType,
+  type TokeniserTables,
+  type AdoptTarget,
+} from "./tokenizer";
+// senza `addBinaryOperator`/`addPrefixOperator`/`addPostfixOperator`: le tre
+// funzioni libere mutano lo `standardParser`, cioè il parser di OGNI domanda
+// del processo, e nessuno le chiama. Restano i metodi omonimi di `Parser`, che
+// agiscono su un'istanza che chi chiama possiede.
+export {
+  default_tokeniser_types,
+  Parser,
+  standardParser,
+  tokenise,
+  compile,
+  shunt,
+  compileList,
+} from "./parser";
+// senza `lazyOps` (array globale mutabile) e `setBuiltinScope` (sostituisce lo
+// scope dei builtin per l'intero processo): sono ganci di bootstrap interni.
+export {
+  makeRng,
+  FunctionSet,
+  Scope,
+  getBuiltinScope,
+  type ConstantDefinition,
+  type ScopeExtras,
+  type CallSignature,
+} from "./scope";
 export * from "./juxtapositions";
 export * from "./evaluate";
 export * from "./compare";
 export * from "./equality";
 export * from "./infer";
-export * from "./subvars";
+// senza `displayHooks`: è la tabella dei ganci che `display.ts` e `rules.ts`
+// riempiono al caricamento, e sovrascriverne uno cambia la resa di tutto il
+// processo.
+export { texsplit, typeToDisplayString, tokenToDisplayString, subvars, contentsubvars } from "./subvars";
 // `./rules` va importato sempre: il modulo registra `collectRuleset` fra i
 // `displayHooks`, di cui `Scope.evaluate` e `contentsubvars` hanno bisogno.
 export * from "./rules";

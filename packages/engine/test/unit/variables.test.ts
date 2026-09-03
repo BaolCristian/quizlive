@@ -9,15 +9,11 @@
 import { describe, it, expect } from "vitest";
 import { Scope, compile, findvars, findvarsOps, makeRng, type Token, TNum } from "../../src/jme";
 import { builtinConstants, builtinScope } from "../../src/jme/builtins";
-import {
-  makeConstants,
-  makeFunction,
-  makeRulesets,
-  makeVariables,
-  remakeVariables,
-  substituteHtml,
-  variableDependants,
-} from "../../src/variables";
+import { makeVariables, remakeVariables, substituteHtml, variableDependants } from "../../src/variables";
+// dettagli interni: non sono nella superficie pubblica di `variables/`.
+import { makeConstants } from "../../src/variables/constants";
+import { makeFunction } from "../../src/variables/functions";
+import { makeRulesets } from "../../src/variables/rulesets";
 import { JmeError } from "../../src/jme/errors";
 
 const def = (expr: string) => {

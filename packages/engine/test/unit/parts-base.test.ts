@@ -16,8 +16,12 @@ import { describe, it, expect, vi } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";
 import { JmeError } from "../../src/jme/errors";
 import { unwrapValue } from "../../src/jme/evaluate";
-import { StatefulScope, makeMarkingScope } from "../../src/marking";
-import { createPartFromJSON, nicePartName, resetStepsWarnings } from "../../src/parts";
+// dettagli interni: non sono nella superficie pubblica di `marking/`.
+import { StatefulScope } from "../../src/marking/stateful-scope";
+import { makeMarkingScope } from "../../src/marking/note-functions";
+import { createPartFromJSON, nicePartName } from "../../src/parts";
+// dettaglio interno: non è nella superficie pubblica di `parts/`.
+import { resetStepsWarnings } from "../../src/parts/part-base";
 import { engineErrorKeys } from "../../src/errors";
 import type { PartBase } from "../../src/parts/part-base";
 import type { PartQuestion } from "../../src/parts/types";
