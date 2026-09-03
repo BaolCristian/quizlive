@@ -11,7 +11,8 @@ import { describe, expect, it } from "vitest";
 import { JmeError } from "../../src/jme/errors";
 import { compile } from "../../src/jme/parser";
 import { findvars } from "../../src/jme/evaluate";
-import { loadQuestion, questionErrorKeys } from "../../src/question";
+import { loadQuestion } from "../../src/question";
+import { engineErrorKeys } from "../../src/errors";
 import type { NumbasQuestionJSON } from "../../src/question";
 import type { Tree } from "../../src/jme/tokens";
 
@@ -24,7 +25,7 @@ function errorKeys(fn: () => unknown): string[] {
   try {
     fn();
   } catch (e) {
-    return e instanceof JmeError ? questionErrorKeys(e) : [`NON-JmeError: ${String(e)}`];
+    return e instanceof JmeError ? engineErrorKeys(e) : [`NON-JmeError: ${String(e)}`];
   }
   return [];
 }

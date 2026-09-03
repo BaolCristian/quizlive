@@ -17,7 +17,8 @@ import { builtinScope } from "../../src/jme/builtins";
 import { JmeError } from "../../src/jme/errors";
 import { unwrapValue } from "../../src/jme/evaluate";
 import { StatefulScope, makeMarkingScope } from "../../src/marking";
-import { createPartFromJSON, partErrorKeys, nicePartName, resetStepsWarnings } from "../../src/parts";
+import { createPartFromJSON, nicePartName, resetStepsWarnings } from "../../src/parts";
+import { engineErrorKeys } from "../../src/errors";
 import type { PartBase } from "../../src/parts/part-base";
 import type { PartQuestion } from "../../src/parts/types";
 import { createPart, freshScope, attachFakeQuestion } from "./parts-helpers";
@@ -55,8 +56,8 @@ describe("Part", () => {
       caught = e;
     }
     expect(caught).toBeInstanceOf(JmeError);
-    expect(partErrorKeys(caught)).toContain("part.error");
-    expect(partErrorKeys(caught)).toContain("part.numberentry.zero sig fig");
+    expect(engineErrorKeys(caught)).toContain("part.error");
+    expect(engineErrorKeys(caught)).toContain("part.numberentry.zero sig fig");
   });
 
   it("nicePartName legge percorso, gap e alternativa", () => {
@@ -264,7 +265,7 @@ describe("Part", () => {
     } catch (e) {
       caught = e;
     }
-    expect(partErrorKeys(caught)).toContain("part.marking.missing required note");
+    expect(engineErrorKeys(caught)).toContain("part.marking.missing required note");
   });
 });
 

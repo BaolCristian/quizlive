@@ -35,10 +35,10 @@ import type { JMEValue } from "./question/types";
 // La superficie di alto livello
 // -------------------------------------------------------------------------
 
-export { loadQuestion, restoreQuestion, Question, questionErrorKeys } from "./question";
+export { loadQuestion, restoreQuestion, Question } from "./question";
+export { engineErrorKeys, errorMessageIn, EngineError, MathError } from "./errors";
 export { setLocale, getLocale, t } from "./i18n";
 export { JmeError } from "./jme/errors";
-export { partErrorKeys } from "./parts";
 
 export type {
   NumbasQuestionJSON,

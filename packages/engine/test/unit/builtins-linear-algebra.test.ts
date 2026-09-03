@@ -23,6 +23,19 @@ import { describe, it, expect } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";
 import type { Token } from "../../src/jme/tokens";
 import { deepCloseEqual, closeEqual } from "./math-helpers";
+import { engineErrorKeys } from "../../src/errors";
+
+/** La prima chiave d'errore lanciata da `fn` (gli errori di `math/` portano la
+ * chiave upstream in `err.key`, il messaggio è tradotto). */
+function errorKey(fn: () => unknown): string | undefined {
+  try {
+    fn();
+  } catch (e) {
+    return engineErrorKeys(e)[0] ?? (e instanceof Error ? e.message : String(e));
+  }
+  return undefined;
+}
+
 
 /** Valuta nello scope dei builtin. */
 function ev(expr: string, variables?: Record<string, unknown>): Token {
@@ -63,13 +76,13 @@ describe("Evaluating > Vector and Matrix operations", () => {
 
   it("det e sum_cells", () => {
     closeEqual(val(ev("det(matrix([2,4],[3,5]))")), -2, "det(matrix([2,4],[3,5]))");
-    expect(() => ev("det(matrix([2,4,6],[3,5,7]))"), "det di una matrice non quadrata").toThrow(
+    expect(errorKey(() => ev("det(matrix([2,4,6],[3,5,7]))")), "det di una matrice non quadrata").toBe(
       "matrixmath.abs.non-square",
     );
     expect(
-      () => ev("det(matrix([1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]))"),
+      errorKey(() => ev("det(matrix([1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]))")),
       "det di una matrice troppo grande",
-    ).toThrow("matrixmath.abs.too big");
+    ).toBe("matrixmath.abs.too big");
     closeEqual(val(ev("sum_cells(matrix([1,2],[3,4]))")), 10, "sum_cells(matrix([1,2],[3,4]))");
   });
 

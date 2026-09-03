@@ -39,6 +39,7 @@ import { castToType } from "../../src/jme/evaluate";
 import { TNum, type Token } from "../../src/jme/tokens";
 import { closeEqual, deepCloseEqual } from "./math-helpers";
 import { raisesJmeError } from "./jme-helpers";
+import { engineErrorKeys } from "../../src/errors";
 
 /** `jme.evaluate(t, builtinScope)` degli helper upstream (jme-tests.mjs:475). */
 function ev(expr: string): Token {
@@ -65,7 +66,20 @@ const plainMatrix = (m: unknown): unknown[][] => (m as unknown[][]).map((row) =>
 /** Gli errori di `math/` sono `Error` semplici con la chiave come messaggio
  * (Task 1), non `JmeError`: `raisesNumbasError` upstream si traduce così. */
 function raisesMathError(fn: () => unknown, key: string, message?: string): void {
-  expect(fn, message).toThrow(key);
+  // gli errori di `math/` portano la chiave upstream in `err.key` e il
+  // messaggio tradotto in `err.message`: il confronto è sulla chiave.
+  expect(errorKey(fn), message ?? key).toBe(key);
+}
+
+/** La prima chiave d'errore lanciata da `fn`, o il messaggio se non è un
+ * errore del motore. */
+function errorKey(fn: () => unknown): string | undefined {
+  try {
+    fn();
+  } catch (e) {
+    return engineErrorKeys(e)[0] ?? (e instanceof Error ? e.message : String(e));
+  }
+  return undefined;
 }
 
 /** `assert.equal` di QUnit confronta con `==`, quindi un `Fraction` o una

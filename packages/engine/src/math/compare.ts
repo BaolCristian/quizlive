@@ -6,6 +6,7 @@
 import type { NumbasNumber } from "./types";
 import { isComplex } from "./types";
 import { re, sub, abs } from "./complex";
+import { MathError } from "../errors";
 
 // math.js:423-425
 /** `n` è reale e maggiore di 0? */
@@ -29,7 +30,7 @@ export function nonnegative(n: NumbasNumber): boolean {
 /** `a` è minore di `b`? */
 export function lt(a: NumbasNumber, b: NumbasNumber): boolean {
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.order complex numbers");
+    throw new MathError("math.order complex numbers");
   }
   return !geq(a, b);
 }
@@ -38,7 +39,7 @@ export function lt(a: NumbasNumber, b: NumbasNumber): boolean {
 /** `a` è maggiore di `b`? */
 export function gt(a: NumbasNumber, b: NumbasNumber): boolean {
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.order complex numbers");
+    throw new MathError("math.order complex numbers");
   }
   return !leq(a, b);
 }
@@ -47,7 +48,7 @@ export function gt(a: NumbasNumber, b: NumbasNumber): boolean {
 /** `a` è minore o uguale a `b`? */
 export function leq(a: NumbasNumber, b: NumbasNumber): boolean {
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.order complex numbers");
+    throw new MathError("math.order complex numbers");
   }
   return (a as number) < (b as number) || eq(a, b);
 }
@@ -56,7 +57,7 @@ export function leq(a: NumbasNumber, b: NumbasNumber): boolean {
 /** `a` è maggiore o uguale a `b`? */
 export function geq(a: NumbasNumber, b: NumbasNumber): boolean {
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.order complex numbers");
+    throw new MathError("math.order complex numbers");
   }
   return (a as number) > (b as number) || eq(a, b);
 }
@@ -158,7 +159,7 @@ export function is_scalar_multiple(
 /** Il più grande fra due numeri. */
 export function max(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.order complex numbers");
+    throw new MathError("math.order complex numbers");
   }
   if (typeof a == "bigint" && typeof b == "bigint") {
     return a > b ? a : b;
@@ -186,7 +187,7 @@ export function listmax(
 /** Il più piccolo fra due numeri. */
 export function min(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.order complex numbers");
+    throw new MathError("math.order complex numbers");
   }
   if (typeof a == "bigint" && typeof b == "bigint") {
     return a < b ? a : b;

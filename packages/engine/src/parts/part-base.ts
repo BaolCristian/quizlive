@@ -13,6 +13,7 @@
 
 import { t, type Locale } from "../i18n";
 import { JmeError, errorMessageIn } from "../jme/errors";
+import { engineErrorKeys } from "../errors";
 import { Scope } from "../jme/scope";
 import { TBool, TNum, TString, type Token, type TScope } from "../jme/tokens";
 import { normaliseName } from "../jme/tokenizer";
@@ -106,21 +107,6 @@ export function tryLoad(
       target[target_attr] = value;
     }
   }
-}
-
-/** Le chiavi d'errore accumulate risalendo la catena di `originalError`.
- *
- * Sostituisce `e.originalMessages` upstream (part.js:783-789), che
- * `Numbas.Error` accumula nel costruttore: qui `JmeError` conserva la causa,
- * e la catena si ricostruisce risalendola. */
-export function partErrorKeys(e: unknown): string[] {
-  const keys: string[] = [];
-  let cur: unknown = e;
-  while (cur instanceof JmeError) {
-    keys.push(cur.key);
-    cur = cur.originalError;
-  }
-  return keys;
 }
 
 /** Il messaggio di un errore, nella lingua data (v. `errorMessageIn`). */
@@ -439,9 +425,9 @@ export abstract class PartBase {
   /** Lancia un errore attribuito a questa parte.
    *
    * upstream ri-lancia l'errore originale se era già un `part.error`; qui il
-   * controllo è sulla catena di chiavi (`partErrorKeys`). */
+   * controllo è sulla catena di chiavi (`engineErrorKeys`). */
   error(message: string, args?: Record<string, string | number>, originalError?: unknown): never {
-    if (originalError && partErrorKeys(originalError)[0] === "part.error") {
+    if (originalError && engineErrorKeys(originalError)[0] === "part.error") {
       throw originalError;
     }
     const nmessage = t(message, args, this.locale);

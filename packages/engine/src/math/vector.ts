@@ -21,6 +21,7 @@ import { eq as scalarEq } from "./compare";
 import { precround as scalarPrecround, siground as scalarSiground } from "./rounding";
 import { arccos } from "./trig";
 import { makeMatrix } from "./matrix";
+import { MathError } from "../errors";
 
 /** `a` ha proprietà `rows`/`columns` (è una matrice, non un vettore semplice)? */
 function isMatrixLike(a: Vector | Matrix): a is Matrix {
@@ -35,7 +36,7 @@ function asVector(a: Vector | Matrix, errorKey: string): Vector {
     } else if (a.columns == 1) {
       return a.map((row) => row[0] as NumbasNumber) as Vector;
     } else {
-      throw new Error(errorKey);
+      throw new MathError(errorKey);
     }
   }
   return a;
@@ -101,7 +102,7 @@ export function cross(a: Vector | Matrix, b: Vector | Matrix): Vector {
   const av = asVector(a, "vectormath.cross.matrix too big");
   const bv = asVector(b, "vectormath.cross.matrix too big");
   if (av.length != 3 || bv.length != 3) {
-    throw new Error("vectormath.cross.not 3d");
+    throw new MathError("vectormath.cross.not 3d");
   }
   return [
     scalarSub(scalarMul(av[1]!, bv[2]!), scalarMul(av[2]!, bv[1]!)) as number,

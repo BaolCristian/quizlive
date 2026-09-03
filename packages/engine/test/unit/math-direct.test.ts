@@ -34,6 +34,21 @@
 import { describe, it, expect } from "vitest";
 import * as math from "../../src/math";
 import { closeEqual, deepCloseEqual } from "./math-helpers";
+import { engineErrorKeys, errorMessageIn, MathError } from "../../src/errors";
+import { it as itDict } from "../../src/i18n/it";
+import { en as enDict } from "../../src/i18n/en";
+
+/** La prima chiave d'errore lanciata da `fn` (gli errori di `math/` portano la
+ * chiave upstream in `err.key`, il messaggio è tradotto). */
+function errorKey(fn: () => unknown): string | undefined {
+  try {
+    fn();
+  } catch (e) {
+    return engineErrorKeys(e)[0] ?? (e instanceof Error ? e.message : String(e));
+  }
+  return undefined;
+}
+
 
 describe("Number functions (abs, sign)", () => {
   it("abs(-5.4)", () => {
@@ -288,19 +303,19 @@ describe("Number theory/combinatorics", () => {
     closeEqual(math.permutations(6, 1), 6n, "perm(6,1)");
   });
   it("perm(2,3) - n less than k", () => {
-    expect(() => math.permutations(2, 3)).toThrow("math.permutations.n less than k");
+    expect(errorKey(() => math.permutations(2, 3))).toBe("math.permutations.n less than k");
   });
   it("perm(-2,3) - n less than zero", () => {
-    expect(() => math.permutations(-2, 3)).toThrow("math.permutations.n less than zero");
+    expect(errorKey(() => math.permutations(-2, 3))).toBe("math.permutations.n less than zero");
   });
   it("perm(2,-3) - k less than zero", () => {
-    expect(() => math.permutations(2, -3)).toThrow("math.permutations.k less than zero");
+    expect(errorKey(() => math.permutations(2, -3))).toBe("math.permutations.k less than zero");
   });
   it("perm(i,1) - complex", () => {
-    expect(() => math.permutations(math.complex(0, 1), 1)).toThrow("math.permutations.complex");
+    expect(errorKey(() => math.permutations(math.complex(0, 1), 1))).toBe("math.permutations.complex");
   });
   it("perm(1,i) - complex", () => {
-    expect(() => math.permutations(1, math.complex(0, 1))).toThrow("math.permutations.complex");
+    expect(errorKey(() => math.permutations(1, math.complex(0, 1)))).toBe("math.permutations.complex");
   });
 
   it("comb(5,4)", () => {
@@ -313,19 +328,19 @@ describe("Number theory/combinatorics", () => {
     closeEqual(math.combinations(7, 3), 35n, "comb(7,3)");
   });
   it("comb(2,3) - n less than k", () => {
-    expect(() => math.combinations(2, 3)).toThrow("math.combinations.n less than k");
+    expect(errorKey(() => math.combinations(2, 3))).toBe("math.combinations.n less than k");
   });
   it("comb(-2,3) - n less than zero", () => {
-    expect(() => math.combinations(-2, 3)).toThrow("math.combinations.n less than zero");
+    expect(errorKey(() => math.combinations(-2, 3))).toBe("math.combinations.n less than zero");
   });
   it("comb(2,-3) - k less than zero", () => {
-    expect(() => math.combinations(2, -3)).toThrow("math.combinations.k less than zero");
+    expect(errorKey(() => math.combinations(2, -3))).toBe("math.combinations.k less than zero");
   });
   it("comb(i,1) - complex", () => {
-    expect(() => math.combinations(math.complex(0, 1), 1)).toThrow("math.combinations.complex");
+    expect(errorKey(() => math.combinations(math.complex(0, 1), 1))).toBe("math.combinations.complex");
   });
   it("comb(1,i) - complex", () => {
-    expect(() => math.combinations(1, math.complex(0, 1))).toThrow("math.combinations.complex");
+    expect(errorKey(() => math.combinations(1, math.complex(0, 1)))).toBe("math.combinations.complex");
   });
 
   // Nota su bigint/number: `Numbas.math.gcd` ritorna `bigint` o `number` a
@@ -363,7 +378,7 @@ describe("Number theory/combinatorics", () => {
     closeEqual(math.gcd(Infinity, 15), 1n, "gcd(infinity,15)");
   });
   it("gcd(2i,4) - complex", () => {
-    expect(() => math.gcd(math.complex(0, 2), 4)).toThrow("math.gcf.complex");
+    expect(errorKey(() => math.gcd(math.complex(0, 2), 4))).toBe("math.gcf.complex");
   });
 
   it("coprime(2,3)", () => {
@@ -398,7 +413,7 @@ describe("Number theory/combinatorics", () => {
     closeEqual(math.lcm(-10, 35), 70, "lcm(-10,35)");
   });
   it("lcm(2,i) - complex", () => {
-    expect(() => math.lcm(2, math.complex(0, 1))).toThrow("math.lcm.complex");
+    expect(errorKey(() => math.lcm(2, math.complex(0, 1)))).toBe("math.lcm.complex");
   });
 
   it("0|1 (divides)", () => {
@@ -860,5 +875,77 @@ describe("matrixmath.row_echelon_form/reduced_row_echelon_form non mutano l'inpu
     math.matrixmath.reduced_row_echelon_form(fm);
     const after = fm.map((row) => row.map((c) => c.toString()));
     expect(after).toEqual(before);
+  });
+});
+
+// Il contratto degli errori di `math/`: chiave upstream stabile, messaggio
+// tradotto in entrambe le lingue, riconosciuto dall'accessore delle chiavi.
+// Prima erano `new Error("<chiave>")`, cioè la chiave grezza come messaggio:
+// non stava in nessun catalogo, `engineErrorKeys` non la vedeva, e quel testo
+// poteva arrivare fino al feedback dello studente (parts/adaptive-marking.ts).
+describe("Errori di math/", () => {
+  it("portano la chiave upstream e un messaggio tradotto", () => {
+    let caught: unknown;
+    try {
+      math.matrixmath.mul(math.makeMatrix([[1, 2]]), math.makeMatrix([[1], [2], [3]]));
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(MathError);
+    expect(engineErrorKeys(caught)).toEqual(["matrixmath.mul.different sizes"]);
+    // il messaggio non è più la chiave grezza
+    expect((caught as Error).message).not.toContain("matrixmath.mul");
+    expect(errorMessageIn(caught, "en")).toBe("Can't multiply matrices of different sizes.");
+    expect(errorMessageIn(caught, "it")).toBe("Non posso moltiplicare matrici di dimensioni diverse.");
+  });
+
+  it("interpolano i parametri come upstream", () => {
+    let caught: unknown;
+    try {
+      math.random_integer_partition(3, 5, () => 0.5);
+    } catch (e) {
+      caught = e;
+    }
+    expect(engineErrorKeys(caught)).toEqual(["math.random_integer_partition.invalid k"]);
+    expect(errorMessageIn(caught, "en")).toBe("The size of the partition must be between 1 and 3.");
+  });
+
+  it("ogni chiave lanciata da math/ è nei due cataloghi", () => {
+    // la lista è quella dei `throw new MathError("...")` di src/math/
+    const keys = [
+      "math.choose.empty selection",
+      "math.combinations.complex",
+      "math.combinations.k less than zero",
+      "math.combinations.n less than k",
+      "math.combinations.n less than zero",
+      "math.gcf.complex",
+      "math.lcm.complex",
+      "math.niceNumber.undefined",
+      "math.order complex numbers",
+      "math.permutations.complex",
+      "math.permutations.k less than zero",
+      "math.permutations.n less than k",
+      "math.permutations.n less than zero",
+      "math.precround.complex",
+      "math.random_integer_partition.invalid k",
+      "math.rangeToList.zero step size",
+      "math.real interval.invalid string",
+      "math.shuffle_together.lists not all the same length",
+      "math.siground.complex",
+      "math.toNearest.complex",
+      "matrixmath.abs.non-square",
+      "matrixmath.abs.too big",
+      "matrixmath.mul.different sizes",
+      "matrixmath.not invertible",
+      "matrixmath.not square",
+      "util.formatNumberNotation.unrecognised syntax",
+      "util.permutations.r bigger than n",
+      "util.product.non list",
+      "vectormath.cross.not 3d",
+    ];
+    for (const key of keys) {
+      expect(itDict[key], `it: ${key}`).toBeDefined();
+      expect(enDict[key], `en: ${key}`).toBeDefined();
+    }
   });
 });

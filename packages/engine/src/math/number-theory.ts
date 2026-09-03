@@ -8,6 +8,7 @@ import { isComplex } from "./types";
 import { ensure_bigint, abs, add, mul } from "./complex";
 import { max } from "./compare";
 import { isInt } from "./predicates";
+import { MathError } from "../errors";
 
 // math.js:1905-1918
 /** Prodotto degli interi in `[a,b]` (circa `a!/b!`). Ritorna `bigint` solo se
@@ -31,18 +32,18 @@ export function productRange(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
 /** `nCk` — numero di modi di scegliere `k` elementi non ordinati da `n`. */
 export function combinations(n: NumbasNumber, k: NumbasNumber): NumbasNumber {
   if (isComplex(n) || isComplex(k)) {
-    throw new Error("math.combinations.complex");
+    throw new MathError("math.combinations.complex");
   }
   const nb = ensure_bigint(n as bigint | number);
   let kb = ensure_bigint(k as bigint | number);
   if (nb < 0n) {
-    throw new Error("math.combinations.n less than zero");
+    throw new MathError("math.combinations.n less than zero");
   }
   if (kb < 0n) {
-    throw new Error("math.combinations.k less than zero");
+    throw new MathError("math.combinations.k less than zero");
   }
   if (nb < kb) {
-    throw new Error("math.combinations.n less than k");
+    throw new MathError("math.combinations.n less than k");
   }
   kb = max(kb, nb - kb) as bigint;
   return (productRange(kb + 1n, nb) as bigint) / (productRange(1n, nb - kb) as bigint);
@@ -52,18 +53,18 @@ export function combinations(n: NumbasNumber, k: NumbasNumber): NumbasNumber {
 /** `nPk` — numero di modi di scegliere `k` elementi ordinati da `n`. */
 export function permutations(n: NumbasNumber, k: NumbasNumber): NumbasNumber {
   if (isComplex(n) || isComplex(k)) {
-    throw new Error("math.permutations.complex");
+    throw new MathError("math.permutations.complex");
   }
   const nb = ensure_bigint(n as bigint | number);
   const kb = ensure_bigint(k as bigint | number);
   if (nb < 0n) {
-    throw new Error("math.permutations.n less than zero");
+    throw new MathError("math.permutations.n less than zero");
   }
   if (kb < 0n) {
-    throw new Error("math.permutations.k less than zero");
+    throw new MathError("math.permutations.k less than zero");
   }
   if (nb < kb) {
-    throw new Error("math.permutations.n less than k");
+    throw new MathError("math.permutations.n less than k");
   }
   return productRange(nb - kb + 1n, nb);
 }
@@ -81,7 +82,7 @@ export function divides(a: NumbasNumber, b: NumbasNumber): boolean {
 /** Massimo comun divisore (MCD) di `a` e `b`; `1n` se non entrambi interi finiti. */
 export function gcd(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.gcf.complex");
+    throw new MathError("math.gcf.complex");
   }
   if (
     (typeof a != "bigint" && (Math.floor(a as number) != a || Math.abs(a as number) == Infinity)) ||
@@ -137,7 +138,7 @@ export function lcm(...args: NumbasNumber[]): NumbasNumber {
   const a = args[0]!;
   const b = args[1]!;
   if (isComplex(a) || isComplex(b)) {
-    throw new Error("math.lcm.complex");
+    throw new MathError("math.lcm.complex");
   }
   let use_bigint = typeof a == "bigint";
   if (args.length > 2) {
@@ -145,7 +146,7 @@ export function lcm(...args: NumbasNumber[]): NumbasNumber {
     for (let i = 1; i < args.length; i++) {
       const argi = args[i]!;
       if (isComplex(argi)) {
-        throw new Error("math.lcm.complex");
+        throw new MathError("math.lcm.complex");
       }
       const bb = abs(ensure_bigint(argi as bigint | number)) as bigint;
       use_bigint = use_bigint && typeof argi == "bigint";

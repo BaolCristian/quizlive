@@ -15,7 +15,7 @@
  * (`getCorrectAnswer` e la correzione di una parte `jme` estraggono).
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { loadQuestion, partErrorKeys } from "../../src/index";
+import { loadQuestion, engineErrorKeys } from "../../src/index";
 import type { Answer, PartType } from "../../src/index";
 import type { OracleFeedbackItem } from "./oracle";
 import { loadOracle, type OracleApi } from "./oracle";
@@ -221,7 +221,7 @@ describe("correzione", () => {
           res = part.mark(part.getScope()).finalised_result;
         } catch (e) {
           ourError = e instanceof Error ? e.message : String(e);
-          ourKeys = partErrorKeys(e);
+          ourKeys = engineErrorKeys(e);
           res = { credit: 0, valid: false, states: [] };
         }
         // Una correzione che upstream fa fallire deve fallire anche qui (e
@@ -333,7 +333,7 @@ describe("invio della domanda", () => {
         ours.submit();
       } catch (e) {
         ourError = e instanceof Error ? e.message : String(e);
-        ourKeys = partErrorKeys(e);
+        ourKeys = engineErrorKeys(e);
       }
       if ((ourError !== undefined) !== (theirs.error !== undefined)) {
         diffs.push({

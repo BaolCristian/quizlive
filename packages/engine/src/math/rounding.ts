@@ -16,6 +16,7 @@ import { isComplex } from "./types";
 import { complex, add, sub } from "./complex";
 import { isclose, geq, leq, eq } from "./compare";
 import { sign, round } from "./integer-rounding";
+import { MathError } from "../errors";
 
 // math.js:21
 /** Il numero massimo di cifre decimali a cui un float può essere arrotondato. */
@@ -98,7 +99,7 @@ export function toExponential(n: NumbasNumber): string {
  * soglie di tolleranza (`1e-9`). */
 export function precround(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
   if (isComplex(b)) {
-    throw new Error("math.precround.complex");
+    throw new MathError("math.precround.complex");
   }
   if (isComplex(a)) {
     return complex(precround(a.re, b) as number, precround(a.im, b) as number);
@@ -202,7 +203,7 @@ export function unscientific(str: string): string {
  * indipendenti sui complessi. */
 export function siground(a: NumbasNumber, b: NumbasNumber): NumbasNumber {
   if (isComplex(b)) {
-    throw new Error("math.siground.complex");
+    throw new MathError("math.siground.complex");
   }
   if (isComplex(a)) {
     return complex(siground(a.re, b) as number, siground(a.im, b) as number);

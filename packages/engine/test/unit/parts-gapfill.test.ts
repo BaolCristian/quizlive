@@ -22,7 +22,7 @@
 
 import { describe, it, expect } from "vitest";
 import { unwrapValue } from "../../src/jme/evaluate";
-import { partErrorKeys } from "../../src/parts";
+import { engineErrorKeys } from "../../src/errors";
 import { createPart, createPartWithQuestion, markPart, attachFakeQuestion } from "./parts-helpers";
 
 describe("Gapfill", () => {
@@ -209,7 +209,7 @@ describe("Gapfill", () => {
     } catch (e) {
       caught = e;
     }
-    expect(partErrorKeys(caught)).toContain("part.gapfill.cyclic adaptive marking");
+    expect(engineErrorKeys(caught)).toContain("part.gapfill.cyclic adaptive marking");
   });
 
   it("senza cicli, gap_adaptive_order mette prima il gap da cui dipende l'altro", () => {

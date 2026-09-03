@@ -20,6 +20,7 @@ import {
 import { eq as scalarEq } from "./compare";
 import { precround as scalarPrecround, siground as scalarSiground } from "./rounding";
 import { Fraction } from "./fraction";
+import { MathError } from "../errors";
 
 /** Costruisce una `Matrix` a partire da un array di righe, impostando
  * sempre `rows`/`columns` (brief, ambiguità 1). */
@@ -86,7 +87,7 @@ export function sub(a: Matrix, b: Matrix): Matrix {
 /** Determinante di una matrice. Funziona solo fino a matrici 3×3. */
 export function abs(m: Matrix): NumbasNumber {
   if (m.rows != m.columns) {
-    throw new Error("matrixmath.abs.non-square");
+    throw new MathError("matrixmath.abs.non-square");
   }
   switch (m.rows) {
     case 1:
@@ -102,7 +103,7 @@ export function abs(m: Matrix): NumbasNumber {
         scalarMul(m[0]![2]!, scalarSub(scalarMul(m[1]![0]!, m[2]![1]!), scalarMul(m[1]![1]!, m[2]![0]!)))
       );
     default:
-      throw new Error("matrixmath.abs.too big");
+      throw new MathError("matrixmath.abs.too big");
   }
 }
 
@@ -124,7 +125,7 @@ export function scalardiv(m: Matrix, k: NumbasNumber): Matrix {
 /** Moltiplica due matrici. */
 export function mul(a: Matrix, b: Matrix): Matrix {
   if (a.columns != b.rows) {
-    throw new Error("matrixmath.mul.different sizes");
+    throw new MathError("matrixmath.mul.different sizes");
   }
   const rows: NumbasNumber[][] = [];
   for (let i = 0; i < a.rows; i++) {
@@ -296,7 +297,7 @@ export function siground(m: Matrix, sf: number): Matrix {
  * triangolare inferiore `L` e una superiore `U`, con `m = L*U`. */
 export function lu_decomposition(m: Matrix): [Matrix, Matrix] {
   if (m.rows != m.columns) {
-    throw new Error("matrixmath.not square");
+    throw new MathError("matrixmath.not square");
   }
   const n = m.rows;
 
@@ -322,7 +323,7 @@ export function lu_decomposition(m: Matrix): [Matrix, Matrix] {
         sum += (L[j]![k]! as number) * (U[k]![i]! as number);
       }
       if (L[j]![j] == 0) {
-        throw new Error("matrixmath.not invertible");
+        throw new MathError("matrixmath.not invertible");
       }
       U[j]![i] = ((m[j]![i]! as number) - sum) / (L[j]![j]! as number);
     }
@@ -459,7 +460,7 @@ export function gauss_jordan_elimination(matrix: Matrix): Matrix {
 /** Trova l'inversa della matrice quadrata data. */
 export function inverse(m: Matrix): Matrix {
   if (m.rows != m.columns) {
-    throw new Error("matrixmath.not square");
+    throw new MathError("matrixmath.not square");
   }
   const n = m.rows;
 

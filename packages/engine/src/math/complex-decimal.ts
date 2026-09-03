@@ -8,6 +8,7 @@
 import DecimalJs from "decimal.js";
 import type { NumbasNumber } from "./types";
 import { isComplex } from "./types";
+import { MathError } from "../errors";
 
 // upstream (math.js:23-28): muta la configurazione GLOBALE della classe
 // `Decimal` al caricamento del modulo (`Decimal.set({...})`). Qui invece si
@@ -81,7 +82,7 @@ export class ComplexDecimal {
   lessThan(b: ComplexDecimal | Decimal | number): boolean {
     const bd = ensure_decimal(b);
     if (!(this.isReal() && bd.isReal())) {
-      throw new Error("math.order complex numbers");
+      throw new MathError("math.order complex numbers");
     }
     return this.re.lessThan(bd.re);
   }
@@ -90,7 +91,7 @@ export class ComplexDecimal {
   lessThanOrEqualTo(b: ComplexDecimal | Decimal | number): boolean {
     const bd = ensure_decimal(b);
     if (!(this.isReal() && bd.isReal())) {
-      throw new Error("math.order complex numbers");
+      throw new MathError("math.order complex numbers");
     }
     return this.re.lessThanOrEqualTo(bd.re);
   }
@@ -99,7 +100,7 @@ export class ComplexDecimal {
   greaterThan(b: ComplexDecimal | Decimal | number): boolean {
     const bd = ensure_decimal(b);
     if (!(this.isReal() && bd.isReal())) {
-      throw new Error("math.order complex numbers");
+      throw new MathError("math.order complex numbers");
     }
     return this.re.greaterThan(bd.re);
   }
@@ -108,7 +109,7 @@ export class ComplexDecimal {
   greaterThanOrEqualTo(b: ComplexDecimal | Decimal | number): boolean {
     const bd = ensure_decimal(b);
     if (!(this.isReal() && bd.isReal())) {
-      throw new Error("math.order complex numbers");
+      throw new MathError("math.order complex numbers");
     }
     return this.re.greaterThanOrEqualTo(bd.re);
   }
@@ -275,7 +276,7 @@ export class ComplexDecimal {
   // math.js:2848-2853
   static min(a: ComplexDecimal, b: ComplexDecimal): ComplexDecimal {
     if (!(a.isReal() && b.isReal())) {
-      throw new Error("math.order complex numbers");
+      throw new MathError("math.order complex numbers");
     }
     return new ComplexDecimal(Decimal.min(a.re, b.re));
   }
@@ -283,7 +284,7 @@ export class ComplexDecimal {
   // math.js:2854-2859
   static max(a: ComplexDecimal, b: ComplexDecimal): ComplexDecimal {
     if (!(a.isReal() && b.isReal())) {
-      throw new Error("math.order complex numbers");
+      throw new MathError("math.order complex numbers");
     }
     return new ComplexDecimal(Decimal.max(a.re, b.re));
   }

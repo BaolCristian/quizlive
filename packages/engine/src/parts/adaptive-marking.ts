@@ -16,7 +16,8 @@ import { TNum, TString, type Token } from "../jme/tokens";
 import { feedback, type FeedbackItem } from "../marking/feedback";
 import type { FinalisedState } from "../marking/finalise-state";
 import type { MarkingFeedbackItem } from "./credit";
-import { partErrorKeys, type ExistingFeedback, type PartBase } from "./part-base";
+import { engineErrorKeys } from "../errors";
+import type { ExistingFeedback, PartBase } from "./part-base";
 import type { VariableReplacementJSON } from "./types";
 
 /** Il risultato grezzo di uno script di correzione, come lo vede il marking
@@ -281,7 +282,7 @@ function handleAdaptiveError(
   e: unknown,
   result: MarkingResults | undefined,
 ): MarkingResults | undefined {
-  const keys = partErrorKeys(e);
+  const keys = engineErrorKeys(e);
   if (keys.includes("part.marking.variable replacement part not answered")) {
     const errorFeedback: FeedbackItem[] = [feedback.feedback(errorMessage(e, part.locale))];
     part.getErrorCarriedForwardReplacements().forEach((vr: VariableReplacementJSON) => {
@@ -351,5 +352,5 @@ export const VARIABLE_REPLACEMENT_NOT_ANSWERED = "part.marking.variable replacem
 
 /** Un errore di marking adattivo, per i test. */
 export function isAdaptiveMarkingError(e: unknown, key: string): boolean {
-  return e instanceof JmeError && partErrorKeys(e).includes(key);
+  return e instanceof JmeError && engineErrorKeys(e).includes(key);
 }

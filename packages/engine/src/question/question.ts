@@ -16,6 +16,7 @@
 // domanda. Qui è la stessa cosa, ma con un seme esplicito.
 
 import { JmeError } from "../jme/errors";
+import { engineErrorKeys } from "../errors";
 import { getLocale, t, type Locale } from "../i18n";
 import type { Scope } from "../jme/scope";
 import { contentsubvars } from "../jme/subvars";
@@ -27,20 +28,6 @@ import { calculateScore, isDirty, submitAllParts, validate, type QuestionScore }
 import { applyQuestionState, questionToState } from "./state";
 import type { JMEValue, LoadOptions, LocalDefinitions, NumbasQuestionJSON, QuestionState } from "./types";
 import { buildVariablesTodo, finaliseVariableScope, generateVariables, type VariablesTodo } from "./variables";
-
-/** Le chiavi d'errore accumulate risalendo la catena di `originalError`.
- *
- * Sostituisce `e.originalMessages` upstream (question.js:249-260), come
- * `partErrorKeys` fa per le parti. */
-export function questionErrorKeys(e: unknown): string[] {
-  const keys: string[] = [];
-  let cur: unknown = e;
-  while (cur instanceof JmeError) {
-    keys.push(cur.key);
-    cur = cur.originalError;
-  }
-  return keys;
-}
 
 /**
  * Una domanda Numbas caricata da JSON: variabili generate, parti costruite,
@@ -186,9 +173,9 @@ export class Question {
   /** Lancia un errore attribuito a questa domanda.
    *
    * Come upstream, l'errore esterno ha sempre la chiave `question.error` e
-   * quello originale resta nella catena (`questionErrorKeys`). */
+   * quello originale resta nella catena (`engineErrorKeys`). */
   error(message: string, args?: Record<string, string | number>, originalError?: unknown): never {
-    if (originalError && questionErrorKeys(originalError)[0] === "question.error") {
+    if (originalError && engineErrorKeys(originalError)[0] === "question.error") {
       throw originalError;
     }
     const nmessage = t(message, args, this.locale);

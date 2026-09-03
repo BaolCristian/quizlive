@@ -34,9 +34,9 @@
 
 import { afterEach, describe, expect, it } from "vitest";
 import { setLocale } from "../../src/i18n";
-import { loadQuestion, questionErrorKeys } from "../../src/question";
+import { loadQuestion } from "../../src/question";
+import { engineErrorKeys } from "../../src/errors";
 import type { NumbasQuestionJSON } from "../../src/question";
-import { partErrorKeys } from "../../src/parts";
 import type { PartBase } from "../../src/parts";
 import { markPart, runPartUnitTests } from "./parts-helpers";
 import unitTestQuestions from "../fixtures/upstream/part-unit-tests.json";
@@ -51,7 +51,7 @@ function errorKeys(fn: () => unknown): string[] {
   try {
     fn();
   } catch (e) {
-    return partErrorKeys(e).concat(questionErrorKeys(e));
+    return engineErrorKeys(e);
   }
   return [];
 }

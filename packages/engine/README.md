@@ -178,11 +178,19 @@ Fuori ambito anche: i tipi di parte `matrixentry`, `extension` e quelli custom;
 gli `steps` di una parte (il campo è ignorato con un avviso); il formato XML;
 la composizione di un esame (navigazione, timer, SCORM).
 
-Gli errori sono `JmeError` e portano una **chiave** stabile
-(`err.key`, per esempio `"question.preamble not supported"`) oltre al messaggio
-tradotto. `questionErrorKeys(err)` e `partErrorKeys(err)` — entrambe esportate
-dal pacchetto — danno la catena delle chiavi, dalla più esterna alla più
-interna.
+Gli errori del motore derivano tutti da `EngineError` — `JmeError` per
+`jme/`, `parts/`, `marking/` e `question/`, `MathError` per `math/` — e
+portano una **chiave** stabile (`err.key`, per esempio
+`"question.preamble not supported"`) oltre al messaggio tradotto.
+`engineErrorKeys(err)` dà la catena delle chiavi, dalla più esterna alla più
+interna, e la lista vuota per un errore che non viene dal motore: è così che si
+distingue una domanda malfatta da un guasto del motore.
+
+Il messaggio è tradotto al momento del lancio, nella lingua predefinita del
+processo (lo stesso contratto di `Numbas.Error` upstream). Chi deve mostrarlo
+in un'altra lingua usa `errorMessageIn(err, locale)`, che lo ricostruisce da
+`err.key` e `err.params`; è quel che fa il motore stesso prima di mettere un
+errore nel feedback di uno studente.
 
 ## Sviluppo
 

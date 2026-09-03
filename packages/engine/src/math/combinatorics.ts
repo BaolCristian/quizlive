@@ -8,11 +8,13 @@
 // conflitto di export perché non tutto finisce in un'unica `index.ts` flat
 // (vedi il commento in index.ts).
 
+import { MathError } from "../errors";
+
 // util.js:1082-1121
 /** Prodotto cartesiano di N liste. */
 export function product<T>(lists: readonly (readonly T[])[]): T[][] {
   if (!Array.isArray(lists)) {
-    throw new Error("util.product.non list");
+    throw new MathError("util.product.non list");
   }
   const indexes = lists.map(() => 0);
   let zero = false;
@@ -27,7 +29,7 @@ export function product<T>(lists: readonly (readonly T[])[]): T[][] {
     return l.length;
   });
   if (nonArray) {
-    throw new Error("util.product.non list");
+    throw new MathError("util.product.non list");
   }
   if (zero) {
     return [];
@@ -155,7 +157,7 @@ export function permutations<T>(list: readonly T[], r?: number): T[][] {
     r = n;
   }
   if (r > n) {
-    throw new Error("util.permutations.r bigger than n");
+    throw new MathError("util.permutations.r bigger than n");
   }
   const indices: number[] = [];
   const cycles: number[] = [];

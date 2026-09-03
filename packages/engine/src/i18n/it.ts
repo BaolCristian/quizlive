@@ -1,9 +1,10 @@
 /* Derived from Numbas (https://github.com/numbas/Numbas), Copyright 2011-2026 Newcastle University.
  * Licensed under the Apache License, Version 2.0. Ported to TypeScript for SAVINT; see packages/engine/NOTICE. */
 
-// Messaggi italiani per le chiavi di errore lanciate da `jme/`. Le chiavi sono
-// quelle upstream (`new Numbas.Error('<chiave>', ...)`, inventario §7.10: 36
-// chiavi in jme.js) più `util.equality not defined for type` (util.js:178) e
+// Messaggi italiani per le chiavi di errore lanciate da `math/`, `jme/`,
+// `parts/`, `marking/` e `question/`. Le chiavi sono quelle upstream
+// (`new Numbas.Error('<chiave>', ...)`, inventario §7.10: 36 chiavi in jme.js,
+// più le 29 di math.js/util.js) più `util.equality not defined for type` (util.js:178) e
 // `jme.subvars.display not available`, che è nostra (decisione 1 del brief:
 // i rami di `subvars` che servono `treeToJME`/`texify` passano da
 // `displayHooks`, riempiti dal Task 5).
@@ -11,6 +12,43 @@
 // sono nella forma `{nome}` (vedi `t()` in i18n/index.ts).
 
 export const it: Record<string, string> = {
+  // math.js, util.js — le chiavi degli errori lanciati da `math/` (49 siti).
+  // upstream sono `new Numbas.Error(chiave)` come tutte le altre; nel port
+  // erano `new Error(chiave)`, cioè la chiave grezza come messaggio, che
+  // arrivava fino al feedback dello studente. Le due marcate "nostra" hanno la
+  // chiave upstream ma nessun testo nei cataloghi upstream.
+  "math.choose.empty selection": "Selezione vuota passata a una funzione casuale",
+  "math.combinations.complex": "Non si possono calcolare le combinazioni di numeri complessi",
+  "math.combinations.k less than zero": "Non posso calcolare le combinazioni: k è più piccolo di zero",
+  "math.combinations.n less than k": "Non posso calcolare le combinazioni: n è più piccolo di k",
+  "math.combinations.n less than zero": "Non posso calcolare le combinazioni: n è più piccolo di zero",
+  "math.gcf.complex": "Non posso calcolare l'MCD di numeri complessi",
+  "math.lcm.complex": "Non posso calcolare l'mcm di numeri complessi",
+  "math.niceNumber.undefined": "Era atteso un numero, è arrivato <code>undefined</code>",
+  "math.order complex numbers": "I numeri complessi non si possono ordinare",
+  "math.permutations.complex": "Non si possono calcolare le permutazioni di numeri complessi",
+  "math.permutations.k less than zero": "Non posso calcolare le permutazioni: k è più piccolo di zero",
+  "math.permutations.n less than k": "Non posso calcolare le permutazioni: n è più piccolo di k",
+  "math.permutations.n less than zero": "Non posso calcolare le permutazioni: n è più piccolo di zero",
+  "math.precround.complex": "Non posso arrotondare a un numero complesso di cifre decimali",
+  "math.random_integer_partition.invalid k": "La dimensione della partizione deve essere fra 1 e {n}.",
+  "math.rangeToList.zero step size": "Non si può convertire in lista un intervallo con passo zero.",
+  "math.real interval.invalid string": "La stringa <code>{str}</code> non è una definizione di intervallo valida.",
+  "math.shuffle_together.lists not all the same length": "Le liste non hanno tutte la stessa lunghezza.",
+  "math.siground.complex": "Non posso arrotondare a un numero complesso di cifre significative",
+  "math.toNearest.complex": "Non posso arrotondare al multiplo di un numero complesso", // nostra
+  "matrixmath.abs.non-square": "Non posso calcolare il determinante di una matrice non quadrata.",
+  "matrixmath.abs.too big":
+    "Mi dispiace, non so ancora calcolare il determinante di una matrice più grande di 3x3.",
+  "matrixmath.mul.different sizes": "Non posso moltiplicare matrici di dimensioni diverse.",
+  "matrixmath.not invertible": "Questa operazione funziona solo su una matrice invertibile.",
+  "matrixmath.not square": "Questa operazione funziona solo su una matrice quadrata.",
+  "util.formatNumberNotation.unrecognised syntax":
+    "La sintassi di formattazione numerica <code>{syntax}</code> non è riconosciuta.",
+  "util.permutations.r bigger than n": "Non si possono prendere più elementi di quanti ne ha la lista.", // nostra
+  "util.product.non list": "Passato a <code>product</code> un valore che non è una lista",
+  "vectormath.cross.not 3d": "Il prodotto vettoriale è definito solo per vettori tridimensionali.",
+
   "jme.calculus.unknown derivative": "Non si sa derivare {tree}",
   "jme.compile list.mismatched bracket": "Parentesi non corrispondenti nella lista di espressioni",
   "jme.compile list.missing right bracket": "Manca una parentesi chiusa nella lista di espressioni",

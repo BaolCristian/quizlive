@@ -18,6 +18,19 @@ import { builtinScope } from "../../src/jme/builtins";
 import { makeRng, Scope } from "../../src/jme/scope";
 import type { Token } from "../../src/jme/tokens";
 import { deepCloseEqual } from "./math-helpers";
+import { engineErrorKeys } from "../../src/errors";
+
+/** La prima chiave d'errore lanciata da `fn` (gli errori di `math/` portano la
+ * chiave upstream in `err.key`, il messaggio è tradotto). */
+function errorKey(fn: () => unknown): string | undefined {
+  try {
+    fn();
+  } catch (e) {
+    return engineErrorKeys(e)[0] ?? (e instanceof Error ? e.message : String(e));
+  }
+  return undefined;
+}
+
 
 /** Valuta nello scope dei builtin. */
 function ev(expr: string): Token {
@@ -48,7 +61,7 @@ describe("Evaluating > Random numbers", () => {
   });
 
   it("random su liste e argomenti multipli", () => {
-    expect(() => ev("random([])"), "random([])").toThrow("math.choose.empty selection");
+    expect(errorKey(() => ev("random([])")), "random([])").toBe("math.choose.empty selection");
     let acc = true;
     for (let i = 0; i < 10; i++) {
       acc = acc && ["a", "b", "c"].includes(val(ev('random(["a","b","c"])')) as string);
@@ -64,7 +77,7 @@ describe("Evaluating > Random numbers", () => {
     const x = val(ev("random(1..3#0)")) as number;
     expect(x >= 1 && x <= 3, "random(1..3#0)").toBe(true);
 
-    expect(() => ev("random()"), "random()").toThrow("math.choose.empty selection");
+    expect(errorKey(() => ev("random()")), "random()").toBe("math.choose.empty selection");
   });
 
   it("deal", () => {

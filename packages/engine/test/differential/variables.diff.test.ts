@@ -9,7 +9,7 @@
  * `known-divergences.json` con il motivo e il riferimento a DIVERGENCES.md.
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { loadQuestion, questionErrorKeys, jme } from "../../src/index";
+import { loadQuestion, engineErrorKeys, jme } from "../../src/index";
 import { loadOracle, type OracleApi } from "./oracle";
 import { corpus, liveCorpus, type CorpusEntry } from "./corpus";
 import { checkDivergences, checkNoStaleDivergences, closeEqual, closeEqualDeep, normalizeHtml, SEEDS } from "./compare";
@@ -87,7 +87,7 @@ describe("variabili e enunciato", () => {
       // Una domanda che upstream rifiuta deve essere rifiutata anche qui, e
       // per lo STESSO motivo: due errori non sono equivalenti solo perché
       // sono entrambi errori. I testi vengono da cataloghi diversi, le chiavi
-      // no (`Numbas.Error#originalMessages` contro `questionErrorKeys`).
+      // no (`Numbas.Error#originalMessages` contro `engineErrorKeys`).
       let ourError: unknown;
       try {
         loadQuestion(entry.json, { seed: seed, locale: "en" });
@@ -96,7 +96,7 @@ describe("variabili e enunciato", () => {
       }
       expect(ourError, `${entry.id}: l'oracolo rifiuta la domanda, il port la carica`).toBeDefined();
       const theirKeys = (e as { originalMessages?: unknown }).originalMessages;
-      const ourKeys = questionErrorKeys(ourError);
+      const ourKeys = engineErrorKeys(ourError);
       const loadDiffs =
         JSON.stringify(ourKeys) === JSON.stringify(theirKeys ?? [])
           ? []

@@ -28,6 +28,7 @@ import {
 } from "./rounding";
 import { isInt, isFloat, re_fraction } from "./predicates";
 import { ComplexDecimal, isComplexDecimal, Decimal } from "./complex-decimal";
+import { MathError } from "../errors";
 
 const DEFAULT_STYLE = "plain";
 
@@ -49,7 +50,7 @@ export type NiceNumberOptions = {
  * non gestisce i complessi né i multipli di pi greco. */
 export function niceRealNumber(n: NumbasNumber, options: NiceNumberOptions = {}): string {
   if (n === undefined) {
-    throw new Error("math.niceNumber.undefined");
+    throw new MathError("math.niceNumber.undefined");
   }
   let out: string;
   const style = options.style || DEFAULT_STYLE;
@@ -120,7 +121,7 @@ export function niceRealNumber(n: NumbasNumber, options: NiceNumberOptions = {})
  * multipli di pi greco/costante-cerchio. */
 export function niceNumber(n: NumbasNumber, options: NiceNumberOptions = {}): string {
   if (n === undefined) {
-    throw new Error("math.niceNumber.undefined");
+    throw new MathError("math.niceNumber.undefined");
   }
   if (isComplex(n)) {
     const imaginary_unit = options.imaginary || "i";
@@ -195,7 +196,7 @@ export function niceNumber(n: NumbasNumber, options: NiceNumberOptions = {}): st
 /** Formattazione di un `ComplexDecimal`. */
 export function niceComplexDecimal(n: ComplexDecimal, options: NiceNumberOptions = {}): string {
   if (n === undefined) {
-    throw new Error("math.niceNumber.undefined");
+    throw new MathError("math.niceNumber.undefined");
   }
   const re = niceDecimal(n.re, options);
   if (n.isReal()) {
@@ -219,7 +220,7 @@ export function niceComplexDecimal(n: ComplexDecimal, options: NiceNumberOptions
 /** Formattazione di un `Decimal`. */
 export function niceDecimal(n: Decimal, options: NiceNumberOptions = {}): string {
   if (n === undefined) {
-    throw new Error("math.niceNumber.undefined");
+    throw new MathError("math.niceNumber.undefined");
   }
   if (!n.isFinite()) {
     return n.lessThan(0) ? "-infinity" : "infinity";
@@ -391,7 +392,7 @@ export function formatNumberNotation(s: string, style_name: string, syntax?: "pl
   const style = numberNotationStyles[style_name]!;
   const syn = syntax || "plain";
   if (!style.format[syn]) {
-    throw new Error("util.formatNumberNotation.unrecognised syntax");
+    throw new MathError("util.formatNumberNotation.unrecognised syntax", { syntax: syn });
   }
   const formatted = style.format[syn](integer, decimal || "");
   return minus + formatted;

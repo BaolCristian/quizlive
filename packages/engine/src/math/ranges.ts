@@ -7,6 +7,7 @@ import { Decimal } from "./complex-decimal";
 import type { NumbasNumber, Range } from "./types";
 import { isComplex } from "./types";
 import { isclose } from "./compare";
+import { MathError } from "../errors";
 
 // math.js:1146-1152
 /** I numeri da 0 a `n-1` (inclusi), come array. */
@@ -43,7 +44,7 @@ export function rangeToDecimalList(r: Range): Decimal[] {
   const step_size = new Decimal(r[2]);
   const out: Decimal[] = [];
   if (step_size.isZero()) {
-    throw new Error("math.rangeToList.zero step size");
+    throw new MathError("math.rangeToList.zero step size");
   }
   if (end.minus(start).times(step_size).isNegative()) {
     return [];

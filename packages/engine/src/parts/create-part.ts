@@ -73,9 +73,8 @@ export function createPartFromJSON(
     part.loadFromJSON(data);
     part.finaliseLoad();
   } catch (e) {
-    // `partErrorKeys` vive in `part-base.ts`, che importa questo modulo: qui
-    // basta la stessa condizione senza l'import (un `part.error` ha già il
-    // nome della parte nel messaggio e non va riavvolto).
+    // un `part.error` ha già il nome della parte nel messaggio e non va
+    // riavvolto.
     if (e instanceof JmeError && e.key === "part.error") {
       throw e;
     }

@@ -6,6 +6,7 @@
 import type { NumbasNumber } from "./types";
 import { isComplex } from "./types";
 import { complex } from "./complex";
+import { MathError } from "../errors";
 
 // math.js:1705-1711
 /** Arrotonda per eccesso all'intero più vicino (parti reale/immaginaria indipendenti). */
@@ -41,7 +42,7 @@ export function round(x: NumbasNumber): NumbasNumber {
 /** Arrotonda al multiplo più vicino di `a` (parti reale/immaginaria indipendenti). */
 export function toNearest(x: NumbasNumber, a: NumbasNumber): NumbasNumber {
   if (isComplex(a)) {
-    throw new Error("math.toNearest.complex");
+    throw new MathError("math.toNearest.complex");
   }
   if ((a as number) == 0) {
     return NaN;

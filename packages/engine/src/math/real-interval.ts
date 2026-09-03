@@ -1,6 +1,7 @@
 /* Derived from Numbas (https://github.com/numbas/Numbas), Copyright 2011-2026 Newcastle University.
  * Licensed under the Apache License, Version 2.0. Ported to TypeScript for SAVINT; see packages/engine/NOTICE. */
 
+import { MathError } from "../errors";
 // math.js:3836-4076 — `RealInterval`/`RealIntervalUnion`, usate da
 // pattern-matching/`resultsequal` (Task 3). Nessuna dipendenza da altri file
 // di math/ né da jme.js — modulo indipendente, come upstream.
@@ -37,7 +38,7 @@ export class RealInterval {
   static fromString(str: string): RealInterval {
     const m = str.match(/^([[(])\s*(.*?)\s*(?:\.\.\s*(.*?))?\s*([\])])/);
     if (!m) {
-      throw new Error("math.real interval.invalid string");
+      throw new MathError("math.real interval.invalid string", { str: str });
     }
     const includes_start = m[1] == "[";
     const start = parseFloat(m[2]!);

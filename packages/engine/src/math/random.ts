@@ -17,6 +17,7 @@
 import type { Range, Rng } from "./types";
 import { eq } from "./compare";
 import { rangeSize } from "./ranges";
+import { MathError } from "../errors";
 
 // math.js:1001-1003
 /** Numero intero casuale uniforme in `[0,n-1]`. */
@@ -73,7 +74,7 @@ export function shuffle_together<T extends unknown[][]>(lists: T, rng: Rng): T {
   const len = lists[0]!.length;
   for (let i = 1; i < lists.length; i++) {
     if (lists[i]!.length != len) {
-      throw new Error("math.shuffle_together.lists not all the same length");
+      throw new MathError("math.shuffle_together.lists not all the same length");
     }
   }
   const order = deal(len, rng);
@@ -84,7 +85,7 @@ export function shuffle_together<T extends unknown[][]>(lists: T, rng: Rng): T {
 /** Una partizione casuale dell'intero `n` in `k` parti non nulle. */
 export function random_integer_partition(n: number, k: number, rng: Rng): number[] {
   if (k > n || k < 1) {
-    throw new Error("math.random_integer_partition.invalid k");
+    throw new MathError("math.random_integer_partition.invalid k", { n: n, k: k });
   }
   const shuffled: number[] = [];
   for (let i = 0; i < k - 1; i++) {
@@ -167,7 +168,7 @@ export function except(r: readonly number[], exclude: readonly number[]): number
 /** Sceglie un elemento a caso dalla lista. */
 export function choose<T>(list: readonly T[], rng: Rng): T {
   if (list.length == 0) {
-    throw new Error("math.choose.empty selection");
+    throw new MathError("math.choose.empty selection");
   }
   const n = Math.floor(randomrange(0, list.length, rng));
   return list[n]!;
@@ -182,7 +183,7 @@ export function weighted_random<T>(list: readonly (readonly [T, number])[], rng:
     total += p > 0 ? p : 0;
   }
   if (total == 0) {
-    throw new Error("math.choose.empty selection");
+    throw new MathError("math.choose.empty selection");
   }
   const target = rng() * total;
   let acc = 0;

@@ -1,13 +1,48 @@
 /* Derived from Numbas (https://github.com/numbas/Numbas), Copyright 2011-2026 Newcastle University.
  * Licensed under the Apache License, Version 2.0. Ported to TypeScript for SAVINT; see packages/engine/NOTICE. */
 
-// English messages for the error keys thrown by `jme/`. Same key set as
+// English messages for the error keys thrown by `math/`, `jme/`, `parts/`,
+// `marking/` and `question/`. Same key set as
 // `i18n/it.ts` — the two dictionaries must stay in sync (there is a test for
 // it in test/unit/i18n.test.ts). Texts are rewritten for SAVINT, taking the
 // upstream `locales/en-GB.json` entries only as a starting point; placeholders
 // use the `{name}` form read by `t()`.
 
 export const en: Record<string, string> = {
+  // math.js, util.js — the error keys thrown by `math/` (49 sites); the text is
+  // the upstream en-GB catalogue's, verbatim. The two marked "ours" carry an
+  // upstream key that has no upstream text.
+  "math.choose.empty selection": "Empty selection given to random function",
+  "math.combinations.complex": "Can't compute combinations of complex numbers",
+  "math.combinations.k less than zero": "Can't compute combinations: k is less than zero",
+  "math.combinations.n less than k": "Can't compute combinations: n is less than k",
+  "math.combinations.n less than zero": "Can't compute combinations: n is less than zero",
+  "math.gcf.complex": "Can't compute GCF of complex numbers",
+  "math.lcm.complex": "Can't compute LCM of complex numbers",
+  "math.niceNumber.undefined": "Was expecting a number, but got <code>undefined</code>",
+  "math.order complex numbers": "Can't order complex numbers",
+  "math.permutations.complex": "Can't compute permutations of complex numbers",
+  "math.permutations.k less than zero": "Can't compute permutations: k is less than zero",
+  "math.permutations.n less than k": "Can't compute permutations: n is less than k",
+  "math.permutations.n less than zero": "Can't compute permutations: n is less than zero",
+  "math.precround.complex": "Can't round to a complex number of decimal places",
+  "math.random_integer_partition.invalid k": "The size of the partition must be between 1 and {n}.",
+  "math.rangeToList.zero step size": "Can't convert a range with step size zero to a list.",
+  "math.real interval.invalid string": "The string <code>{str}</code> is not a valid interval definition.",
+  "math.shuffle_together.lists not all the same length": "Not all lists are the same length.",
+  "math.siground.complex": "Can't round to a complex number of sig figs",
+  "math.toNearest.complex": "Can't round to the nearest multiple of a complex number", // ours
+  "matrixmath.abs.non-square": "Can't compute the determinant of a matrix which isn't square.",
+  "matrixmath.abs.too big": "Sorry, can't compute the determinant of a matrix bigger than 3x3 yet.",
+  "matrixmath.mul.different sizes": "Can't multiply matrices of different sizes.",
+  "matrixmath.not invertible": "This operation only works on an invertible matrix.",
+  "matrixmath.not square": "This operation only works on a square matrix.",
+  "util.formatNumberNotation.unrecognised syntax":
+    "The number formatting syntax <code>{syntax}</code> is not recognised.",
+  "util.permutations.r bigger than n": "Can't take more elements than the list has.", // ours
+  "util.product.non list": "Passed a non-list to <code>Numbas.util.product</code>",
+  "vectormath.cross.not 3d": "Can only take the cross product of 3-dimensional vectors.",
+
   "jme.calculus.unknown derivative": "I don't know how to differentiate {tree}",
   "jme.compile list.mismatched bracket": "Mismatched brackets in the list of expressions",
   "jme.compile list.missing right bracket": "A closing bracket is missing in the list of expressions",
