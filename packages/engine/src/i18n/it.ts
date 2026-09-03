@@ -111,7 +111,6 @@ export const it: Record<string, string> = {
   "jme.tokenise.invalid near": "Espressione non valida: {expression}, alla posizione {position} vicino a {nearby}",
   "jme.tokenise.keypair key not a string": "La chiave di un dizionario deve essere una stringa, non {type}",
   "jme.tokenise.number.object not complex": "Oggetto non complesso passato al costruttore di un numero",
-  "jme.tokenise.parser not ready": "Il parser standard non è ancora inizializzato",
   "jme.type.no cast method": "Conversione automatica non disponibile da {from} a {to}",
   "jme.type.type already registered": "Il tipo di dato {type} è già registrato",
   "jme.typecheck.for in name wrong type": "Il nome legato da `of:` deve essere un nome o una lista di nomi, non {type}",

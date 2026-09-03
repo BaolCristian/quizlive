@@ -2,9 +2,18 @@
  * Licensed under the Apache License, Version 2.0. Ported to TypeScript for SAVINT; see packages/engine/NOTICE. */
 
 // Superficie pubblica del modulo `jme/`, l'equivalente del namespace
-// `Numbas.jme` upstream. L'ordine degli export non conta: nessun modulo legge
-// simboli di un altro durante la valutazione (il grafo è circolare come lo era
-// il namespace unico di jme.js).
+// `Numbas.jme` upstream.
+//
+// ATTENZIONE: l'ordine degli export QUI È VINCOLANTE, e niente lo impone
+// automaticamente. Tre moduli fanno lavoro di inizializzazione al primo
+// caricamento — `rules.ts` registra `collectRuleset` fra i `displayHooks`,
+// `builtins.ts` costruisce `builtinScope`, `display.ts` e `display-jme.ts`
+// riempiono gli altri `displayHooks` — e un `export *` è anche un import: è
+// questa lista a decidere in che ordine girano. Spostare una riga può far
+// valutare `builtins.ts` prima di `rules.ts` e lasciare `builtinScope` senza
+// ruleset. Le righe sotto dicono, una per una, da cosa dipendono; il grafo
+// resta circolare come lo era il namespace unico di jme.js, ma NESSUN modulo
+// deve leggere simboli di un altro durante la propria inizializzazione.
 
 export * from "./errors";
 export * from "./tokens";

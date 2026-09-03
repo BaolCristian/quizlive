@@ -53,6 +53,11 @@ export function negate(n: NumbasNumber): NumbasNumber {
   if (isComplex(n)) {
     return complex(-n.re, -n.im);
   }
+  // i due rami sono identici a occhio ma non a tipi: `-n` su un
+  // `number | bigint` non compila (TS2365), perché l'unario meno vuole un
+  // operando di un solo tipo numerico. Il `typeof` è il restringimento che
+  // serve a TypeScript per applicarlo due volte, una per tipo. Non è un ramo
+  // morto: toglierlo rompe la compilazione.
   if (typeof n === "bigint") {
     return -n;
   }

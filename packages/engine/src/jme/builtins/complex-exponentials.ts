@@ -9,12 +9,6 @@ import type { Scope } from "../scope";
 import { TDecimal, TNum } from "../tokens";
 import { add } from "./registry";
 
-/** Registra i temi `complex_numbers` ed `exponentials`. */
-export function registerComplexExponentials(scope: Scope): void {
-  registerComplexNumbers(scope);
-  registerExponentials(scope);
-}
-
 // jme-builtins.js:182-191
 /** Tema `complex_numbers`. */
 export function registerComplexNumbers(scope: Scope): void {

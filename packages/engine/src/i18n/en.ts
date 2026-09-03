@@ -100,7 +100,6 @@ export const en: Record<string, string> = {
   "jme.tokenise.invalid near": "Invalid expression: {expression}, at position {position} near {nearby}",
   "jme.tokenise.keypair key not a string": "A dictionary key must be a string, not {type}",
   "jme.tokenise.number.object not complex": "A non-complex object was passed to a number constructor",
-  "jme.tokenise.parser not ready": "The standard parser has not been initialised yet",
   "jme.type.no cast method": "There is no automatic conversion from {from} to {to}",
   "jme.type.type already registered": "The data type {type} is already registered",
   "jme.typecheck.for in name wrong type": "The name bound by `of:` must be a name or a list of names, not {type}",

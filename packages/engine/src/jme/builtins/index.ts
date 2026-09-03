@@ -53,25 +53,20 @@ import { registerMarking } from "./marking-builtins";
 export * from "./registry";
 export { registerConstants, builtinConstants } from "./constants";
 export { registerArithmetic } from "./arithmetic";
-export {
-  registerComplexExponentials,
-  registerComplexNumbers,
-  registerExponentials,
-} from "./complex-exponentials";
+export { registerComplexNumbers, registerExponentials } from "./complex-exponentials";
 export { registerTrigonometry } from "./trigonometry";
 export { registerRounding } from "./rounding";
 export { registerNumberTheory } from "./number-theory";
 export { registerComparison } from "./comparison";
 export { registerLinearAlgebra } from "./linear-algebra";
 export { registerBooleans } from "./booleans";
-export { registerSetsIntervals, registerSetTheory, registerIntervals } from "./sets-intervals";
+export { registerSetTheory, registerIntervals } from "./sets-intervals";
 export { registerRanges, best_number_type_for_range } from "./ranges";
 export { registerLists } from "./lists";
 export { registerDictionaries } from "./dictionaries";
 export { registerStrings } from "./strings";
 export { registerTypeCasting } from "./type-casting";
 export {
-  registerNumberParsing,
   registerNumberFormatting,
   registerNumberConversion,
   registerPrecision,

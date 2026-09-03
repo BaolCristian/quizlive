@@ -22,12 +22,6 @@ function tokenEq(scope: Scope): (a: Token, b: Token) => boolean {
   return (a, b) => eq(a, b, scope);
 }
 
-/** Registra i temi `set_theory` e `intervals`. */
-export function registerSetsIntervals(scope: Scope): void {
-  registerSetTheory(scope);
-  registerIntervals(scope);
-}
-
 // jme-builtins.js:969-1011
 /** Tema `set_theory`. */
 export function registerSetTheory(scope: Scope): void {

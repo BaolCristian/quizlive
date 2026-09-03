@@ -9,6 +9,11 @@ globale `Numbas`. Gira identico nel browser e in Node, e a parità di seme
 produce sempre gli stessi numeri — è questo che permette di ricalcolare un
 punteggio lato server.
 
+"A parità di seme" va preso alla lettera: la riproducibilità è di ogni singola
+`Question`, che il suo generatore ce l'ha (`loadQuestion({ seed })`). Le
+utilità senza seme — `evaluate`, `renderLatex` — condividono un generatore di
+processo: non usano `Math.random`, ma non sono ripetibili da sole (vedi sotto).
+
 ## Il modello in tre parole
 
 Una **domanda** (`Question`) è un oggetto JSON prodotto dall'editor Numbas. Al
@@ -148,6 +153,27 @@ renderLatex("x^2/2");       // "\\frac{x^2}{2}"
 dell'applicazione. Anche l'enunciato di una domanda contiene le formule come
 LaTeX dentro `\(...\)` / `\[...\]`.
 
+Una precisazione su `evaluate`: non prende un seme, e lo scope che costruisce
+eredita il generatore casuale di `builtinScope`, che è **uno solo per
+processo**. Le funzioni casuali (`random(1..9)`, `shuffle`, `deal`) restano
+riproducibili solo nel senso che non usano `Math.random`: due chiamate
+consecutive danno risultati diversi, e il risultato della seconda dipende da
+quante ne sono state fatte prima nel processo. Se serve una sequenza
+riproducibile, la si semina esplicitamente — `seedrandom("seme", expr)` in JME,
+oppure uno `Scope` proprio con `{ rng: makeRng("seme") }`. `loadQuestion`, che
+un seme lo prende, non ha questo problema: ogni domanda ha il suo generatore.
+
+### `Decimal`
+
+`math.Decimal` esportato da questo pacchetto **non è** la classe di
+`decimal.js`: è un `Decimal.clone()` con la configurazione di Numbas
+(precisione 40, `modulo: EUCLID`, niente notazione esponenziale sotto le mille
+cifre). Un'istanza costruita col `Decimal` di `decimal.js` "nudo" si comporta
+diversamente — altra precisione, altra resa — e `instanceof` fra le due classi
+è falso. Chi confronta valori decimali del motore deve usare il `Decimal` del
+motore. Upstream la differenza non esiste perché muta la classe globale;
+qui non la si tocca (vedi DIVERGENCES.md).
+
 ### Lingua
 
 I messaggi di feedback e gli errori escono in italiano o in inglese:
@@ -156,9 +182,14 @@ I messaggi di feedback e gli errori escono in italiano o in inglese:
 loadQuestion(json, { seed: "s", locale: "en" });
 ```
 
-La lingua è **globale** al motore (`setLocale`): `loadQuestion` la imposta e le
-correzioni successive la usano. Non cambia la resa dei numeri, che è sempre
-quella "plain" (`12345.6789`, separatore di lista `,`).
+La lingua appartiene alla **domanda**, non al processo: `loadQuestion` la fissa
+sullo scope della domanda, e resta quella per tutte le correzioni successive,
+comunque venga caricata un'altra domanda nel frattempo. `setLocale(l)` imposta
+solo la predefinita per chi non passa `locale`, letta al momento del
+caricamento; `q.locale` dice quale lingua ha una domanda.
+
+La lingua non cambia la resa dei numeri, che è sempre quella "plain"
+(`12345.6789`, separatore di lista `,`).
 
 ### Cosa non è supportato
 

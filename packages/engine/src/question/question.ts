@@ -47,7 +47,13 @@ export class Question {
   readonly name: string;
   /** Il nome scelto dall'autore, grezzo. */
   readonly customName: string;
-  /** L'autore ha dato un nome proprio alla domanda? (decisione 10) */
+  /** L'autore ha dato un nome proprio alla domanda, invece di lasciare quello
+   * generato? (decisione 10)
+   *
+   * Il motore non la usa: serve a chi mostra la domanda, per decidere se
+   * stampare `name` o un'etichetta propria ("Domanda 3"). È `customName !== ""`
+   * — upstream il percorso JSON non la calcola mai (question.js:280-283 è solo
+   * il percorso XML). */
   readonly hasCustomName: boolean;
   /** L'enunciato, con le variabili già sostituite. */
   readonly statementHtml: string;

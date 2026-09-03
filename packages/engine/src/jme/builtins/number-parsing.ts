@@ -33,14 +33,6 @@ const Decimal = math.Decimal;
 /** Un token numerico che può portare l'informazione di precisione. */
 type WithPrecision = { precisionType?: "dp" | "sigfig" | undefined; precision?: number | undefined };
 
-/** Registra i temi `number_parsing`, `precision` e `json`. */
-export function registerNumberParsing(scope: Scope): void {
-  registerNumberFormatting(scope);
-  registerNumberConversion(scope);
-  registerPrecision(scope);
-  registerJson(scope);
-}
-
 // jme-builtins.js:1917-1990
 /** `dpformat`, `sigformat`, `formatnumber`, `string`, `parsenumber`,
  * `with_precision`, `imprecise`. */
