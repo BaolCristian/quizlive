@@ -212,6 +212,32 @@ parte non portata (display, XML, SCORM).
 - L'oracolo non entra in produzione: è escluso dal build Next (fuori da
   `src/`, importato solo dai test).
 
+### Tolleranze imposte dal differenziale
+
+Il confronto è esatto ovunque tranne in tre punti, e nessuno dei tre concede
+margine al port su un valore che oggi non coincide già:
+
+1. **Numeri**: uguali "a dieci decimali", con lo stesso criterio dell'helper
+   `closeEqual` upstream (`tests/jme/jme-tests.mjs:23-30`), che confronta
+   `math.precround(x, 10)` dei due valori. La tolleranza è **assoluta**: sopra
+   `9e5` l'arrotondamento a dieci decimali non toglie più nulla (`x * 1e10`
+   esce dagli interi rappresentabili da un `double`) e il confronto diventa di
+   uguaglianza esatta, esattamente come upstream, dove `precround(1e25, 10)` è
+   `1e25`. Una tolleranza *relativa* sarebbe stata puro margine: tutte le
+   variabili del corpus coincidono esattamente, nessuna ha bisogno di
+   arrotondamento. I casi che fissano il criterio stanno in
+   `test/differential/variables.diff.test.ts`, blocco "tolleranza numerica".
+2. **HTML** (enunciato, testo di aiuto, consegne): confronto dopo
+   `s.replace(/\s+/g, " ").trim()` e con entrambi i lati serializzati da jsdom,
+   perché l'oracolo passa comunque per il DOM. Si confronta il contenuto, non
+   il modo di scrivere i tag.
+3. **LaTeX**: stessa normalizzazione degli spazi. In LaTeX la spaziatura fra
+   token non cambia la resa.
+
+Il campo `reason` di una voce di feedback è `null` upstream e `""` nel port
+quando non c'è: le due assenze sono normalizzate alla stessa, ma un `reason`
+davvero diverso (`correct` contro `incorrect`) resta una differenza.
+
 ## Localizzazione
 
 I messaggi upstream usati dal motore (chiavi `R()` in `part.js`, `marking.js`,

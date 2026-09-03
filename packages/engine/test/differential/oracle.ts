@@ -6,16 +6,35 @@ import { JSDOM } from "jsdom";
 import { createRequire } from "node:module";
 import path from "node:path";
 
+/** Una voce di feedback, proiettata sui campi confrontabili.
+ *
+ * `credit_message` e `credit_change` esistono solo sulle voci di
+ * `markingFeedback` (le decora `apply_feedback`, part.js:1817-1844): sugli
+ * stati di `finalised_result` restano stringhe vuote. */
+export interface OracleFeedbackItem {
+  /** Il messaggio mostrato allo studente. */
+  message: string;
+  /** "Ti sono stati assegnati N punti". */
+  credit_message: string;
+  /** Il verso del cambiamento di credito. */
+  credit_change: string;
+  /** Perché l'operazione è stata applicata. */
+  reason: string;
+}
+
 /** Il risultato della correzione di una parte, come lo vede l'oracolo. */
 export interface OracleMarkResult {
   /** Il credito finale, fra 0 e 1. */
   credit: number;
   /** La risposta era correggibile? */
   valid: boolean;
-  /** I messaggi di feedback, nell'ordine in cui li produce lo script. */
-  feedback: string[];
+  /** Le voci di feedback, nell'ordine in cui le produce lo script. */
+  feedback: OracleFeedbackItem[];
   /** Il messaggio dell'errore che ha impedito la correzione, se c'è stato. */
   error?: string;
+  /** Le chiavi dell'errore, dalla più esterna alla più interna
+   * (`Numbas.Error#originalMessages`). */
+  errorKeys?: string[];
 }
 
 /** Il risultato di un invio dell'intera domanda. */
@@ -26,10 +45,16 @@ export interface OracleSubmitResult {
   marks: number;
   /** Tutte le parti sono state risposte? */
   answered: boolean;
-  /** Per percorso di parte: punteggio, credito, feedback. */
-  parts: Record<string, { score: number; credit: number; answered: boolean; feedback: string[] }>;
+  /** Per percorso di parte: punteggio, credito, feedback e avvisi. Ci sono
+   * TUTTE le parti di primo livello, anche quelle a cui non si è risposto. */
+  parts: Record<
+    string,
+    { score: number; credit: number; answered: boolean; feedback: OracleFeedbackItem[]; warnings: string[] }
+  >;
   /** L'errore che ha interrotto l'invio, se c'è stato. */
   error?: string;
+  /** Le chiavi di quell'errore (`Numbas.Error#originalMessages`). */
+  errorKeys?: string[];
 }
 
 /** La domanda costruita dall'oracolo. */
@@ -38,6 +63,10 @@ export interface OracleQuestion {
   variables: Record<string, unknown>;
   /** L'enunciato con le variabili sostituite (`DOMcontentsubvars`). */
   statementHtml: string;
+  /** Il testo di aiuto con le variabili sostituite. */
+  adviceHtml: string;
+  /** La consegna di ogni parte, con le variabili sostituite, per percorso. */
+  promptHtml: Record<string, string>;
   /** Il nome della domanda, con le variabili sostituite. */
   name: string;
   /** I percorsi di tutte le parti costruite (`"p0"`, `"p0g1"`, ...). */
@@ -190,11 +219,25 @@ export function loadOracle(): Promise<OracleApi> {
       const q = Numbas.createQuestionFromJSON(json, 0);
       q.generateVariables();
       await q.signals.on("ready");
+      // Le consegne: il port le sostituisce al caricamento con
+      // `substituteHtml(p.promptHtml, p.getScope())` (question/parts.ts), qui
+      // si applica la stessa composizione allo scope della stessa parte.
+      //
+      // Il testo grezzo va preso da `p.json`, non da `p`: `part.js` non legge
+      // MAI il campo `prompt` (lo usa solo il tema), e lo conserva soltanto
+      // nel JSON di partenza salvato a part.js:311.
+      const promptHtml: Record<string, string> = {};
+      for (const [partPath, p] of Object.entries(q.partDictionary ?? {})) {
+        const raw = ((p as any).json?.prompt as string | undefined) ?? "";
+        promptHtml[partPath] = subHtml(raw, (p as any).getScope());
+      }
       const drawsAfter: number[] = [];
       for (let i = 0; i < probeDraws; i++) drawsAfter.push(Math.random());
       return {
         variables: q.unwrappedVariables as Record<string, unknown>,
         statementHtml: subHtml(q.statement, q.scope),
+        adviceHtml: subHtml(q.advice, q.scope),
+        promptHtml: promptHtml,
         name: q.name as string,
         partPaths: Object.keys(q.partDictionary ?? {}),
         drawsAfter: drawsAfter,
@@ -202,13 +245,39 @@ export function loadOracle(): Promise<OracleApi> {
       };
     };
 
-    /** `finalised_result` → la tripla che il differenziale confronta. */
+    /** Proietta una voce di feedback sui campi confrontabili.
+     *
+     * `message` da solo non basta: `credit_message` porta i messaggi
+     * "ti sono stati assegnati N punti" (part.js:1824-1827), che sono due
+     * delle tre chiavi con forma plurale — confrontare solo `message` lascia
+     * scoperta la maggior parte del testo che lo studente legge. */
+    const projectFeedback = (items: any[]): OracleFeedbackItem[] =>
+      items
+        .filter((f) => {
+          const m = f.message;
+          const cm = f.credit_message;
+          return (typeof m === "string" && m !== "") || (typeof cm === "string" && cm !== "");
+        })
+        .map((f) => ({
+          message: typeof f.message === "string" ? f.message : "",
+          credit_message: typeof f.credit_message === "string" ? f.credit_message : "",
+          credit_change: typeof f.credit_change === "string" ? f.credit_change : "",
+          // upstream usa `null` dove il port usa `""`: è la stessa assenza.
+          reason: typeof f.reason === "string" ? f.reason : "",
+        }));
+
+    /** Le chiavi d'errore di un `Numbas.Error`, dalla più esterna alla più
+     * interna (numbas.js:82-95). Un errore JavaScript qualunque non ne ha. */
+    const errorKeys = (e: unknown): string[] => {
+      const messages = (e as { originalMessages?: unknown })?.originalMessages;
+      return Array.isArray(messages) ? (messages as string[]) : [];
+    };
+
+    /** `finalised_result` → quel che il differenziale confronta. */
     const finalisedToResult = (finalised: any): OracleMarkResult => ({
       credit: finalised.credit as number,
       valid: finalised.valid as boolean,
-      feedback: (finalised.states as any[])
-        .map((st) => st.message)
-        .filter((m): m is string => typeof m === "string" && m !== ""),
+      feedback: projectFeedback(finalised.states as any[]),
     });
 
     const oracleMark = async (
@@ -234,6 +303,7 @@ export function loadOracle(): Promise<OracleApi> {
             valid: false,
             feedback: [],
             error: e instanceof Error ? e.message : String(e),
+            errorKeys: errorKeys(e),
           };
         }
       }
@@ -260,19 +330,20 @@ export function loadOracle(): Promise<OracleApi> {
           answered: false,
           parts: {},
           error: e instanceof Error ? e.message : String(e),
+          errorKeys: errorKeys(e),
         };
       }
       const parts: OracleSubmitResult["parts"] = {};
-      for (const partPath of Object.keys(answers)) {
-        const p = q.getPart(partPath);
-        parts[partPath] = {
+      // TUTTE le parti di primo livello, non solo quelle a cui si è risposto:
+      // una variante che lascia una parte senza risposta deve poter guardare
+      // anche quella.
+      for (const p of q.parts as any[]) {
+        parts[p.path as string] = {
           score: p.score as number,
           credit: p.credit as number,
           answered: p.answered as boolean,
-          feedback: (p.markingFeedback as any[])
-            .map((f) => f.message)
-            .filter((m: unknown): m is string => typeof m === "string" && m !== "")
-            .concat(p.warnings as string[]),
+          feedback: projectFeedback(p.markingFeedback as any[]),
+          warnings: (p.warnings as string[]).slice(),
         };
       }
       return { score: q.score as number, marks: q.marks as number, answered: q.answered as boolean, parts: parts };

@@ -9,10 +9,10 @@
  * `known-divergences.json` con il motivo e il riferimento a DIVERGENCES.md.
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { loadQuestion, jme } from "../../src/index";
+import { loadQuestion, questionErrorKeys, jme } from "../../src/index";
 import { loadOracle, type OracleApi } from "./oracle";
-import { corpus, type CorpusEntry } from "./corpus";
-import { checkDivergences, checkNoStaleDivergences, closeEqualDeep, normalizeHtml, SEEDS } from "./compare";
+import { corpus, liveCorpus, type CorpusEntry } from "./corpus";
+import { checkDivergences, checkNoStaleDivergences, closeEqual, closeEqualDeep, normalizeHtml, SEEDS } from "./compare";
 
 let oracle: OracleApi;
 beforeAll(async () => {
@@ -34,7 +34,38 @@ describe("parità del seme", () => {
   );
 });
 
+describe("tolleranza numerica", () => {
+  // Il criterio è quello di `closeEqual` upstream (jme-tests.mjs:23-30):
+  // `precround(x,10)` sui due valori. È ASSOLUTO — dieci decimali sono dieci
+  // decimali a qualunque ordine di grandezza — e questi casi lo fissano, perché
+  // una tolleranza relativa qui sarebbe puro margine regalato al port.
+  it("accetta una differenza sotto il decimo decimale", () => {
+    expect(closeEqual(1, 1 + 1e-12)).toBe(true);
+    expect(closeEqual(0.1 + 0.2, 0.3)).toBe(true);
+  });
+  it("rifiuta una differenza sopra il decimo decimale", () => {
+    expect(closeEqual(1, 1 + 1e-8)).toBe(false);
+    expect(closeEqual(0, 1e-9)).toBe(false);
+  });
+  it("non concede margine ai valori grandi", () => {
+    // con una tolleranza relativa questi due passerebbero entrambi.
+    expect(closeEqual(1e6, 1e6 + 1e-4)).toBe(false);
+    expect(closeEqual(1e25, 1e25 + 1e14)).toBe(false);
+  });
+  it("tratta NaN e infiniti come upstream", () => {
+    expect(closeEqual(NaN, NaN)).toBe(true);
+    expect(closeEqual(Infinity, Infinity)).toBe(true);
+    expect(closeEqual(Infinity, -Infinity)).toBe(false);
+    expect(closeEqual(NaN, 0)).toBe(false);
+  });
+});
+
 describe("variabili e enunciato", () => {
+  it("il corpus in ambito non è degenere", () => {
+    expect(liveCorpus.length).toBeGreaterThanOrEqual(42);
+    expect(liveCorpus.filter((e) => e.source === "savint").length).toBeGreaterThanOrEqual(12);
+  });
+
   const cases: Array<[string, CorpusEntry, string]> = [];
   for (const entry of corpus) {
     if (entry.skip !== undefined) continue;
@@ -53,7 +84,30 @@ describe("variabili e enunciato", () => {
       // Le fixture `savint` sono nostre: se l'oracolo le rifiuta, sono
       // scritte male e il test non sta confrontando nulla.
       if (entry.source === "savint") throw e;
-      expect(() => loadQuestion(entry.json, { seed: seed, locale: "en" })).toThrow();
+      // Una domanda che upstream rifiuta deve essere rifiutata anche qui, e
+      // per lo STESSO motivo: due errori non sono equivalenti solo perché
+      // sono entrambi errori. I testi vengono da cataloghi diversi, le chiavi
+      // no (`Numbas.Error#originalMessages` contro `questionErrorKeys`).
+      let ourError: unknown;
+      try {
+        loadQuestion(entry.json, { seed: seed, locale: "en" });
+      } catch (e2) {
+        ourError = e2;
+      }
+      expect(ourError, `${entry.id}: l'oracolo rifiuta la domanda, il port la carica`).toBeDefined();
+      const theirKeys = (e as { originalMessages?: unknown }).originalMessages;
+      const ourKeys = questionErrorKeys(ourError);
+      const loadDiffs =
+        JSON.stringify(ourKeys) === JSON.stringify(theirKeys ?? [])
+          ? []
+          : [
+              {
+                path: "-",
+                field: "caricamento.chiaviErrore",
+                detail: `nostro ${JSON.stringify(ourKeys)} vs oracolo ${JSON.stringify(theirKeys ?? [])}`,
+              },
+            ];
+      checkDivergences(entry.id, loadDiffs);
       return;
     }
     const q = loadQuestion(entry.json, { seed: seed, locale: "en" });
@@ -94,6 +148,44 @@ describe("variabili e enunciato", () => {
     // (c) nome della domanda: upstream lo sostituisce con `contentsubvars`.
     if (q.name !== expected.name) {
       diffs.push({ path: "-", field: "name", detail: `nostro «${q.name}» vs oracolo «${expected.name}»` });
+    }
+
+    // (c2) testo di aiuto: stessa sostituzione dell'enunciato. Nessuna delle
+    // 42 domande upstream ha un `advice`, quindi senza le fixture `savint`
+    // questo confronto non direbbe nulla — motivo in più per tenerlo.
+    const ourAdvice = normalizeHtml(oracle.serializeHtml(q.adviceHtml));
+    const theirAdvice = normalizeHtml(expected.adviceHtml);
+    if (ourAdvice !== theirAdvice) {
+      diffs.push({ path: "-", field: "adviceHtml", detail: `nostro «${ourAdvice}» vs oracolo «${theirAdvice}»` });
+    }
+
+    // (c3) elenco delle parti: i percorsi devono coincidere. Le parti MANCANTI
+    // le coglie già il confronto della correzione; questo coglie quelle in
+    // PIÙ, che nessun altro controllo vedrebbe.
+    const ourPaths = Object.keys(q.partDictionary).sort();
+    const theirPaths = [...expected.partPaths].sort();
+    if (JSON.stringify(ourPaths) !== JSON.stringify(theirPaths)) {
+      diffs.push({
+        path: "-",
+        field: "partPaths",
+        detail: `nostro ${JSON.stringify(ourPaths)} vs oracolo ${JSON.stringify(theirPaths)}`,
+      });
+    }
+
+    // (c4) consegna di ogni parte: la sostituisce `substitutePartPrompts` con
+    // la stessa `substituteHtml` dell'enunciato, ma nello scope della parte.
+    for (const partPath of theirPaths) {
+      const part = q.partDictionary[partPath];
+      if (!part) continue;
+      const ourPrompt = normalizeHtml(oracle.serializeHtml(part.promptHtml));
+      const theirPrompt = normalizeHtml(expected.promptHtml[partPath] ?? "");
+      if (ourPrompt !== theirPrompt) {
+        diffs.push({
+          path: partPath,
+          field: "promptHtml",
+          detail: `nostro «${ourPrompt}» vs oracolo «${theirPrompt}»`,
+        });
+      }
     }
 
     // (d) posizione del generatore casuale: le prime estrazioni DOPO il

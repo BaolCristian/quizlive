@@ -15,12 +15,14 @@
  * (`getCorrectAnswer` e la correzione di una parte `jme` estraggono).
  */
 import { describe, it, expect, beforeAll } from "vitest";
-import { loadQuestion } from "../../src/index";
+import { loadQuestion, partErrorKeys } from "../../src/index";
 import type { Answer, PartType } from "../../src/index";
+import type { OracleFeedbackItem } from "./oracle";
 import { loadOracle, type OracleApi } from "./oracle";
-import { corpus, type CorpusEntry } from "./corpus";
+import { corpus, liveCorpus, type CorpusEntry } from "./corpus";
 import {
   checkDivergences,
+  checkDivergenceRegistryIsWellFormed,
   checkDivergencesAreDocumented,
   checkNoStaleDivergences,
   closeEqualDeep,
@@ -38,6 +40,29 @@ const VARIANTS = ["corretta", "sbagliata", "nonvalida", "alternativa"] as const;
 type Variant = (typeof VARIANTS)[number];
 
 const MCQ_TYPES = new Set<PartType>(["1_n_2", "m_n_2", "m_n_x"]);
+
+/** Proietta le voci di feedback del port sugli stessi campi dell'oracolo.
+ *
+ * `message` da solo lascerebbe fuori `credit_message`, dove finiscono due
+ * delle tre chiavi con forma plurale: senza questo campo il differenziale non
+ * saprebbe accorgersi di una regressione della pluralizzazione. */
+function projectFeedback(
+  items: ReadonlyArray<{
+    message?: string | undefined;
+    credit_message?: string | undefined;
+    credit_change?: string | undefined;
+    reason?: string | undefined;
+  }>,
+): OracleFeedbackItem[] {
+  return items
+    .filter((f) => (f.message ?? "") !== "" || (f.credit_message ?? "") !== "")
+    .map((f) => ({
+      message: f.message ?? "",
+      credit_message: f.credit_message ?? "",
+      credit_change: f.credit_change ?? "",
+      reason: f.reason ?? "",
+    }));
+}
 
 /** Ruota di una posizione le spunte, in ordine di riga: conserva il numero di
  * risposte selezionate (quindi resta valida dove il tipo impone un massimo)
@@ -96,7 +121,21 @@ function answerablePaths(q: any): string[] {
   return (q.parts as any[]).filter((p) => p.type !== "information").map((p) => p.path as string);
 }
 
+/** Le parti di primo livello che il JSON dichiara e che assegnano punteggio.
+ *
+ * Serve a distinguere "questa domanda non ha parti da correggere" da "il
+ * corpus si è degradato e non stiamo più confrontando niente". */
+function declaresAnswerableParts(entry: CorpusEntry): boolean {
+  const parts = (entry.json.parts ?? []) as Array<{ type?: string }>;
+  return parts.some((p) => p.type !== "information");
+}
+
 describe("correzione", () => {
+  it("il corpus in ambito non è degenere", () => {
+    expect(liveCorpus.length).toBeGreaterThanOrEqual(42);
+    expect(liveCorpus.filter((e) => e.source === "savint").length).toBeGreaterThanOrEqual(12);
+  });
+
   const cases: Array<[string, CorpusEntry, string]> = [];
   for (const entry of corpus) {
     if (entry.skip !== undefined) continue;
@@ -115,6 +154,9 @@ describe("correzione", () => {
       return;
     }
     const paths = answerablePaths(probe.q);
+    if (declaresAnswerableParts(entry)) {
+      expect(paths, `${entry.id}: il JSON dichiara parti correggibili ma l'oracolo non ne ha`).not.toEqual([]);
+    }
     if (paths.length === 0) return;
 
     const answers: Record<Variant, Record<string, unknown>> = {
@@ -172,17 +214,18 @@ describe("correzione", () => {
         if (theirRes === undefined) continue;
         let res: { credit: number; valid: boolean; states: unknown[] };
         let ourError: string | undefined;
+        let ourKeys: string[] = [];
         try {
           part.storeAnswer(answers[variant][partPath] as Answer);
           part.setStudentAnswer();
           res = part.mark(part.getScope()).finalised_result;
         } catch (e) {
           ourError = e instanceof Error ? e.message : String(e);
+          ourKeys = partErrorKeys(e);
           res = { credit: 0, valid: false, states: [] };
         }
         // Una correzione che upstream fa fallire deve fallire anche qui (e
-        // viceversa). I testi dei due messaggi non si confrontano: sono
-        // tradotti da cataloghi diversi.
+        // viceversa).
         if ((ourError !== undefined) !== (theirRes.error !== undefined)) {
           diffs.push({
             path: partPath,
@@ -191,10 +234,22 @@ describe("correzione", () => {
           });
           continue;
         }
-        if (ourError !== undefined) continue;
-        const ourFeedback = res.states
-          .map((st) => (st as { message?: string }).message)
-          .filter((m): m is string => typeof m === "string" && m !== "");
+        if (ourError !== undefined) {
+          // I TESTI dei due messaggi vengono da cataloghi diversi e non si
+          // confrontano, ma le CHIAVI sì: sono le stesse di upstream, e due
+          // errori diversi non sono equivalenti solo perché sono entrambi
+          // errori.
+          const theirKeys = theirRes.errorKeys ?? [];
+          if (JSON.stringify(ourKeys) !== JSON.stringify(theirKeys)) {
+            diffs.push({
+              path: partPath,
+              field: `chiaviErrore[${variant}]`,
+              detail: `nostro ${JSON.stringify(ourKeys)} vs oracolo ${JSON.stringify(theirKeys)}`,
+            });
+          }
+          continue;
+        }
+        const ourFeedback = projectFeedback(res.states as Array<{ message?: string; reason?: string }>);
         if (res.credit !== theirRes.credit) {
           diffs.push({
             path: partPath,
@@ -227,7 +282,12 @@ describe("invio della domanda", () => {
   // `mark_part` (part-tests.mjs:53-65) non passa da `submit`: non tocca il
   // marking adattivo, le penalità, il punteggio della domanda né gli avvisi.
   // Questo blocco chiude quel buco confrontando `Question#submit` intero.
-  const SUBMIT_VARIANTS: Variant[] = ["corretta", "sbagliata"];
+  // `parziale` non è una risposta: è l'ASSENZA di risposta sulla prima parte,
+  // con le altre corrette. Serve a percorrere i rami di fallimento della
+  // correzione adattiva (`shouldUseInAdaptiveMarking` falso, `must_go_first`),
+  // che una variante che risponde a tutto non raggiunge mai — ed è l'area con
+  // più righe nel registro delle divergenze.
+  const SUBMIT_VARIANTS: Array<Variant | "parziale"> = ["corretta", "sbagliata", "parziale"];
   const cases: Array<[string, CorpusEntry, string]> = [];
   for (const entry of corpus) {
     if (entry.skip !== undefined) continue;
@@ -244,25 +304,36 @@ describe("invio della domanda", () => {
       return; // già coperto dal blocco precedente
     }
     const paths = answerablePaths(probe.q);
+    if (declaresAnswerableParts(entry)) {
+      expect(paths, `${entry.id}: il JSON dichiara parti correggibili ma l'oracolo non ne ha`).not.toEqual([]);
+    }
     if (paths.length === 0) return;
 
     const diffs: Diff[] = [];
     for (const variant of SUBMIT_VARIANTS) {
       const answers: Record<string, unknown> = {};
       for (const partPath of paths) {
-        answers[partPath] = answersFor(probe.q.getPart(partPath))[variant];
+        if (variant === "parziale") {
+          // la prima parte resta senza risposta
+          if (partPath === paths[0]) continue;
+          answers[partPath] = answersFor(probe.q.getPart(partPath)).corretta;
+        } else {
+          answers[partPath] = answersFor(probe.q.getPart(partPath))[variant];
+        }
       }
       const theirs = await oracle.oracleSubmit(entry.json, seed, answers);
       let ours;
       let ourError: string | undefined;
+      let ourKeys: string[] = [];
       try {
         ours = loadQuestion(entry.json, { seed: seed, locale: "en" });
-        for (const partPath of paths) {
+        for (const partPath of Object.keys(answers)) {
           ours.getPart(partPath)?.storeAnswer(answers[partPath] as Answer);
         }
         ours.submit();
       } catch (e) {
         ourError = e instanceof Error ? e.message : String(e);
+        ourKeys = partErrorKeys(e);
       }
       if ((ourError !== undefined) !== (theirs.error !== undefined)) {
         diffs.push({
@@ -272,7 +343,19 @@ describe("invio della domanda", () => {
         });
         continue;
       }
-      if (ourError !== undefined || ours === undefined) continue;
+      if (ourError !== undefined || ours === undefined) {
+        if (ourError !== undefined) {
+          const theirKeys = theirs.errorKeys ?? [];
+          if (JSON.stringify(ourKeys) !== JSON.stringify(theirKeys)) {
+            diffs.push({
+              path: "-",
+              field: `invio.chiaviErrore[${variant}]`,
+              detail: `nostro ${JSON.stringify(ourKeys)} vs oracolo ${JSON.stringify(theirKeys)}`,
+            });
+          }
+        }
+        continue;
+      }
 
       const score = ours.score();
       if (score.score !== theirs.score) {
@@ -313,15 +396,21 @@ describe("invio della domanda", () => {
             detail: `nostro ${part.answered} vs oracolo ${theirPart.answered}`,
           });
         }
-        const ourFeedback = part.markingFeedback
-          .map((f) => f.message)
-          .filter((m): m is string => typeof m === "string" && m !== "")
-          .concat(part.warnings);
+        const ourFeedback = projectFeedback(part.markingFeedback);
         if (JSON.stringify(ourFeedback) !== JSON.stringify(theirPart.feedback)) {
           diffs.push({
             path: partPath,
             field: `invio.feedback[${variant}]`,
             detail: `nostro ${JSON.stringify(ourFeedback)} vs oracolo ${JSON.stringify(theirPart.feedback)}`,
+          });
+        }
+        // Gli avvisi erano concatenati al feedback: separarli distingue una
+        // differenza nel messaggio da una nell'avviso.
+        if (JSON.stringify(part.warnings) !== JSON.stringify(theirPart.warnings)) {
+          diffs.push({
+            path: partPath,
+            field: `invio.warnings[${variant}]`,
+            detail: `nostro ${JSON.stringify(part.warnings)} vs oracolo ${JSON.stringify(theirPart.warnings)}`,
           });
         }
       }
@@ -340,5 +429,9 @@ describe("registro delle divergenze", () => {
 
   it("ogni voce cita una riga viva di DIVERGENCES.md", () => {
     checkDivergencesAreDocumented();
+  });
+
+  it("ogni voce ha un campo «test» valido", () => {
+    checkDivergenceRegistryIsWellFormed();
   });
 });

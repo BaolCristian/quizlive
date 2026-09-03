@@ -32,6 +32,10 @@ interface KnownDivergence {
   field: string;
   /** Perché il port diverge. */
   reason: string;
+  /** Il testo ESATTO della differenza attesa. Fissarlo impedisce che una voce
+   * accettata inghiotta un cambiamento futuro di quel campo: se la differenza
+   * cambia forma, la voce non la copre più e il test fallisce. */
+  detail: string;
   /** La riga di DIVERGENCES.md che la documenta (prima colonna). */
   divergence: string;
   /** Da quando è nota. */
@@ -39,6 +43,19 @@ interface KnownDivergence {
 }
 
 const known = knownDivergences as KnownDivergence[];
+
+/** I tre soli valori ammessi per `test`. */
+const TESTS: ReadonlyArray<KnownDivergence["test"]> = ["variables", "display", "marking"];
+
+/** Fallisce se una voce ha un `test` che non è uno dei tre file: un refuso lì
+ * dentro renderebbe la voce invisibile a `checkNoStaleDivergences` (non
+ * risulterebbe mai obsoleta) pur continuando a zittire una differenza. */
+export function checkDivergenceRegistryIsWellFormed(): void {
+  const bad = known
+    .filter((e) => !TESTS.includes(e.test))
+    .map((e) => `  • ${e.fixture} · ${e.path} · ${e.field}: test «${e.test}» non è uno di ${TESTS.join(", ")}`);
+  expect(bad, `voci di known-divergences.json con un campo «test» non valido:\n${bad.join("\n")}`).toEqual([]);
+}
 
 /** Le voci già incontrate, per scoprire quelle obsolete. */
 const seen = new Set<string>();
@@ -48,20 +65,27 @@ const key = (fixture: string, path: string, field: string): string => `${fixture
 /** Verifica le differenze trovate su una fixture: fallisce su quelle non
  * elencate in `known-divergences.json`. */
 export function checkDivergences(fixture: string, diffs: Diff[]): void {
-  const unexpected: Diff[] = [];
+  const unexpected: string[] = [];
   for (const d of diffs) {
     const k = key(fixture, d.path, d.field);
     const entry = known.find((e) => key(e.fixture, e.path, e.field) === k);
-    if (entry) {
+    if (entry === undefined) {
+      unexpected.push(`  • ${fixture} · ${d.path} · ${d.field}: ${d.detail}`);
+    } else if (entry.detail !== d.detail) {
+      // La voce copre QUELLA differenza, non il campo in generale.
       seen.add(k);
+      unexpected.push(
+        `  • ${fixture} · ${d.path} · ${d.field}: la differenza accettata è cambiata\n` +
+          `      attesa:  ${entry.detail}\n` +
+          `      trovata: ${d.detail}`,
+      );
     } else {
-      unexpected.push(d);
+      seen.add(k);
     }
   }
   if (unexpected.length > 0) {
-    const lines = unexpected.map((d) => `  • ${fixture} · ${d.path} · ${d.field}: ${d.detail}`);
     throw new Error(
-      `il port diverge dall'oracolo su ${unexpected.length} campo/i non documentato/i:\n${lines.join("\n")}\n` +
+      `il port diverge dall'oracolo su ${unexpected.length} campo/i non documentato/i:\n${unexpected.join("\n")}\n` +
         "Cerca prima il baco nel port (ordine dei sorteggi, deal delle scelte, ordine di valutazione " +
         "delle variabili, arrotondamenti). Solo se la divergenza è voluta, aggiungi la riga a " +
         "DIVERGENCES.md e la voce a known-divergences.json.",
@@ -118,18 +142,29 @@ export function normTex(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
-/** Due numeri sono uguali "a 10 decimali" (upstream `closeEqual`, che
- * arrotonda con `math.precround(x,10)`).
+/** La soglia oltre la quale `x * 1e10` esce dagli interi rappresentabili da un
+ * `double` (2^53 ≈ 9.007e15): sopra, arrotondare a dieci decimali è l'identità. */
+const NO_ROUNDING_ABOVE = 9e5;
+
+/** Due numeri sono uguali "a 10 decimali", con lo stesso criterio dell'helper
+ * `closeEqual` upstream (jme-tests.mjs:23-30), che confronta
+ * `math.precround(x,10)` dei due valori.
  *
- * Qui la tolleranza è relativa per i valori grandi — `precround` su `1e25`
- * non arrotonda nulla — e assoluta sotto l'unità: è almeno stretta quanto
- * quella upstream su ogni valore di modulo ≤ 1. */
+ * La tolleranza è ASSOLUTA, non relativa: arrotondare a dieci decimali non
+ * concede nulla ai valori grandi, e infatti sopra `NO_ROUNDING_ABOVE`
+ * l'arrotondamento non toglie più niente e il confronto diventa di uguaglianza
+ * esatta — esattamente come upstream, dove `precround(1e25, 10)` è `1e25`.
+ * Nessuna delle variabili del corpus ha bisogno di margine: coincidono tutte
+ * esattamente. Vedi la sezione "Test differenziali" del design doc. */
 export function closeEqual(a: number, b: number): boolean {
   if (a === b) return true;
   if (Number.isNaN(a) && Number.isNaN(b)) return true;
   if (!Number.isFinite(a) || !Number.isFinite(b)) return false;
-  const scale = Math.max(1, Math.abs(a), Math.abs(b));
-  return Math.abs(a - b) <= 1e-10 * scale;
+  if (Math.abs(a) > NO_ROUNDING_ABOVE || Math.abs(b) > NO_ROUNDING_ABOVE) {
+    // l'uguaglianza esatta è già stata provata e ha fallito.
+    return false;
+  }
+  return Math.round(a * 1e10) === Math.round(b * 1e10);
 }
 
 /** Un `Decimal` di decimal.js (i tre campi della rappresentazione interna).
@@ -163,7 +198,11 @@ export function closeEqualDeep(ours: unknown, theirs: unknown, where = ""): stri
   if (typeof ours === "number" && typeof theirs === "number") {
     return closeEqual(ours, theirs) ? null : differ();
   }
-  if (isDecimal(ours) || isDecimal(theirs)) {
+  // Un `Decimal` contro un numero È una divergenza (il port avrebbe scelto un
+  // tipo diverso per la stessa variabile): va segnalata, non appiattita a
+  // stringa. Il confronto per stringa vale solo fra due `Decimal`.
+  if (isDecimal(ours) !== isDecimal(theirs)) return differ();
+  if (isDecimal(ours) && isDecimal(theirs)) {
     // decimal.js da entrambe le parti (il port dipende dallo stesso pacchetto).
     return String(ours) === String(theirs) ? null : differ();
   }
