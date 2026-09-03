@@ -19,6 +19,7 @@ export const it: Record<string, string> = {
   "jme.display.simplifyTree.stuck in a loop":
     "La semplificazione di {expr} è entrata in un ciclo: le regole si annullano a vicenda",
   "jme.evaluate.no scope given": "Per valutare un'espressione serve uno scope",
+  "jme.func.except.continuous range": "Non si può usare `except` su un intervallo continuo (passo 0)",
   "jme.makeFast.no fast definition of function":
     "La funzione {name} non ha una definizione utilizzabile in forma veloce",
   "jme.matchTree.group name not a name":

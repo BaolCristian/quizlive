@@ -24,3 +24,6 @@ export * from "./subvars";
 // `displayHooks`, di cui `Scope.evaluate` e `contentsubvars` hanno bisogno.
 export * from "./rules";
 export * as calculus from "./calculus";
+// va per ultimo: il modulo costruisce `builtinScope` al caricamento, e per
+// farlo ha bisogno che `scope`, `rules` e `evaluate` siano già inizializzati.
+export * from "./builtins";

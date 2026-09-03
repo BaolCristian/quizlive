@@ -15,6 +15,7 @@ export const en: Record<string, string> = {
   "jme.display.collectRuleset.set not defined": "The ruleset {name} is not defined",
   "jme.display.simplifyTree.stuck in a loop": "Simplifying {expr} got stuck in a loop: the rules undo each other",
   "jme.evaluate.no scope given": "Evaluating an expression needs a scope",
+  "jme.func.except.continuous range": "Can't use `except` on a continuous range (step 0)",
   "jme.makeFast.no fast definition of function": "The function {name} has no definition that can be made fast",
   "jme.matchTree.group name not a name": "The name of a captured group must be a name or a key-value pair",
   "jme.matchTree.match macro first argument not a dictionary":
