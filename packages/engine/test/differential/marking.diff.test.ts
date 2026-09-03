@@ -19,7 +19,14 @@ import { loadQuestion } from "../../src/index";
 import type { Answer, PartType } from "../../src/index";
 import { loadOracle, type OracleApi } from "./oracle";
 import { corpus, type CorpusEntry } from "./corpus";
-import { checkDivergences, checkNoStaleDivergences, closeEqualDeep, type Diff, SEEDS } from "./compare";
+import {
+  checkDivergences,
+  checkDivergencesAreDocumented,
+  checkNoStaleDivergences,
+  closeEqualDeep,
+  type Diff,
+  SEEDS,
+} from "./compare";
 
 let oracle: OracleApi;
 beforeAll(async () => {
@@ -329,5 +336,9 @@ describe("invio della domanda", () => {
 describe("registro delle divergenze", () => {
   it("nessuna voce obsoleta in known-divergences.json", () => {
     checkNoStaleDivergences("marking");
+  });
+
+  it("ogni voce cita una riga viva di DIVERGENCES.md", () => {
+    checkDivergencesAreDocumented();
   });
 });

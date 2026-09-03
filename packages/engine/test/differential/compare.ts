@@ -2,6 +2,8 @@
  * Licensed under the Apache License, Version 2.0. Ported to TypeScript for SAVINT; see packages/engine/NOTICE. */
 /* Confronti e contabilità delle divergenze note, condivisi dai tre file
  * differenziali. Solo dev. */
+import fs from "node:fs";
+import path from "node:path";
 import { expect } from "vitest";
 import knownDivergences from "./known-divergences.json";
 
@@ -75,6 +77,34 @@ export function checkNoStaleDivergences(test: KnownDivergence["test"]): void {
     .filter((e) => !seen.has(key(e.fixture, e.path, e.field)))
     .map((e) => `  • ${e.fixture} · ${e.path} · ${e.field} (${e.reason})`);
   expect(stale, `voci obsolete in known-divergences.json (il port non diverge più):\n${stale.join("\n")}`).toEqual([]);
+}
+
+/** Fallisce se una voce di `known-divergences.json` cita una riga che in
+ * DIVERGENCES.md non c'è (più).
+ *
+ * È l'altra metà della riconciliazione: `checkNoStaleDivergences` verifica che
+ * ogni voce corrisponda a una differenza ancora viva, questa che corrisponda a
+ * una divergenza ancora documentata. `divergence` può citare più righe,
+ * separate da " + ", e ogni pezzo deve essere esattamente la prima colonna di
+ * una riga. */
+export function checkDivergencesAreDocumented(): void {
+  const file = path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../DIVERGENCES.md");
+  const firstColumns = new Set(
+    fs
+      .readFileSync(file, "utf8")
+      .split("\n")
+      .filter((line) => line.startsWith("| "))
+      .map((line) => line.slice(2).split(" | ")[0]?.trim() ?? ""),
+  );
+  const orphans: string[] = [];
+  for (const e of known) {
+    for (const ref of e.divergence.split(" + ")) {
+      if (!firstColumns.has(ref)) {
+        orphans.push(`  • ${e.fixture} · ${e.path} · ${e.field} cita «${ref}», che in DIVERGENCES.md non c'è`);
+      }
+    }
+  }
+  expect(orphans, `voci di known-divergences.json senza riga in DIVERGENCES.md:\n${orphans.join("\n")}`).toEqual([]);
 }
 
 /** Collassa gli spazi: la normalizzazione dell'HTML del brief (decisione 2b). */
