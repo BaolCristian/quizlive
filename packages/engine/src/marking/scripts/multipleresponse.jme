@@ -1,0 +1,131 @@
+// Derived from Numbas (https://github.com/numbas/Numbas), Copyright 2011-2026 Newcastle University.
+// Licensed under the Apache License, Version 2.0. Copia verbatim di marking_scripts/multipleresponse.jme;
+// vedi packages/engine/NOTICE. Le righe che iniziano con "//" sono tolte dal parser delle note.
+
+numAnswers: len(settings["matrix"])
+
+numChoices: if(numAnswers=1,1,len(settings["matrix"][0]))
+
+numTicks (How many options did the student tick?):
+  sum(map(sum(map(if(x,1,0),x,row)),row,studentAnswer))
+
+wrongNumber:
+  assert(numTicks >= settings["minAnswers"] and (settings["maxAnswers"]=0 or numTicks<=settings["maxAnswers"]),
+    if(settings["warningType"]="prevent",
+        fail(translate("part.mcq.wrong number of choices"))
+    ,
+        incorrect(translate("part.mcq.wrong number of choices"));
+        end()
+    )
+  )
+
+tick_indexes (Indexes of choice/answer pairs):
+    flatten(map(
+        map([x,y], x, shuffleAnswers),
+        y,
+        shuffleChoices
+    ))
+
+only_ticked_score_ticks (The score for each choice/answer pair):
+  map(
+    if(studentAnswer[x][y],
+      let(distractor,settings["distractors"][x][y], credit, if(marks=0,0,settings["matrix"][x][y]/marks),
+        switch(
+          credit<>0,
+            if(not isnonemptyhtml(distractor),
+              add_credit(credit,translate(if(credit>0,'part.mcq.correct choice','part.mcq.incorrect choice')))
+            ,
+              add_credit(credit,distractor)
+            )
+          ,
+            if(isnonemptyhtml(distractor),negative_feedback(distractor),if(marks<>0,negative_feedback(translate('part.mcq.incorrect choice')),false))
+        );credit
+      )
+    ,
+      0
+    ),
+    [x,y],
+    tick_indexes
+  )
+
+
+layout_tick_indexes (Indexes of choice/answer pairs shown in the layout):
+    filter(layout[tick[0]][tick[1]],tick,tick_indexes)
+
+binary_score_ticks (Scores and feedback for each choice/answer pair, in the "binary" marking method):
+    let(
+        per_tick, 1/len(layout_tick_indexes),
+        scores,map(
+            let(distractor,settings["distractors"][x][y],
+                should_tick, settings["matrix"][x][y]>0,
+                if(studentAnswer[x][y]=should_tick,
+                    per_tick
+                ,
+                    assert(not isnonemptyhtml(distractor),negative_feedback(distractor));
+                    0
+                )
+            ),
+            [x,y],
+            layout_tick_indexes
+        ),
+        total, sum(scores),
+        switch(
+            total=1,correct(),
+            total=0 or settings["markingMethod"]="all-or-nothing",incorrect(),
+            set_credit(total,translate('part.marking.partially correct'))
+        )
+    )
+
+score_ticks:
+    switch(
+        settings["markingMethod"] in ["score per matched cell","all-or-nothing"], apply(binary_score_ticks);binary_score_ticks,
+        apply(only_ticked_score_ticks);only_ticked_score_ticks
+    )
+
+total_score: 
+    sum(score_ticks)
+
+mark:
+  assert(marks>0,correct());  // any answer is correct when 0 marks are available
+  assert(settings["markingMethod"]<>"sum ticked cells" or numTicks>0,
+    warn(translate("part.marking.nothing entered"));
+    fail(translate("part.marking.nothing entered"))
+  );
+  apply(wrongNumber);
+  apply(score_ticks)
+
+choice_indices (The indices of the student's choices):
+    j for: j of: 0..numAnswers-1 where: studentAnswer[j][0]
+
+choice_index (The index of the student's choice):
+    min(choice_indices)
+
+pair_indices (Answer, choice pairs that the student chose):
+    [answer,choice] for: [answer,choice] of: tick_indexes where: studentAnswer[answer][choice]
+
+answer_indices (The index of the chosen answer for each choice):
+    min(y for: y of: 0..numAnswers-1 where: studentAnswer[y][x]) for: x of: 0..numChoices-1
+
+interpreted_answer (The student's answer, to be reused by other parts):
+    switch(
+        settings["interpretedAnswerForm"] = "index of choice",
+            choice_index,
+        settings["interpretedAnswerForm"] = "text of choice",
+            settings["choices"][choice_index],
+        settings["interpretedAnswerForm"] = "list of boolean",
+            x[0] for: x of: studentAnswer,
+        settings["interpretedAnswerForm"] = "indices of choices",
+            choice_indices,
+        settings["interpretedAnswerForm"] = "text of choices",
+            settings["choices"][i] for: i of: choice_indices,
+        settings["interpretedAnswerForm"] = "indices of pairs",
+            pair_indices,
+        settings["interpretedAnswerForm"] = "text of pairs",
+            [settings["answers"][answer], settings["choices"][choice]] for: [answer, choice] of: pair_indices,
+        settings["interpretedAnswerForm"] = "list of indices",
+            answer_indices,
+        settings["interpretedAnswerForm"] = "list of texts",
+            settings["answers"][i] for: i of: answer_indices,
+        // otherwise
+            studentAnswer
+    )

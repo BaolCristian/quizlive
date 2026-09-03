@@ -1,0 +1,83 @@
+// Derived from Numbas (https://github.com/numbas/Numbas), Copyright 2011-2026 Newcastle University.
+// Licensed under the Apache License, Version 2.0. Copia verbatim di marking_scripts/gapfill.jme;
+// vedi packages/engine/NOTICE. Le righe che iniziano con "//" sono tolte dal parser delle note.
+
+marked_original_order (Mark the gaps in the original order, mainly to establish if every gap has a valid answer):
+    map(
+        mark_part(gap["path"],studentAnswer),
+        [gap,studentAnswer],
+        zip(gaps,studentAnswer)
+    )
+
+interpreted_answers (The interpreted answers for each gap, in the original order):
+    map(
+        res["values"]["interpreted_answer"],
+        res,
+        marked_original_order
+    )
+
+answers (The student's answers to each gap):
+    if(settings["sortAnswers"],
+        sort(interpreted_answers)
+    ,
+        interpreted_answers
+    )
+
+gap_order:
+    if(settings["sortAnswers"],
+        sort_destinations(interpreted_answers)
+    ,
+        gap_adaptive_order
+    )
+
+answer_order:
+    if(settings["sortAnswers"],
+        0..(len(studentAnswer)-1)
+    ,
+        gap_adaptive_order
+    )
+
+gap_feedback (Feedback on each of the gaps):
+    map(
+        try(
+            let(
+                answer, studentAnswer[answer_number],
+                result, submit_part(gaps[gap_number]["path"],answer),
+                gap, gaps[gap_number],
+                name, gap["name"],
+                noFeedbackIcon, not gap["settings"]["showFeedbackIcon"],
+                non_warning_feedback, filter(x["op"]<>"warning",x,result["feedback"]),
+                    assert(noFeedbackIcon,
+                        assert(name="" or len(gaps)=1 or len(non_warning_feedback)=0,feedback(translate('part.gapfill.feedback header',["name": name])))
+                    );
+                    concat_feedback(non_warning_feedback, if(marks>0,result["marks"]/marks,1/len(gaps)), noFeedbackIcon);
+                    result
+            ),
+            err,
+            fail(translate("part.gapfill.error marking gap",["name": gaps[gap_number]["name"], "message": err]))
+        ),
+        [gap_number,answer_number],
+        zip(gap_order,answer_order)
+    )
+
+all_valid (Are the answers to all of the gaps valid?):
+  all(map(res["valid"],res,marked_original_order))
+
+mark:
+  assert(all_valid or not settings["sortAnswers"], fail(translate("question.can not submit")));
+  apply(answers);
+  apply(gap_feedback)
+
+interpreted_answer:
+  answers
+
+pre_submit:
+    map(
+        let(
+            answer, studentAnswer[answer_number],
+            result, submit_part(gaps[gap_number]["path"],answer),
+            check_pre_submit(gaps[gap_number]["path"], answer, exec_path)
+        ),
+        [gap_number,answer_number],
+        zip(gap_order,answer_order)
+    )

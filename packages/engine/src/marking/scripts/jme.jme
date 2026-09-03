@@ -1,0 +1,297 @@
+// Derived from Numbas (https://github.com/numbas/Numbas), Copyright 2011-2026 Newcastle University.
+// Licensed under the Apache License, Version 2.0. Copia verbatim di marking_scripts/jme.jme;
+// vedi packages/engine/NOTICE. Le righe che iniziano con "//" sono tolte dal parser delle note.
+
+evaluation_scope (The JME scope in which to evaluate answer expressions):
+  scope()
+  |> add_function_sets(settings["functionSets"])
+  |> add_functions(settings["enabledFunctions"])
+  |> remove_functions(settings["disabledFunctions"])
+
+
+expand_juxtapositions_settings (Settings for the "expand juxtapositions" step):
+    [
+        "singleLetterVariables": settings["singleLetterVariables"],
+        "noUnknownFunctions": not settings["allowUnknownFunctions"],
+        "implicitFunctionComposition": settings["implicitFunctionComposition"],
+        "normaliseSubscripts": true
+    ]
+
+studentExpr_empty (If the student's answer is empty, don't try to mark it):
+    assert(trim(studentAnswer)<>"" and parse(studentAnswer)<>parse(""),
+        warn(translate("part.marking.nothing entered"));
+        fail(translate("part.marking.nothing entered"))
+    )
+
+notation (The name of the JME notation to use):
+    settings["notation"]
+
+studentExpr (The student's answer, parsed):
+    apply(studentExpr_empty);
+    try(
+        simplify(
+            expand_juxtapositions(parse(studentAnswer, notation), evaluation_scope, expand_juxtapositions_settings),
+            'basic'
+        )
+    , message,
+        warn(translate("part.jme.answer invalid",["message":message]));
+        fail(translate("part.jme.answer invalid",["message":message]));
+        nothing
+    )
+
+cleanedStudentString (The student's answer as a string, cleaned up): string(studentExpr)
+
+scope_vars (Variables already defined in the scope):
+    definedvariables()
+
+correctExpr (The correct answer, parsed):
+    expand_juxtapositions(parse(settings["correctAnswer"], notation), evaluation_scope, expand_juxtapositions_settings)
+
+studentMatch (The result of matching the student's expression against the pattern):
+    scope_case_sensitive(match(studentExpr,settings["mustMatchPattern"]),settings["caseSensitive"])
+
+correctMatch (The result of matching the correct answer against the pattern):
+    scope_case_sensitive(match(correctExpr,settings["mustMatchPattern"]),settings["caseSensitive"])
+
+compareName (The name of the matched group from each expression to compare): 
+    settings["nameToCompare"]
+
+formula_replacement_pattern: "$v;lhs = ?;rhs"
+
+formula_replacement:
+    if(is_formula,
+        string(
+            substitute(settings, expression("resultsequal(lhs, rhs, checkingType, checkingAccuracy)"))
+        )
+    ,
+        "lhs = rhs"
+    )
+
+studentCompare (The part of the student's expression to compare):
+    if(settings["mustMatchPattern"]="" or compareName="",
+        replace(formula_replacement_pattern, formula_replacement, studentExpr)
+    ,
+        studentMatch["groups"][compareName]
+    )
+
+correctCompare (The part of the correct expression to compare):
+    if(settings["mustMatchPattern"]="" or compareName="",
+        replace(formula_replacement_pattern, formula_replacement, correctExpr)
+    ,
+        correctMatch["groups"][compareName]
+    )
+
+failNameToCompare (If comparing just a subexpression, stop marking if the student's expression doesn't have that subexpression):
+    assert(settings["mustMatchPattern"]="" or compareName="" or (studentMatch["match"] and compareName in studentMatch["groups"]),
+        incorrect(settings["mustMatchMessage"]);
+        end()
+    )
+
+studentVariables (Variables used in the student's answer): 
+    scope_case_sensitive(set(findvars(studentCompare)),settings["caseSensitive"])
+
+correctVariables (Variables used in the correct answer):
+    scope_case_sensitive(set(findvars(correctCompare)),settings["caseSensitive"])
+
+unexpectedVariables (Unexpected variables used in the student's answer):
+    let(uvars, filter(not (x in correctVariables),x,list(studentVariables)),
+        assert(not settings["checkVariableNames"] or len(uvars)=0,
+            warn(translate("part.jme.unexpected variable name",["name":uvars[0]]));
+            feedback(translate("part.jme.unexpected variable name",["name":uvars[0]]))
+        );
+        uvars
+    )
+
+failMinLength (Is the student's answer too short?):
+    assert(settings["minLength"]=0 or len(cleanedStudentString)>=settings["minLength"],
+        multiply_credit(settings["minLengthPC"],settings["minLengthMessage"]);
+        true
+    )
+
+failMaxLength:
+    assert(settings["maxLength"]=0 or len(cleanedStudentString)<=settings["maxLength"],
+        multiply_credit(settings["maxLengthPC"],settings["maxLengthMessage"]);
+        true
+    )
+
+forbiddenStrings:
+    filter(x in cleanedStudentString, x, settings["notAllowed"])
+
+forbiddenStringsPenalty:
+    assert(len(forbiddenStrings)=0,
+        translate(
+          if(len(settings["notAllowed"])=1, 'part.jme.not-allowed one', 'part.jme.not-allowed several'),
+          ["strings":map(translate('part.jme.not-allowed bits',["string":str]),str,forbiddenStrings)]
+        );
+        multiply_credit(settings["notAllowedPC"],settings["notAllowedMessage"]);
+        warn(settings["notAllowedMessage"])
+    )
+
+requiredStrings:
+    filter(not (x in cleanedStudentString), x, settings["mustHave"])
+
+requiredStringsPenalty:
+    assert(len(requiredStrings)=0,
+        translate(
+          if(len(settings["mustHave"])=1, 'part.jme.must-have one', 'part.jme.must-have several'),
+          ["strings":map(translate('part.jme.must-have bits',["string":str]),str,forbiddenStrings)]
+        );
+        multiply_credit(settings["mustHavePC"],settings["mustHaveMessage"]);
+        warn(settings["mustHaveMessage"])
+    )
+
+vRange (The range to pick variable values from): 
+    settings["vsetRangeStart"]..settings["vsetRangeEnd"] # 0
+
+answerVariables (Variables used in either the correct answer or the student's answer):
+    correctVariables or studentVariables
+
+formula_match:
+  scope_case_sensitive(match(correctExpr,"$v;lhs = ?;rhs"),settings["caseSensitive"])
+
+is_formula (Is the correct answer a formula of the form name = expression?):
+  formula_match["match"]
+
+formula_variable (The variable on the left-hand side of the formula, if the correct answer is a formula):
+  try(string(formula_match["groups"]["lhs"]),err,"")
+
+formula_expression (The right-hand side of the formula, if the correct answer is a formula):
+  formula_match["groups"]["rhs"]
+
+formula_type (The type of value the formula produces, if the correct answer is a formula):
+  let(t,scope_case_sensitive(infer_type(formula_expression),settings["caseSensitive"]),
+    if(t in ["name",""],"number",t)
+  )
+
+value_generator_definitions:
+    dict([normalise_subscripts(k), v] for: [k,v] of: items(settings["valueGenerators"]))
+
+value_generators (Expressions which generate values for each variable in the answer):
+    dict(map(
+        [
+          name,
+          get(
+            value_generator_definitions,
+            name,
+            if(is_formula and name=formula_variable,
+              exec(function("random"),[formula_expression,default_value_generator[formula_type]])
+            ,
+              default_value_generator[get(variable_types,name,"number")]
+            )
+          )
+        ],
+        name,
+        answerVariables
+    ))
+
+variable_types (Inferred types for each of the variables):
+    scope_case_sensitive(infer_variable_types(correctExpr),settings["caseSensitive"])
+
+default_value_generator:
+    [
+        "number": expression("random(vRange)"),
+        "decimal": expression("dec(random(vRange))"),
+        "integer": expression("int(random(vRange))"),
+        "rational": expression("rational(random(vRange))"),
+        "matrix": expression("matrix(repeat(repeat(random(vRange),3),3))"),
+        "vector": expression("vector(repeat(random(vRange),3))"),
+        "boolean": expression("random(true,false)"),
+        "set": expression("set(repeat(random(vRange),5))")
+    ]
+
+vset (The sets of variable values to test against):
+    try(
+        repeat(
+            scope_case_sensitive(make_variables(value_generators,vRange),settings["caseSensitive"]),
+            settings["vsetRangePoints"]
+        ),
+        message,
+        warn(translate("part.jme.error checking numerically",["message":message]));
+        fail(translate("part.jme.error checking numerically",["message":message]));
+        []
+    )
+
+agree (Do the student's answer and the expected answer agree on each of the sets of variable values?):
+    apply(vset);
+    map(
+        try(
+            let(
+                scope, case_sensitive(evaluation_scope, settings["caseSensitive"]),
+                resultsequal(
+                  eval(studentCompare,scope,vars),
+                  eval(correctCompare,scope,vars),
+                  settings["checkingType"],
+                  settings["checkingAccuracy"]
+                )
+            ),
+            message,
+            warn(translate("part.jme.answer invalid",["message":message]));
+            fail(translate("part.jme.answer invalid",["message":message]));
+            false
+        ),
+        vars,
+        vset
+    )
+
+numFails (The number of times the student's answer and the expected answer disagree):
+    apply(agree);
+    len(filter(not x,x,agree))
+
+numericallyCorrect (Is the student's answer numerically correct?):
+    apply(numFails);
+    if(numFails<settings["failureRate"],
+        correct(translate("part.jme.marking.correct"))
+    ,
+        incorrect()
+    )
+
+sameVars (Does the student use the same variables as the correct answer?):
+    // Removed, but still defined so that older questions with custom marking algorithms don't break
+    nothing
+
+studentMatches (Does the student's answer match the required pattern?):
+    matches(studentExpr,settings["mustMatchPattern"])
+
+mustMatchMessage:
+    if(settings["mustMatchMessage"]="",
+        translate("part.jme.must-match.failed")
+    ,
+        translate("part.jme.must-match.warning", ["message": settings["mustMatchMessage"]])
+    )
+
+failMatchPatternPrevent (Prevent submission if the student's answer doesn't match the required pattern):
+    assert(settings["mustMatchWarningTime"]<>"prevent" or studentMatches,
+        warn(mustMatchMessage);
+        fail(mustMatchMessage)
+    )
+
+failMatchPattern (Give feedback if the student's answer doesn't match the required pattern):
+    assert(settings["mustMatchPattern"]="" or studentMatches,
+        assert(settings["mustMatchWarningTime"]<>"input",
+            warn(mustMatchMessage)
+        );
+        if(compareName="",
+            multiply_credit(settings["mustMatchPC"], mustMatchMessage)
+        ,
+            set_credit(0,mustMatchMessage)
+        );
+        true
+    )
+
+mark:
+    apply(studentExpr);
+    apply(failNameToCompare);
+    apply(unexpectedVariables);
+    apply(sameVars);
+    apply(failMatchPatternPrevent);
+    apply(numericallyCorrect);
+    apply(failMinLength);
+    apply(failMaxLength);
+    apply(forbiddenStringsPenalty);
+    apply(requiredStringsPenalty);
+    apply(failMatchPattern)
+
+interpreted_answer (The student's answer, to be reused by other parts):
+    apply(studentExpr);
+    studentExpr
+
