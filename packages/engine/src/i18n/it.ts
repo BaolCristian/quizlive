@@ -212,4 +212,22 @@ export const it: Record<string, string> = {
     "Questa parte arrotonderebbe la risposta a un numero negativo di decimali, il che non ha senso.",
   "part.numberentry.zero sig fig":
     "Questa parte arrotonderebbe la risposta a zero cifre significative, il che non ha senso.",
+  // question.js — le chiavi del caricamento e del ciclo di vita di una
+  // domanda (inventario 06 §5). Le quattro marcate "nostra" non hanno un
+  // equivalente upstream: rifiutano funzionalità fuori ambito (decisioni 1-4
+  // del brief del Task 9).
+  "question.error": "Domanda {number}: {message}",
+  "question.function.async not supported":
+    "La funzione {name} è asincrona (type: \"promise\"): il motore è sincrono e non la supporta", // nostra
+  "question.no such part": "Non trovo la parte {path}",
+  "question.parts mode not supported":
+    "La modalità di generazione delle parti \"{mode}\" non è supportata", // nostra
+  "question.preamble not supported":
+    "Questa domanda ha un preambolo JavaScript: il motore non esegue codice arbitrario", // nostra
+  "question.required extension not available":
+    "Questa domanda richiede l'estensione <code>{extension}</code>, che non è disponibile",
+  "jme.variables.duplicate definition": "La variabile {name} è definita più di una volta",
+  "jme.variables.question took too many runs to generate variables":
+    "Non è stato generato in tempo un insieme valido di variabili per la domanda",
+  "variable.error in variable definition": "Errore nella definizione della variabile {name}",
 };

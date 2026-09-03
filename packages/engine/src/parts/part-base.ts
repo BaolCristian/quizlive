@@ -175,6 +175,10 @@ export abstract class PartBase {
   warnings: string[] = [];
   /** La risposta è cambiata dall'ultimo invio? */
   isDirty = false;
+  /** La risposta corretta è stata rivelata? (part.js:2238-2250) */
+  revealed = false;
+  /** La parte è bloccata: non accetta più risposte. (part.js:2256-2261) */
+  locked = false;
   /** La risposta in attesa di invio. */
   stagedAnswer: unknown = undefined;
   /** La parte ha ricevuto una risposta correggibile? */
@@ -853,6 +857,26 @@ export abstract class PartBase {
       this.setDirty(true);
       this.giveWarning(t("part.marking.resubmit because of variable replacement"));
     }
+  }
+
+  // part.js:2238-2250, senza display, eventi e il ramo `steps` (non portato).
+  // La ricorsione sui gap è quella che upstream mette in
+  // `GapFillPart#revealAnswer` (gapfill.js:147-151, composta PRIMA di quella
+  // base da `util.extend`, gapfill.js:240-242): con `gaps` vuoto per gli altri
+  // tipi il risultato osservabile è identico, senza un override.
+  /** Rivela la risposta corretta allo studente. */
+  revealAnswer(): void {
+    this.revealed = true;
+    this.setDirty(false);
+    this.gaps.forEach((g) => {
+      g.revealAnswer();
+    });
+  }
+
+  // part.js:2256-2261, senza display ed eventi
+  /** Blocca la parte: non accetta più risposte. */
+  lock(): void {
+    this.locked = true;
   }
 
   /** Il risultato dell'ultimo `submit`, se c'è stato. */

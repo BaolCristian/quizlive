@@ -199,4 +199,21 @@ export const en: Record<string, string> = {
     "This part is set up to round the student's answer to a negative number of decimal places, which has no meaning.",
   "part.numberentry.zero sig fig":
     "This part is set up to round the student's answer to zero significant figures, which has no meaning.",
+  // question.js — the keys used while loading a question and running its life
+  // cycle (inventory 06 §5). The four marked "ours" have no upstream
+  // equivalent: they reject out-of-scope features (decisions 1-4 of the Task 9
+  // brief).
+  "question.error": "Question {number}: {message}",
+  "question.function.async not supported":
+    "The function {name} is asynchronous (type: \"promise\"): this engine is synchronous and does not support it", // ours
+  "question.no such part": "Can't find the part {path}",
+  "question.parts mode not supported": "The parts mode \"{mode}\" is not supported", // ours
+  "question.preamble not supported":
+    "This question has a JavaScript preamble: the engine does not run arbitrary code", // ours
+  "question.required extension not available":
+    "This question requires the extension <code>{extension}</code> but it is not available",
+  "jme.variables.duplicate definition": "There is more than one definition of the variable {name}",
+  "jme.variables.question took too many runs to generate variables":
+    "A valid set of question variables was not generated in time",
+  "variable.error in variable definition": "Error in the definition of the variable {name}",
 };
