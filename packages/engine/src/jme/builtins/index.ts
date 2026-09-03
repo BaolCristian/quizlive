@@ -6,59 +6,105 @@
 // risoluzione degli overload preferisce il primo match esatto e, a parità, la
 // definizione registrata per prima (inventario §8.9).
 //
-// I temi del Task 4b (`lists`, `dictionaries`, `strings`, `type_casting`,
-// `jme`, `pattern_matching`, `control_flow`, `comprehensions`,
-// `differentiation`, `marking`) si aggiungono qui, ognuno nella posizione
-// upstream.
+// Ogni tema è avvolto in `functionSet(...)`, l'equivalente del
+// `builtin_function_set({name, description}, ...)` upstream: le funzioni sono
+// registrate una per una nello scope (nell'ordine originale) e l'insieme
+// finisce in `scope.function_sets`, dove lo cerca il builtin
+// `add_function_sets` (jme-builtins.js:2599).
+//
+// I temi `http` (3785-3812) e `promises` (3815-3824) non sono portati, e del
+// tema `html` (2769-2924) restano solo `isnonemptyhtml` ed `escape_html`:
+// vedi DIVERGENCES.md. I temi `jme` (2213-2636), `pattern_matching`
+// (2639-2766), `control_flow` (3015-3224), `comprehensions` (3227-3750),
+// `calculus` (3753-3766) e `marking` (3769-3782) arrivano nel passo
+// successivo.
 
 import { simplificationRules } from "../rules-simplify";
 import { makeRng, Scope, setBuiltinScope } from "../scope";
 
+import { functionSet } from "./registry";
 import { registerConstants } from "./constants";
 import { registerArithmetic } from "./arithmetic";
-import { registerComplexExponentials } from "./complex-exponentials";
+import { registerComplexNumbers, registerExponentials } from "./complex-exponentials";
 import { registerTrigonometry } from "./trigonometry";
 import { registerRounding } from "./rounding";
 import { registerNumberTheory } from "./number-theory";
 import { registerComparison } from "./comparison";
 import { registerLinearAlgebra } from "./linear-algebra";
 import { registerBooleans } from "./booleans";
-import { registerSetsIntervals } from "./sets-intervals";
+import { registerIntervals, registerSetTheory } from "./sets-intervals";
 import { registerRanges } from "./ranges";
-import { registerNumberParsing } from "./number-parsing";
+import { registerLists } from "./lists";
+import { registerDictionaries } from "./dictionaries";
+import { registerStrings } from "./strings";
+import { registerTypeCasting } from "./type-casting";
+import {
+  registerJson,
+  registerNumberConversion,
+  registerNumberFormatting,
+  registerPrecision,
+} from "./number-parsing";
+import { registerHtmlPure } from "./html-pure";
 import { registerRandomisation } from "./randomisation";
 
 export * from "./registry";
 export { registerConstants, builtinConstants } from "./constants";
 export { registerArithmetic } from "./arithmetic";
-export { registerComplexExponentials } from "./complex-exponentials";
+export {
+  registerComplexExponentials,
+  registerComplexNumbers,
+  registerExponentials,
+} from "./complex-exponentials";
 export { registerTrigonometry } from "./trigonometry";
 export { registerRounding } from "./rounding";
 export { registerNumberTheory } from "./number-theory";
 export { registerComparison } from "./comparison";
 export { registerLinearAlgebra } from "./linear-algebra";
 export { registerBooleans } from "./booleans";
-export { registerSetsIntervals } from "./sets-intervals";
+export { registerSetsIntervals, registerSetTheory, registerIntervals } from "./sets-intervals";
 export { registerRanges, best_number_type_for_range } from "./ranges";
-export { registerNumberParsing } from "./number-parsing";
+export { registerLists } from "./lists";
+export { registerDictionaries } from "./dictionaries";
+export { registerStrings } from "./strings";
+export { registerTypeCasting } from "./type-casting";
+export {
+  registerNumberParsing,
+  registerNumberFormatting,
+  registerNumberConversion,
+  registerPrecision,
+  registerJson,
+} from "./number-parsing";
+export { registerHtmlPure } from "./html-pure";
 export { registerRandomisation } from "./randomisation";
 
 /** Registra nello scope le costanti e tutte le funzioni predefinite, nello
  * stesso ordine di `jme-builtins.js`. Si può rieseguire su uno scope nuovo. */
 export function registerBuiltins(scope: Scope): void {
   registerConstants(scope);
-  registerArithmetic(scope);
-  registerComplexExponentials(scope);
-  registerTrigonometry(scope);
-  registerRounding(scope);
-  registerNumberTheory(scope);
-  registerComparison(scope);
-  registerLinearAlgebra(scope);
-  registerBooleans(scope);
-  registerSetsIntervals(scope);
-  registerRanges(scope);
-  registerNumberParsing(scope);
-  registerRandomisation(scope);
+  functionSet(scope, { name: "arithmetic", description: "Arithmetic operations" }, registerArithmetic);
+  functionSet(scope, { name: "complex_numbers", description: "Complex numbers" }, registerComplexNumbers);
+  functionSet(scope, { name: "exponentials", description: "Exponentials and logarithms" }, registerExponentials);
+  functionSet(scope, { name: "trigonometry", description: "Trigonometry" }, registerTrigonometry);
+  functionSet(scope, { name: "rounding", description: "Rounding" }, registerRounding);
+  functionSet(scope, { name: "number_theory", description: "Number theory" }, registerNumberTheory);
+  functionSet(scope, { name: "comparison", description: "Comparison" }, registerComparison);
+  functionSet(scope, { name: "linear_algebra", description: "Linear algebra" }, registerLinearAlgebra);
+  functionSet(scope, { name: "booleans", description: "Booleans" }, registerBooleans);
+  functionSet(scope, { name: "set_theory", description: "Set theory" }, registerSetTheory);
+  functionSet(scope, { name: "intervals", description: "Real intervals" }, registerIntervals);
+  functionSet(scope, { name: "number_ranges", description: "Ranges of numbers" }, registerRanges);
+  functionSet(scope, { name: "lists", description: "Lists" }, registerLists);
+  functionSet(scope, { name: "dictionaries", description: "Dictionaries" }, registerDictionaries);
+  functionSet(scope, { name: "strings", description: "Strings" }, registerStrings);
+  functionSet(scope, { name: "type_casting", description: "Converting between data types" }, registerTypeCasting);
+  functionSet(scope, { name: "number_parsing", description: "Parsing numbers" }, (s) => {
+    registerNumberFormatting(s);
+    registerNumberConversion(s);
+  });
+  functionSet(scope, { name: "precision", description: "Testing precision" }, registerPrecision);
+  functionSet(scope, { name: "json", description: "JSON" }, registerJson);
+  functionSet(scope, { name: "html", description: "HTML" }, registerHtmlPure);
+  functionSet(scope, { name: "randomisation", description: "Random" }, registerRandomisation);
 }
 
 // jme-builtins.js:41 — `new Scope({rulesets: jme.rules.simplificationRules})`.

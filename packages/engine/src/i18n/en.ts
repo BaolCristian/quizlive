@@ -16,7 +16,18 @@ export const en: Record<string, string> = {
   "jme.display.simplifyTree.stuck in a loop": "Simplifying {expr} got stuck in a loop: the rules undo each other",
   "jme.evaluate.no scope given": "Evaluating an expression needs a scope",
   "jme.func.except.continuous range": "Can't use `except` on a continuous range (step 0)",
+  "jme.func.listval.invalid index": "Index {index} is outside the list, which has {size} elements",
+  "jme.func.listval.key not in dict": "Key {key} is not in the dictionary",
+  "jme.func.listval.not a list": "Only a list can be indexed",
+  "jme.func.parse.no notation": "There is no notation called {notation_name}",
+  "jme.func.satisfy.condition not a boolean": "The conditions of `satisfy` must evaluate to true or false",
+  "jme.func.satisfy.took too many runs": "`satisfy` could not find values satisfying the conditions",
+  "jme.func.satisfy.wrong number of definitions": "`satisfy` needs one definition for each name",
+  "jme.func.switch.no default case": "No case of `switch` is true and there is no default case",
+  "jme.iterate_until.condition produced non-boolean": "The condition of `iterate_until` produced {type} instead of a boolean",
   "jme.makeFast.no fast definition of function": "The function {name} has no definition that can be made fast",
+  "jme.map.matrix map returned non number": "Mapping over a matrix must produce numbers",
+  "jme.map.vector map returned non number": "Mapping over a vector must produce numbers",
   "jme.matchTree.group name not a name": "The name of a captured group must be a name or a key-value pair",
   "jme.matchTree.match macro first argument not a dictionary":
     "The first argument of `@ must be a dictionary of sub-patterns",
@@ -48,16 +59,19 @@ export const en: Record<string, string> = {
   "jme.tokenise.parser not ready": "The standard parser has not been initialised yet",
   "jme.type.no cast method": "There is no automatic conversion from {from} to {to}",
   "jme.type.type already registered": "The data type {type} is already registered",
+  "jme.typecheck.for in name wrong type": "The name bound by `of:` must be a name or a list of names, not {type}",
   "jme.typecheck.function maybe implicit multiplication":
     "The function {name} is not defined: did you mean {first}*{possibleOp}(...)?",
   "jme.typecheck.function not defined":
     "The function {op} is not defined: is {op} a variable, and did you mean {suggestion}*(...)?",
+  "jme.typecheck.map not on enumerable": "Cannot map over a value of type {type}",
   "jme.typecheck.no right type definition": "No definition of {op} matches these argument types",
   "jme.typecheck.no right type unbound name": "The variable {name} is not defined",
   "jme.typecheck.op not defined": "The operation {op} is not defined",
   "jme.typecheck.wrong arguments for anonymous function": "Wrong number of arguments for this anonymous function",
   "jme.typecheck.wrong names for anonymous function":
     "Invalid argument names for an anonymous function: {names_type}",
+  "jme.variables.variable not defined": "Variable {name} is not defined",
   "jme.vector.value not an array of numbers": "A vector must be built from an array of numbers",
   "util.equality not defined for type": "Equality is not defined for the type {type}",
 };

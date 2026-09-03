@@ -14,9 +14,21 @@
 // registrato — inventario §8.9). Vedi DIVERGENCES.md per il raggruppamento
 // per tema, che qui è dato dai moduli `builtins/<tema>.ts`.
 
+import { JmeError } from "../errors";
 import { FuncObj, signature, type FuncObjOptions, type SignatureInput } from "../funcobj";
-import { lazyOps, type Scope } from "../scope";
-import type { TokenConstructor } from "../tokens";
+import { compile } from "../parser";
+import { FunctionSet, type Scope, lazyOps } from "../scope";
+import { displayHooks } from "../subvars";
+import type { TokenConstructor, Tree } from "../tokens";
+
+// jme-builtins.js:60-68 — l'insieme di funzioni del tema in costruzione.
+// upstream ogni tema costruisce un `jme.FunctionSet` con `add_function` e poi
+// lo assorbe nello scope; qui `add` registra subito nello scope (per non
+// alterare l'ordine) e, se un tema è aperto, aggiunge la definizione anche al
+// suo insieme, che `functionSet` deposita nello scope alla fine. Serve a
+// `scope.getFunctionSet(nome)`, cioè al builtin `add_function_sets`
+// (jme-builtins.js:2599).
+let currentSet: FunctionSet | undefined;
 
 /**
  * Registra una definizione di funzione nello scope, con la stessa semantica di
@@ -35,7 +47,60 @@ export function add(
   opts.random = "random" in opts ? opts.random : false;
   const jme_fn = new FuncObj(name, intype, outcons, fn, opts);
   scope.addFunction(jme_fn);
+  if (currentSet) {
+    currentSet.functions.push(jme_fn);
+  }
   return jme_fn;
+}
+
+// jme-builtins.js:60-68 (`builtin_function_set`).
+/** Esegue `register` dichiarando che le funzioni registrate appartengono al
+ * tema dato, e deposita l'insieme risultante nello scope. */
+export function functionSet(
+  scope: Scope,
+  options: { name: string; description: string },
+  register: (scope: Scope) => void,
+): void {
+  const previous = currentSet;
+  const set = new FunctionSet(options);
+  currentSet = set;
+  try {
+    register(scope);
+  } finally {
+    currentSet = previous;
+  }
+  // le funzioni sono già nello scope (`add` le ha registrate una per una):
+  // `addFunctionSet` non le duplica e serve a registrare l'insieme per nome.
+  scope.addFunctionSet(set);
+}
+
+/** Una notazione JME: sa compilare una stringa e riscrivere un albero
+ * (jme-notations.js:414). */
+export interface Notation {
+  compile: (str: string) => Tree | null;
+  treeToJME: (tree: Tree, settings: unknown, scope: Scope) => string;
+}
+
+// jme-builtins.js:72-84 (`get_notation`).
+/** La notazione con il nome dato.
+ *
+ * upstream le legge da `Numbas.jme.notations` (jme-notations.js, non portato
+ * in questo batch): qui esiste solo `standard`, cioè il parser e il
+ * serializzatore predefiniti. Vedi DIVERGENCES.md. */
+export function get_notation(notation_name: string): Notation {
+  if (notation_name !== "standard") {
+    throw new JmeError("jme.func.parse.no notation", { notation_name: notation_name });
+  }
+  return {
+    compile: (str) => compile(str),
+    treeToJME: (tree, settings, scope) => {
+      const hook = displayHooks.treeToJME;
+      if (!hook) {
+        throw new JmeError("jme.subvars.display not available", { op: "treeToJME" });
+      }
+      return hook(tree, settings, scope);
+    },
+  };
 }
 
 // jme-builtins.js:31 (`var sig = jme.signature`).

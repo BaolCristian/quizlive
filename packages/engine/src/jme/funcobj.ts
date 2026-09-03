@@ -425,8 +425,10 @@ export interface FuncObjOptions {
   evaluate?: (args: Token[] | Tree[], scope: Scope) => Token;
   /** Spacchetta gli argomenti in valori JS grezzi prima di passarli a `fn`. */
   unwrapValues?: boolean | UnwrapValueOptions;
-  /** La funzione può comportarsi in modo casuale? */
-  random?: boolean;
+  /** La funzione può comportarsi in modo casuale? `undefined` esplicito vuol
+   * dire "non si sa" (jme-builtins.js:2458): `isRandom` deve guardare
+   * l'espressione, non la definizione. */
+  random?: boolean | undefined;
   /** Il risultato è codice LaTeX. */
   latex?: boolean;
   /** La funzione è pigra: valuta lei i suoi argomenti. */

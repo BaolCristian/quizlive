@@ -44,7 +44,7 @@ export function registerNumberParsing(scope: Scope): void {
 // jme-builtins.js:1917-1990
 /** `dpformat`, `sigformat`, `formatnumber`, `string`, `parsenumber`,
  * `with_precision`, `imprecise`. */
-function registerNumberFormatting(scope: Scope): void {
+export function registerNumberFormatting(scope: Scope): void {
   add(
     scope,
     "dpformat",
@@ -149,7 +149,7 @@ function registerNumberFormatting(scope: Scope): void {
 
 // jme-builtins.js:1991-2152
 /** `parsedecimal`, le conversioni di base, `scientificnumber*`, `decimal`. */
-function registerNumberConversion(scope: Scope): void {
+export function registerNumberConversion(scope: Scope): void {
   add(scope, "parsedecimal", [TString, TString], TDecimal, (s: string, style: string) =>
     math.parseDecimal(s, false, style, true),
   );
@@ -355,7 +355,7 @@ function registerNumberConversion(scope: Scope): void {
 
 // jme-builtins.js:2155-2192
 /** Tema `precision`. */
-function registerPrecision(scope: Scope): void {
+export function registerPrecision(scope: Scope): void {
   add(scope, "togivenprecision", [TString, TString, TNum, TBool], TBool, math.toGivenPrecision);
   add(scope, "togivenprecision_scientific", [TString, TString, TNum], TBool, math.toGivenPrecisionScientific);
   add(scope, "withintolerance", [TNum, TNum, TNum], TBool, math.withinTolerance);
@@ -384,7 +384,7 @@ function registerPrecision(scope: Scope): void {
 
 // jme-builtins.js:2195-2210
 /** Tema `json`. */
-function registerJson(scope: Scope): void {
+export function registerJson(scope: Scope): void {
   add(scope, "json_decode", [TString], "?", null, {
     evaluate: (args) => {
       const data: unknown = JSON.parse(((args as Token[])[0] as TString).value);

@@ -20,8 +20,19 @@ export const it: Record<string, string> = {
     "La semplificazione di {expr} è entrata in un ciclo: le regole si annullano a vicenda",
   "jme.evaluate.no scope given": "Per valutare un'espressione serve uno scope",
   "jme.func.except.continuous range": "Non si può usare `except` su un intervallo continuo (passo 0)",
+  "jme.func.listval.invalid index": "Indice {index} fuori dalla lista, che ha {size} elementi",
+  "jme.func.listval.key not in dict": "La chiave {key} non è nel dizionario",
+  "jme.func.listval.not a list": "Si può indicizzare solo una lista",
+  "jme.func.parse.no notation": "La notazione {notation_name} non esiste",
+  "jme.func.satisfy.condition not a boolean": "Le condizioni di `satisfy` devono valere vero o falso",
+  "jme.func.satisfy.took too many runs": "`satisfy` non ha trovato valori che soddisfano le condizioni",
+  "jme.func.satisfy.wrong number of definitions": "`satisfy` vuole una definizione per ogni nome",
+  "jme.func.switch.no default case": "Nessun caso di `switch` è vero e non c'è un caso predefinito",
+  "jme.iterate_until.condition produced non-boolean": "La condizione di `iterate_until` ha prodotto {type} invece di un booleano",
   "jme.makeFast.no fast definition of function":
     "La funzione {name} non ha una definizione utilizzabile in forma veloce",
+  "jme.map.matrix map returned non number": "Mappando su una matrice si devono produrre numeri",
+  "jme.map.vector map returned non number": "Mappando su un vettore si devono produrre numeri",
   "jme.matchTree.group name not a name":
     "Il nome di un gruppo catturato deve essere un nome o una coppia chiave-valore",
   "jme.matchTree.match macro first argument not a dictionary":
@@ -56,10 +67,12 @@ export const it: Record<string, string> = {
   "jme.tokenise.parser not ready": "Il parser standard non è ancora inizializzato",
   "jme.type.no cast method": "Conversione automatica non disponibile da {from} a {to}",
   "jme.type.type already registered": "Il tipo di dato {type} è già registrato",
+  "jme.typecheck.for in name wrong type": "Il nome legato da `of:` deve essere un nome o una lista di nomi, non {type}",
   "jme.typecheck.function maybe implicit multiplication":
     "La funzione {name} non è definita: forse intendevi {first}*{possibleOp}(...)?",
   "jme.typecheck.function not defined":
     "La funzione {op} non è definita: {op} è una variabile e intendevi {suggestion}*(...)?",
+  "jme.typecheck.map not on enumerable": "Non si può mappare su un valore di tipo {type}",
   "jme.typecheck.no right type definition": "Nessuna definizione di {op} adatta a questi tipi di argomento",
   "jme.typecheck.no right type unbound name": "La variabile {name} non è definita",
   "jme.typecheck.op not defined": "L'operazione {op} non è definita",
@@ -67,6 +80,7 @@ export const it: Record<string, string> = {
     "Numero di argomenti sbagliato per questa funzione anonima",
   "jme.typecheck.wrong names for anonymous function":
     "Nomi di argomento non validi per una funzione anonima: {names_type}",
+  "jme.variables.variable not defined": "La variabile {name} non è definita",
   "jme.vector.value not an array of numbers": "Un vettore va costruito da un array di numeri",
   "util.equality not defined for type": "Uguaglianza non definita per il tipo {type}",
 };

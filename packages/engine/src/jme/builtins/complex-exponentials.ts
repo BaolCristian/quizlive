@@ -11,14 +11,26 @@ import { add } from "./registry";
 
 /** Registra i temi `complex_numbers` ed `exponentials`. */
 export function registerComplexExponentials(scope: Scope): void {
-  // complex_numbers (183-187)
+  registerComplexNumbers(scope);
+  registerExponentials(scope);
+}
+
+// jme-builtins.js:182-191
+/** Tema `complex_numbers`. */
+export function registerComplexNumbers(scope: Scope): void {
+  // 183-187
   add(scope, "arg", [TNum], TNum, math.arg);
   add(scope, "re", [TNum], TNum, math.re);
   add(scope, "im", [TNum], TNum, math.im);
   add(scope, "conj", [TNum], TNum, math.conjugate);
   add(scope, "arg", [TDecimal], TDecimal, (a: math.ComplexDecimal) => a.argument());
 
-  // exponentials (193-211)
+}
+
+// jme-builtins.js:192-215
+/** Tema `exponentials`. */
+export function registerExponentials(scope: Scope): void {
+  // 193-211
   add(scope, "sqrt", [TNum], TNum, math.sqrt);
   add(scope, "ln", [TNum], TNum, math.log);
   add(scope, "log", [TNum], TNum, math.log10);

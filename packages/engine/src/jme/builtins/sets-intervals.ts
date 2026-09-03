@@ -30,7 +30,7 @@ export function registerSetsIntervals(scope: Scope): void {
 
 // jme-builtins.js:969-1011
 /** Tema `set_theory`. */
-function registerSetTheory(scope: Scope): void {
+export function registerSetTheory(scope: Scope): void {
   add(scope, "set", [TList], TSet, null, {
     evaluate: (args, s) => new TSet(distinct(((args as Token[])[0] as TList).value ?? [], s)),
   });
@@ -79,7 +79,7 @@ function registerSetTheory(scope: Scope): void {
 
 // jme-builtins.js:1021-1086
 /** Tema `intervals`. */
-function registerIntervals(scope: Scope): void {
+export function registerIntervals(scope: Scope): void {
   add(
     scope,
     "interval",
