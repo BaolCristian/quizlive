@@ -22,7 +22,8 @@ import type { PatternMatch } from "../../src/jme/rules-match";
 import { matchExpression as matchExpressionRaw, patternParser } from "../../src/jme/rules-parser";
 import { extendOptions, type MatchTreeOptions } from "../../src/jme/rules-terms";
 import { Rule } from "../../src/jme/rules-transform";
-import { evaluated, makePatternScope, treesEqual } from "./jme-helpers";
+import { treesSame } from "../../src/jme/compare";
+import { evaluated, makePatternScope } from "./jme-helpers";
 
 const scope = makePatternScope();
 
@@ -358,7 +359,7 @@ describe("Pattern-matching > replace", () => {
     // `treeToJME`).
     let res = replace("?;x+?;y", "x*y", "acg", "1+2");
     expect(res.changed, "1+2 cambia").toBe(true);
-    treesEqual(res.expression, compile("1*2") as Tree, "1+2 diventa 1*2");
+    expect(treesSame(res.expression, compile("1*2") as Tree, scope), "1+2 diventa 1*2").toBe(true);
 
     res = replace("?;x+?;y", "x*y", "acg", "1*2");
     expect(res.changed, "1*2 non cambia").toBe(false);
@@ -368,6 +369,9 @@ describe("Pattern-matching > replace", () => {
 
     res = replaceAll("?;x*?;y", "x+y", "acg", "1*2+3*4");
     expect(res.changed, "replaceAll cambia 1*2+3*4").toBe(true);
-    treesEqual(res.expression, compile("(1+2)+(3+4)") as Tree, "1*2+3*4 diventa (1+2)+(3+4)");
+    expect(
+      treesSame(res.expression, compile("(1+2)+(3+4)") as Tree, scope),
+      "1*2+3*4 diventa (1+2)+(3+4)",
+    ).toBe(true);
   });
 });
