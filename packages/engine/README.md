@@ -287,4 +287,12 @@ del codice.
 Spec: `docs/superpowers/specs/2026-09-02-esercizi-02-motore-design.md`;
 inventari di porting in `docs/superpowers/plans/2026-09-02-esercizi-02-motore/inventory/`.
 
+## Licenze
+
+Il port e il resto di SAVINT sono AGPL-3.0-only (`LICENSE` alla radice del
+repository). Il runtime Numbas da cui derivano è Apache 2.0, Copyright
+2011-2026 Newcastle University: la copia della licenza è in
+[`LICENSE-Apache-2.0.txt`](./LICENSE-Apache-2.0.txt) e l'attribuzione, con
+l'elenco di quel che è ridistribuito verbatim, in [`NOTICE`](./NOTICE).
+
 Derived from Numbas, see NOTICE.
