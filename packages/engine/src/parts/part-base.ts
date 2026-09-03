@@ -11,8 +11,8 @@
 // `resume`/`store`, `display`, `signals`/`events`, `setScript`/`applyScripts`,
 // gli step, la modalità "explore", `wait_for_pre_submit`.
 
-import { t } from "../i18n";
-import { JmeError } from "../jme/errors";
+import { t, type Locale } from "../i18n";
+import { JmeError, errorMessageIn } from "../jme/errors";
 import { Scope } from "../jme/scope";
 import { TBool, TNum, TString, type Token, type TScope } from "../jme/tokens";
 import { normaliseName } from "../jme/tokenizer";
@@ -123,9 +123,9 @@ export function partErrorKeys(e: unknown): string[] {
   return keys;
 }
 
-/** Il messaggio di un errore qualsiasi. */
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e);
+/** Il messaggio di un errore, nella lingua data (v. `errorMessageIn`). */
+function errorMessage(e: unknown, locale?: Locale): string {
+  return errorMessageIn(e, locale);
 }
 
 /**
@@ -149,10 +149,16 @@ export abstract class PartBase {
   question: PartQuestion | undefined;
   /** La parte madre, se questa è un gap o un'alternativa. */
   parentPart: PartBase | undefined;
-  /** La lingua dei messaggi (informativa: `t()` usa quella globale). */
-  locale: PartContext["locale"];
   /** Lo scope genitore da cui la parte costruisce il proprio. */
   protected readonly parentScope: Scope;
+
+  /** La lingua dei messaggi della parte: quella del suo scope, cioè quella
+   * della domanda che la contiene. `undefined` significa "la predefinita del
+   * processo" (`getLocale()`), che è il caso di una parte costruita fuori da
+   * una domanda. */
+  get locale(): Locale | undefined {
+    return this.parentScope.locale;
+  }
 
   /** La parte è un gap di un `gapfill`? */
   isGap: boolean;
@@ -254,10 +260,9 @@ export abstract class PartBase {
     this.path = path || "p0";
     this.question = ctx.questionRef;
     this.parentPart = parentPart;
-    this.locale = ctx.locale;
     this.parentScope = ctx.scope;
     this.full_path = (this.question && this.question.number !== undefined ? "q" + this.question.number : "") + this.path;
-    this.name = capitalise(nicePartName(this.path));
+    this.name = capitalise(nicePartName(this.path, this.locale));
     if (this.question && this.question.partDictionary) {
       this.question.partDictionary[this.path] = this;
     }
@@ -346,7 +351,7 @@ export abstract class PartBase {
 
   /** Il contesto da passare alle parti figlie (gap, alternative). */
   context(): PartContext {
-    return { scope: this.parentScope, questionRef: this.question, locale: this.locale };
+    return { scope: this.parentScope, questionRef: this.question };
   }
 
   // part.js:439-443
@@ -410,9 +415,9 @@ export abstract class PartBase {
     if (this.useCustomName) {
       this.name = contentsubvars(this.customName, this.getScope(), false);
     } else if (this.isGap) {
-      this.name = capitalise(t("gap")) + " " + index;
+      this.name = capitalise(t("gap", undefined, this.locale)) + " " + index;
     } else if (this.isStep && siblings > 0) {
-      this.name = capitalise(t("step")) + " " + index;
+      this.name = capitalise(t("step", undefined, this.locale)) + " " + index;
     } else if (siblings === 0) {
       this.name = "";
     } else {
@@ -439,7 +444,7 @@ export abstract class PartBase {
     if (originalError && partErrorKeys(originalError)[0] === "part.error") {
       throw originalError;
     }
-    const nmessage = t(message, args);
+    const nmessage = t(message, args, this.locale);
     throw new JmeError(
       "part.error",
       { path: this.name, message: nmessage },
@@ -598,15 +603,15 @@ export abstract class PartBase {
       // ramo `marks == 0` assegna il numero `0` a `creditFraction`, non una
       // frazione. Portati entrambi con i tipi corretti.
       this.creditFraction = marks !== 0 ? Fraction.fromFloat(this.settings.minimumMarks) : Fraction.zero;
-      this.markingComment(t("part.marking.minimum score applied", { score: niceNumber(this.settings.minimumMarks) }));
+      this.markingComment(t("part.marking.minimum score applied", { score: niceNumber(this.settings.minimumMarks) }, this.locale));
     }
     if (this.score > marks) {
       this.finalised_result.states.push(
-        feedback.sub_credit(this.credit - 1, t("part.marking.maximum score applied", { score: niceNumber(marks) })),
+        feedback.sub_credit(this.credit - 1, t("part.marking.maximum score applied", { score: niceNumber(marks) }, this.locale)),
       );
       this.score = marks;
       this.creditFraction = Fraction.one;
-      this.markingComment(t("part.marking.maximum score applied", { score: niceNumber(marks) }));
+      this.markingComment(t("part.marking.maximum score applied", { score: niceNumber(marks) }, this.locale));
     }
   }
 
@@ -792,10 +797,10 @@ export abstract class PartBase {
         result = markAdaptive(this);
       } catch (e) {
         this.submitting = false;
-        this.error("part.marking.uncaught error", { message: errorMessage(e) }, e);
+        this.error("part.marking.uncaught error", { message: errorMessage(e, this.locale) }, e);
       }
       if (!result) {
-        this.setCredit(0, t("part.marking.no result after replacement"));
+        this.setCredit(0, t("part.marking.no result after replacement", undefined, this.locale));
         this.answered = true;
       } else {
         this.setWarnings(result.warnings);
@@ -810,20 +815,20 @@ export abstract class PartBase {
       }
     } else {
       this.submit_no_staged_answer();
-      this.setCredit(0, t("part.marking.did not answer"));
+      this.setCredit(0, t("part.marking.did not answer", undefined, this.locale));
       this.answered = false;
     }
     const availableMarks = this.availableMarks();
     if (availableMarks < this.marks) {
       this.markingFeedback.splice(0, 0, {
         op: "feedback",
-        message: t("part.marking.maximum scaled down", { count: niceNumber(availableMarks) }),
+        message: t("part.marking.maximum scaled down", { count: niceNumber(availableMarks) }, this.locale),
       });
     }
     if (this.adaptiveMarkingUsed && this.settings.adaptiveMarkingPenalty > 0) {
       this.markingFeedback.splice(0, 0, {
         op: "feedback",
-        message: t("part.marking.used variable replacements"),
+        message: t("part.marking.used variable replacements", undefined, this.locale),
       });
     }
     this.calculateScore();
@@ -846,7 +851,7 @@ export abstract class PartBase {
   // part.js:1359-1361
   /** Chiamata quando si invia una parte senza risposta. */
   submit_no_staged_answer(): void {
-    this.giveWarning(t("part.marking.not submitted"));
+    this.giveWarning(t("part.marking.not submitted", undefined, this.locale));
   }
 
   // part.js:1375-1381
@@ -855,7 +860,7 @@ export abstract class PartBase {
     if (!this.shouldResubmit) {
       this.shouldResubmit = true;
       this.setDirty(true);
-      this.giveWarning(t("part.marking.resubmit because of variable replacement"));
+      this.giveWarning(t("part.marking.resubmit because of variable replacement", undefined, this.locale));
     }
   }
 

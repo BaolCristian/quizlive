@@ -10,7 +10,7 @@
 // mai `pre_submit_parameters` e `mark_answer` è sincrona.
 
 import { t } from "../i18n";
-import { JmeError } from "../jme/errors";
+import { JmeError, errorMessageIn } from "../jme/errors";
 import { makeSafe, wrapValue } from "../jme/evaluate";
 import type { Scope } from "../jme/scope";
 import { TNum, TString, type Token } from "../jme/tokens";
@@ -89,8 +89,14 @@ export function markAnswer(
     }
     return script.evaluate(scope, parameters);
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    throw new JmeError("part.marking.error in marking script", { message: message }, e);
+    // il messaggio interpolato finisce davanti allo studente (`markAgainstScope`
+    // lo mette fra gli avvisi): va reso nella lingua della parte, non in quella
+    // predefinita del processo con cui `JmeError` traduce al lancio.
+    throw new JmeError(
+      "part.marking.error in marking script",
+      { message: errorMessageIn(e, part.locale) },
+      e,
+    );
   }
 }
 
@@ -211,9 +217,9 @@ function annotateCreditChanges(part: PartBase): void {
       if (change !== 0) {
         const marks = Math.abs(change);
         if (change > 0) {
-          action.credit_message = t("feedback.you were awarded", { count: niceNumber(marks) });
+          action.credit_message = t("feedback.you were awarded", { count: niceNumber(marks) }, part.locale);
         } else {
-          action.credit_message = t("feedback.taken away", { count: niceNumber(marks) });
+          action.credit_message = t("feedback.taken away", { count: niceNumber(marks) }, part.locale);
         }
       }
     }

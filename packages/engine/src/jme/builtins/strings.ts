@@ -16,7 +16,7 @@ import * as math from "../../math";
 import type { Scope } from "../scope";
 import { Scope as ScopeClass } from "../scope";
 import { TBool, TDict, TList, TNum, TRange, TString, type Token, type Tree } from "../tokens";
-import { findvars, findvarsOps, isFunction } from "../evaluate";
+import { findvars, findvarsOps, isFunction, unwrapValue } from "../evaluate";
 import { contentsubvars, tokenToDisplayString } from "../subvars";
 import { mergeUnique } from "../util";
 import { t } from "../../i18n";
@@ -196,14 +196,19 @@ export function registerStrings(scope: Scope): void {
   add(scope, "abs", [TString], TNum, (s: string) => s.length);
 
   // 1805-1810 — upstream chiama `R(s)`/`R(s, params)`, la funzione globale di
-  // i18next; qui il dizionario è quello del motore (`i18n/`).
-  add(scope, "translate", [TString], TString, (s: string) => t(s));
-  add(
-    scope,
-    "translate",
-    [TString, TDict],
-    TString,
-    (s: string, params: Record<string, string | number>) => t(s, params),
-    { unwrapValues: true },
-  );
+  // i18next; qui il dizionario è quello del motore (`i18n/`) e la lingua è
+  // quella dello scope in cui la chiamata è valutata (`Scope.locale`), non una
+  // globale del modulo: `translate` è il produttore principale del testo che
+  // lo studente legge (33 chiamate nei cinque script di correzione
+  // incorporati), e l'unico contesto che ha è lo scope. Vedi DIVERGENCES.md.
+  add(scope, "translate", [TString], TString, null, {
+    evaluate: (args, s) => new TString(t((toks(args)[0] as TString).value, undefined, s.locale)),
+  });
+  add(scope, "translate", [TString, TDict], TString, null, {
+    evaluate: (args, s) => {
+      const key = (toks(args)[0] as TString).value;
+      const params = unwrapValue(toks(args)[1] as Token) as Record<string, string | number>;
+      return new TString(t(key, params, s.locale));
+    },
+  });
 }

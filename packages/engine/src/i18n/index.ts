@@ -15,14 +15,23 @@ export type Params = Record<string, string | number>;
 
 const dictionaries: Record<Locale, Record<string, string>> = { it, en };
 
+// upstream: la lingua è la globale di i18next scelta da `localisation.js`, e
+// `R()` la legge a ogni chiamata. Qui la lingua di una domanda viaggia sul suo
+// `Scope` (`Scope.locale`, vedi DIVERGENCES.md): questa variabile è solo la
+// PREDEFINITA del processo, cioè quel che si usa quando nessuno scope, nessuna
+// parte e nessuna opzione ne indica una.
 let currentLocale: Locale = "it";
 
-/** Imposta la lingua usata da `t()` quando non ne riceve una esplicita. */
+/** Imposta la lingua predefinita del processo: quella che `t()` usa quando non
+ * ne riceve una esplicita, e quella che `loadQuestion` fissa sulla domanda se
+ * `LoadOptions.locale` manca.
+ *
+ * Non cambia la lingua di una domanda già caricata: quella sta sul suo scope. */
 export function setLocale(l: Locale): void {
   currentLocale = l;
 }
 
-/** La lingua corrente. */
+/** La lingua predefinita del processo. */
 export function getLocale(): Locale {
   return currentLocale;
 }
@@ -32,8 +41,9 @@ export function getLocale(): Locale {
 // file di `locales/`.
 const re_placeholder = /\{(\w+)\}/g;
 
-/** Traduce `key` nella lingua indicata (o in quella corrente), interpolando i
- * segnaposto `{nome}` con `params`. Una chiave assente ritorna la chiave
+/** Traduce `key` nella lingua indicata (o in quella predefinita del processo,
+ * se `locale` è assente), interpolando i segnaposto `{nome}` con `params`.
+ * Una chiave assente ritorna la chiave
  * stessa: i test upstream verificano le chiavi, non i messaggi
  * (jme-tests.mjs:19-21, `e.originalMessage`), quindi una chiave mancante non
  * deve mai far fallire una valutazione. */

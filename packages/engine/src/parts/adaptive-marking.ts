@@ -9,8 +9,8 @@
 // attesa (decisione 2 del Task 7, inventario §6.9). Non è portato nemmeno il
 // blocco `partsMode == 'explore'` (1107).
 
-import { t } from "../i18n";
-import { JmeError } from "../jme/errors";
+import { t, type Locale } from "../i18n";
+import { JmeError, errorMessageIn } from "../jme/errors";
 import type { Scope } from "../jme/scope";
 import { TNum, TString, type Token } from "../jme/tokens";
 import { feedback, type FeedbackItem } from "../marking/feedback";
@@ -76,9 +76,11 @@ export interface MarkingResults {
   adaptiveMarkingUsed?: boolean | undefined;
 }
 
-/** Il messaggio di un errore qualsiasi. */
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e);
+/** Il messaggio di un errore, nella lingua della parte: `JmeError` traduce al
+ * momento del lancio (come upstream), ma questo testo finisce davanti allo
+ * studente, quindi si ricostruisce da `key`/`params`. */
+function errorMessage(e: unknown, locale?: Locale): string {
+  return errorMessageIn(e, locale);
 }
 
 /** L'errore, come `Error`. */
@@ -107,7 +109,7 @@ export function markAlternatives(
       values = result.values;
       script_result = result.script_result;
     } catch (e) {
-      part.giveWarning(errorMessage(e));
+      part.giveWarning(errorMessage(e, part.locale));
       script_result = { stateErrors: { mark: asError(e) } };
     }
     return {
@@ -206,7 +208,7 @@ export function markAgainstScope(part: PartBase, scope: Scope, existing: Existin
   const res = altres.result;
   const markError = res.script_result.stateErrors["mark"];
   if (markError) {
-    const message = markError.message;
+    const message = errorMessage(markError, part.locale);
     part.markingComment(message);
     part.giveWarning(message);
   }
@@ -262,7 +264,7 @@ export function markAdaptive(part: PartBase): MarkingResults | undefined {
       const result_replacement = part.markAgainstScope(scope, existing_feedback);
       if (!result_original || (result_replacement.answered && result_replacement.credit > result_original.credit)) {
         result = result_replacement;
-        result.finalised_result.states.splice(0, 0, feedback.feedback(t("part.marking.used variable replacements")));
+        result.finalised_result.states.splice(0, 0, feedback.feedback(t("part.marking.used variable replacements", undefined, part.locale)));
         result.adaptiveMarkingUsed = true;
       }
     } catch (e) {
@@ -281,36 +283,41 @@ function handleAdaptiveError(
 ): MarkingResults | undefined {
   const keys = partErrorKeys(e);
   if (keys.includes("part.marking.variable replacement part not answered")) {
-    const errorFeedback: FeedbackItem[] = [feedback.feedback(errorMessage(e))];
+    const errorFeedback: FeedbackItem[] = [feedback.feedback(errorMessage(e, part.locale))];
     part.getErrorCarriedForwardReplacements().forEach((vr: VariableReplacementJSON) => {
       const other = part.question ? (part.question.getPart(vr.part) as PartBase | undefined) : undefined;
       if (other && other.answered && !other.shouldUseInAdaptiveMarking()) {
         errorFeedback.splice(0, 0, {
           op: "feedback",
           message: other.settings.adaptiveMarkingNotUsedMessage
-            ? t("part.marking.adaptive variable replacement does not satisfy condition message", {
-                name: other.name,
-                message: other.settings.adaptiveMarkingNotUsedMessage,
-              })
-            : t("part.marking.adaptive variable replacement does not satisfy condition", { name: other.name }),
+            ? t(
+                "part.marking.adaptive variable replacement does not satisfy condition message",
+                { name: other.name, message: other.settings.adaptiveMarkingNotUsedMessage },
+                part.locale,
+              )
+            : t(
+                "part.marking.adaptive variable replacement does not satisfy condition",
+                { name: other.name },
+                part.locale,
+              ),
           reason: "",
           format: "string",
         });
       }
     });
     const out = result ?? emptyErrorResult(errorFeedback, asError(e));
-    out.warnings.push(errorMessage(e));
+    out.warnings.push(errorMessage(e, part.locale));
     return out;
   }
   try {
-    part.error(errorMessage(e), {}, e);
+    part.error(errorMessage(e, part.locale), {}, e);
   } catch (pe) {
     // upstream (part.js:1170) interpola `e.message`, l'errore ORIGINALE, non
     // `pe` (il `part.error` appena costruito): il messaggio mostrato allo
     // studente non deve avere il prefisso col nome della parte. `pe` finisce
     // solo in `script_result.state_errors.mark`.
     const errorFeedback: FeedbackItem[] = [
-      feedback.feedback(t("part.marking.error in adaptive marking", { message: errorMessage(e) })),
+      feedback.feedback(t("part.marking.error in adaptive marking", { message: errorMessage(e, part.locale) }, part.locale)),
     ];
     if (!result) {
       return emptyErrorResult(errorFeedback, asError(pe));

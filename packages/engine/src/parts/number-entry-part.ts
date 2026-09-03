@@ -6,7 +6,7 @@
 // `input_options` (142-158).
 
 import { t } from "../i18n";
-import { JmeError } from "../jme/errors";
+import { JmeError, errorMessageIn } from "../jme/errors";
 import { castToType, isType, unwrapValue } from "../jme/evaluate";
 import type { Scope } from "../jme/scope";
 import { subvars } from "../jme/subvars";
@@ -97,7 +97,7 @@ export class NumberEntryPart extends PartBase {
       precisionPC: 0,
       mustBeReduced: false,
       mustBeReducedPC: 0,
-      precisionMessage: t("You have not given your answer to the correct precision."),
+      precisionMessage: t("You have not given your answer to the correct precision.", undefined, this.locale),
       showPrecisionHint: true,
       showFractionHint: true,
     });
@@ -155,7 +155,7 @@ export class NumberEntryPart extends PartBase {
     try {
       this.getCorrectAnswer(this.getScope());
     } catch (e) {
-      this.error(e instanceof Error ? e.message : String(e), {}, e);
+      this.error(errorMessageIn(e, this.locale), {}, e);
     }
     // numberentry.js:77 — una parte appena caricata ha già una risposta in
     // attesa (la stringa vuota): senza questo, inviare senza rispondere darebbe
@@ -178,12 +178,12 @@ export class NumberEntryPart extends PartBase {
     let minvalue = scope.evaluate(subvars(String(settings.minvalueString), scope));
     const ominvalue = minvalue;
     if (!minvalue) {
-      this.error("part.setting not present", { property: t("minimum value") });
+      this.error("part.setting not present", { property: t("minimum value", undefined, this.locale) });
     }
     let maxvalue = scope.evaluate(subvars(String(settings.maxvalueString), scope));
     const omaxvalue = maxvalue;
     if (!maxvalue) {
-      this.error("part.setting not present", { property: t("maximum value") });
+      this.error("part.setting not present", { property: t("maximum value", undefined, this.locale) });
     }
 
     const dmin = (castToType(minvalue, "decimal") as { value: ComplexDecimal }).value;

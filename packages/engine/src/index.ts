@@ -64,7 +64,7 @@ export interface RenderLatexOptions {
   ruleset?: string | string[];
   /** La lingua degli eventuali messaggi d'errore.
    *
-   * Non cambia la resa dei numeri: il motore non ha le globali di locale di
+   * Non cambia la resa dei numeri: il motore non ha le globali di formato di
    * `Numbas.locale` (separatore delle liste sempre `,`, notazione sempre
    * `plain`) — vedi DIVERGENCES.md. */
   locale?: Locale;
@@ -81,12 +81,15 @@ export function renderLatex(expr: string, opts?: RenderLatexOptions): string {
   if (locale === undefined) {
     return exprToLaTeX(expr, opts?.ruleset ?? "all", builtinScope);
   }
-  // la lingua corrente è globale al motore: renderla in inglese non deve
-  // cambiare la lingua delle correzioni successive.
+  // la lingua viaggia sullo scope (`Scope.locale`); l'unica cosa che ancora
+  // legge la predefinita del processo è `JmeError`, che traduce al momento del
+  // lancio come upstream (`Numbas.Error`) — quindi la si sposta e la si
+  // rimette, il che è sicuro perché `exprToLaTeX` è sincrona.
+  const scope = new Scope([builtinScope, { locale: locale }]);
   const previous = getLocale();
   setLocale(locale);
   try {
-    return exprToLaTeX(expr, opts?.ruleset ?? "all", builtinScope);
+    return exprToLaTeX(expr, opts?.ruleset ?? "all", scope);
   } finally {
     setLocale(previous);
   }

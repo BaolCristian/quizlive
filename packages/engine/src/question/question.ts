@@ -16,7 +16,7 @@
 // domanda. Qui è la stessa cosa, ma con un seme esplicito.
 
 import { JmeError } from "../jme/errors";
-import { setLocale, t } from "../i18n";
+import { getLocale, t, type Locale } from "../i18n";
 import type { Scope } from "../jme/scope";
 import { contentsubvars } from "../jme/subvars";
 import { substituteHtml } from "../variables";
@@ -95,6 +95,11 @@ export class Question {
   /** La domanda è bloccata (nessuna risposta ulteriore è accettata)? */
   locked = false;
 
+  /** La lingua dei messaggi di questa domanda: quella indicata a
+   * `loadQuestion`, o la predefinita del processo al momento del caricamento.
+   * È la stessa che porta `this.scope` e ogni scope che ne discende. */
+  readonly locale: Locale;
+
   /** Il JSON da cui la domanda è stata caricata: serve a `regenerate`. */
   private readonly json: NumbasQuestionJSON;
   /** Le opzioni di caricamento: servono a `regenerate`. */
@@ -103,22 +108,27 @@ export class Question {
   private currentScore: QuestionScore = { score: 0, marks: 0 };
 
   constructor(json: NumbasQuestionJSON, opts: LoadOptions) {
-    // upstream: la lingua è quella globale di `Numbas.locale`, scelta dall'esame.
-    // Decisione 11 del brief: la sceglie chi carica la domanda, e va scelta
-    // prima di costruire qualunque cosa perché i messaggi delle parti sono
-    // calcolati durante il caricamento.
-    setLocale(opts.locale ?? "it");
+    // upstream: la lingua è quella globale di `Numbas.locale`, scelta
+    // dall'esame. Decisione 11 del brief: la sceglie chi carica la domanda.
+    // Qui viene fissata una volta sola e portata dallo scope della domanda
+    // (`Scope.locale`), non da una globale del modulo: due domande caricate in
+    // lingue diverse restano ciascuna nella propria, e `setLocale` resta solo
+    // la predefinita per chi non ne indica nessuna. Vedi DIVERGENCES.md.
+    this.locale = opts.locale ?? getLocale();
     this.json = json;
-    this.options = opts;
+    // le opzioni memorizzate portano la lingua già risolta, così `regenerate`
+    // ricostruisce la domanda nella stessa lingua anche se nel frattempo la
+    // predefinita del processo è cambiata.
+    this.options = { ...opts, locale: this.locale };
     this.seed = opts.seed;
 
-    const parsed: ParsedQuestion = parseQuestionJSON(json, opts);
+    const parsed: ParsedQuestion = parseQuestionJSON(json, this.options);
     this.customName = parsed.customName;
     this.hasCustomName = parsed.hasCustomName;
     this.tags = parsed.tags;
 
     // question.js:789-808 — costanti, funzioni, ruleset, in quest'ordine.
-    const questionScope = buildQuestionScope(parsed, opts, this);
+    const questionScope = buildQuestionScope(parsed, this.options, this);
 
     // question.js:809-842
     this.variablesTodo = buildVariablesTodo(parsed.variableDefinitions, questionScope, (m, a, c) => this.error(m, a, c));
@@ -165,14 +175,11 @@ export class Question {
   }
 
   /** Il contesto da passare alle parti: lo scope della domanda e la domanda
-   * stessa (`PartContext.questionRef`, Task 8). */
+   * stessa (`PartContext.questionRef`, Task 8).
+   *
+   * La lingua non compare qui: la porta lo scope. */
   private partContext(): PartContext {
-    const ctx: PartContext = { scope: this.scope, questionRef: this };
-    const locale = this.options.locale;
-    if (locale !== undefined) {
-      ctx.locale = locale;
-    }
-    return ctx;
+    return { scope: this.scope, questionRef: this };
   }
 
   // question.js:241-260
@@ -184,7 +191,7 @@ export class Question {
     if (originalError && questionErrorKeys(originalError)[0] === "question.error") {
       throw originalError;
     }
-    const nmessage = t(message, args);
+    const nmessage = t(message, args, this.locale);
     // upstream: question.js:255-258 vorrebbe conservare la catena
     // (`[message].concat(originalError.originalMessages || [])`) ma riassegna
     // `originalError` a un `Error` nuovo la riga prima, quindi la catena si

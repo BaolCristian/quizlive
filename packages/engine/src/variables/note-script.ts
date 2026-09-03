@@ -41,9 +41,9 @@ export class ScriptNote {
       // `[a-zA-Z0-9+]` include letteralmente `+`, non solo cifre/lettere —
       // portato com'è.
       if (/^[a-zA-Z_][a-zA-Z0-9+]*'*(?:\s*\(([^)]*)\))?$/.test(trimmed)) {
-        hint = t("jme.script.note.invalid definition.missing colon");
+        hint = t("jme.script.note.invalid definition.missing colon", undefined, scope.locale);
       } else if (/^[a-zA-Z_][a-zA-Z0-9+]*'*\s*\(/.test(trimmed)) {
-        hint = t("jme.script.note.invalid definition.description missing closing bracket");
+        hint = t("jme.script.note.invalid definition.description missing closing bracket", undefined, scope.locale);
       }
       throw new JmeError("jme.script.note.invalid definition", { source: trimmed, hint: hint });
     }

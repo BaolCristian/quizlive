@@ -6,7 +6,7 @@
 //
 // `createPartFromXML` (49-84) non è portata: il percorso XML è fuori ambito.
 
-import { JmeError } from "../jme/errors";
+import { JmeError, errorMessageIn } from "../jme/errors";
 import { nicePartName } from "./nice-part-name";
 import type { PartBase } from "./part-base";
 import type { PartContext, PartJSON, PartType } from "./types";
@@ -40,7 +40,7 @@ export function createPart(
 ): PartBase {
   const cons = partConstructors[type];
   if (!cons) {
-    throw new JmeError("part.unknown type", { part: nicePartName(path), type: type });
+    throw new JmeError("part.unknown type", { part: nicePartName(path, ctx.scope.locale), type: type });
   }
   const part = new cons(index, path, ctx, parentPart);
   part.type = type;
@@ -66,7 +66,7 @@ export function createPartFromJSON(
   parentPart?: PartBase,
 ): PartBase {
   if (!data || !data.type) {
-    throw new JmeError("part.missing type attribute", { part: nicePartName(path) });
+    throw new JmeError("part.missing type attribute", { part: nicePartName(path, ctx.scope.locale) });
   }
   const part = createPart(index, data.type, path, ctx, parentPart);
   try {
@@ -79,7 +79,7 @@ export function createPartFromJSON(
     if (e instanceof JmeError && e.key === "part.error") {
       throw e;
     }
-    part.error(e instanceof Error ? e.message : String(e), {}, e);
+    part.error(errorMessageIn(e, part.locale), {}, e);
   }
   return part;
 }

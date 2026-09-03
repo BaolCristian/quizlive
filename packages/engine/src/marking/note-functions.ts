@@ -47,15 +47,26 @@ export interface StateFnResult {
  * spacchettati. */
 type StateFnBody = (...args: never[]) => StateFnResult;
 
+/** Il corpo di una funzione di stato che ha bisogno dello scope di
+ * valutazione: lo riceve come PRIMO argomento, prima dei valori. Serve alle
+ * poche funzioni che producono da sé un messaggio tradotto e devono farlo
+ * nella lingua dello scope (`Scope.locale`). */
+type StateFnScopedBody = (scope: Scope, ...args: never[]) => StateFnResult;
+
 // marking.js:110-130
 /** Crea una funzione JME che modifica lo stato della correzione: esegue `fn`,
  * accoda `fn().state` allo stato dello `StatefulScope` più vicino nella catena
- * dei genitori, e ritorna `fn().return` impacchettato come token JME. */
+ * dei genitori, e ritorna `fn().return` impacchettato come token JME.
+ *
+ * Con `options.scoped` il corpo riceve lo scope come primo argomento
+ * (`StateFnScopedBody`); è un'aggiunta del port, upstream la lingua è globale.
+ * Vedi DIVERGENCES.md. */
 export function stateFn(
   name: string,
   args: SignatureInput[],
   outcons: TokenConstructor,
-  fn: StateFnBody,
+  fn: StateFnBody | StateFnScopedBody,
+  options?: { scoped?: boolean },
 ): FuncObj {
   return new FuncObj(name, args, outcons, null, {
     evaluate: function (fnargs: Token[] | Tree[], scope: Scope): Token {
@@ -64,8 +75,9 @@ export function stateFn(
         // le funzioni pigre ricevono gli alberi e lo scope, non i valori
         res = (fn as unknown as (a: Tree[], s: Scope) => StateFnResult)(fnargs as Tree[], scope);
       } else {
+        const values = (fnargs as Token[]).map((a) => unwrapValue(a));
         res = (fn as unknown as (...a: unknown[]) => StateFnResult)(
-          ...(fnargs as Token[]).map((a) => unwrapValue(a)),
+          ...(options?.scoped === true ? [scope, ...values] : values),
         );
       }
       res.state.forEach((s) => {
@@ -144,12 +156,17 @@ function submitPart(part: MarkablePart, answer?: unknown): Token {
 
 // marking.js:157-168
 /** `correctif(condizione)` e `correctif(condizione, messaggio, messaggio)`. */
-function correctif(condition: boolean, correctMessage?: string, incorrectMessage?: string): StateFnResult {
+function correctif(
+  scope: Scope,
+  condition: boolean,
+  correctMessage?: string,
+  incorrectMessage?: string,
+): StateFnResult {
   let state: FeedbackItem;
   if (condition) {
-    state = feedback.set_credit(1, "correct", correctMessage || t("part.marking.correct"));
+    state = feedback.set_credit(1, "correct", correctMessage || t("part.marking.correct", undefined, scope.locale));
   } else {
-    state = feedback.set_credit(0, "incorrect", incorrectMessage || t("part.marking.incorrect"));
+    state = feedback.set_credit(0, "incorrect", incorrectMessage || t("part.marking.incorrect", undefined, scope.locale));
   }
   return { return: condition, state: [state] };
 }
@@ -161,10 +178,16 @@ const stateFunctions: FuncObj[] = [];
 
 // marking.js:133-138
 stateFunctions.push(
-  stateFn("correct", [], TBool, () => ({
-    return: true,
-    state: [feedback.set_credit(1, "correct", t("part.marking.correct"))],
-  })),
+  stateFn(
+    "correct",
+    [],
+    TBool,
+    ((scope: Scope) => ({
+      return: true,
+      state: [feedback.set_credit(1, "correct", t("part.marking.correct", undefined, scope.locale))],
+    })) as StateFnScopedBody,
+    { scoped: true },
+  ),
 );
 // marking.js:139-144
 stateFunctions.push(
@@ -175,10 +198,16 @@ stateFunctions.push(
 );
 // marking.js:145-150
 stateFunctions.push(
-  stateFn("incorrect", [], TBool, () => ({
-    return: false,
-    state: [feedback.set_credit(0, "incorrect", t("part.marking.incorrect"))],
-  })),
+  stateFn(
+    "incorrect",
+    [],
+    TBool,
+    ((scope: Scope) => ({
+      return: false,
+      state: [feedback.set_credit(0, "incorrect", t("part.marking.incorrect", undefined, scope.locale))],
+    })) as StateFnScopedBody,
+    { scoped: true },
+  ),
 );
 // marking.js:151-156
 stateFunctions.push(
@@ -188,8 +217,10 @@ stateFunctions.push(
   })) as StateFnBody),
 );
 // marking.js:169-170
-stateFunctions.push(stateFn("correctif", [TBool], TBool, correctif as StateFnBody));
-stateFunctions.push(stateFn("correctif", [TBool, TString, TString], TBool, correctif as StateFnBody));
+stateFunctions.push(stateFn("correctif", [TBool], TBool, correctif as StateFnScopedBody, { scoped: true }));
+stateFunctions.push(
+  stateFn("correctif", [TBool, TString, TString], TBool, correctif as StateFnScopedBody, { scoped: true }),
+);
 // marking.js:171-176
 stateFunctions.push(
   stateFn("set_credit", [TNum, TString], TNum, ((n: number, message: string) => ({
@@ -412,7 +443,7 @@ stateFunctions.push(
       const answer = (args as Token[])[1] as Token;
       let part_result;
       if (answer.type === "nothing") {
-        part.setCredit(0, t("part.marking.nothing entered"));
+        part.setCredit(0, t("part.marking.nothing entered", undefined, scope.locale));
         part_result = {
           states: { mark: [] as FeedbackItem[] },
           stateValid: {} as Record<string, boolean>,

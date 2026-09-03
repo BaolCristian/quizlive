@@ -6,6 +6,7 @@
 
 import seedrandom from "seedrandom";
 import type { Rng } from "../math";
+import type { Locale } from "../i18n";
 import { JmeError } from "./errors";
 import {
   TDict,
@@ -69,6 +70,7 @@ export interface ScopeExtras {
   rulesets?: Record<string, Ruleset>;
   caseSensitive?: boolean;
   rng?: Rng;
+  locale?: Locale;
   question?: unknown;
 }
 
@@ -171,6 +173,18 @@ export class Scope {
    * — solo per una radice che non ha né l'uno né l'altro — seminato con
    * `makeRng(DEFAULT_RNG_SEED)`. */
   rng!: Rng;
+  /** La lingua dei messaggi prodotti valutando in questo scope: la leggono
+   * `translate` (jme/builtins/strings.ts) e ogni `t()` che ha uno scope o una
+   * parte sottomano.
+   *
+   * upstream: non esiste — la lingua è la globale di i18next impostata da
+   * `localisation.js` e letta da `R()`.
+   *
+   * Viaggia come `rng`: ereditata dal genitore, sovrascrivibile da `extras`,
+   * conservata da `clone()`. Lasciarla indefinita significa "usa la lingua
+   * predefinita del processo" (`getLocale()`), che resta il comportamento per
+   * chi non ne indica nessuna. Vedi DIVERGENCES.md. */
+  declare locale?: Locale;
   /** La domanda a cui appartiene lo scope: riferimento opaco, riempito dal
    * Task 9. */
   declare question?: unknown;
@@ -208,6 +222,12 @@ export class Scope {
       this.parser = this.parent.parser;
       if (this.parent.caseSensitive !== undefined) {
         this.caseSensitive = this.parent.caseSensitive;
+      }
+      // il figlio eredita la lingua del genitore: i messaggi prodotti da uno
+      // scope figlio (script di correzione, lambda, sostituzioni) restano
+      // nella lingua della domanda.
+      if (this.parent.locale !== undefined) {
+        this.locale = this.parent.locale;
       }
       // il figlio eredita il generatore casuale del genitore, per riferimento:
       // le estrazioni continuano la stessa sequenza.
@@ -248,6 +268,9 @@ export class Scope {
       if (extras.rng !== undefined) {
         this.rng = extras.rng;
       }
+      if (extras.locale !== undefined) {
+        this.locale = extras.locale;
+      }
     }
   }
 
@@ -267,6 +290,9 @@ export class Scope {
     scope.deleted = structuredClone(this.deleted);
     if (this.caseSensitive !== undefined) {
       scope.caseSensitive = this.caseSensitive;
+    }
+    if (this.locale !== undefined) {
+      scope.locale = this.locale;
     }
     scope.rng = this.rng;
     return scope;

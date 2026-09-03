@@ -7,7 +7,7 @@
 // avviene dentro il costruttore. I test upstream confrontano `e.originalMessage`
 // (la chiave, non il testo tradotto): qui la chiave è `err.key`.
 
-import { t, type Params } from "../i18n";
+import { t, type Locale, type Params } from "../i18n";
 
 export class JmeError extends Error {
   /** La chiave upstream, es. `"jme.shunt.no left bracket"`. Stabile fra le
@@ -26,4 +26,18 @@ export class JmeError extends Error {
     this.params = params;
     this.originalError = originalError;
   }
+}
+
+/** Il messaggio di un errore qualsiasi, reso nella lingua data.
+ *
+ * `JmeError` traduce nel costruttore, come `Numbas.Error` upstream, quindi
+ * `e.message` è nella lingua predefinita del processo al momento del lancio.
+ * Chi deve mostrare quel testo a uno studente lo ricostruisce da `key` e
+ * `params` nella lingua giusta — che è il contratto documentato della classe.
+ * Con `locale` assente il comportamento coincide con `e.message`. */
+export function errorMessageIn(e: unknown, locale?: Locale): string {
+  if (e instanceof JmeError) {
+    return t(e.key, e.params, locale);
+  }
+  return e instanceof Error ? e.message : String(e);
 }

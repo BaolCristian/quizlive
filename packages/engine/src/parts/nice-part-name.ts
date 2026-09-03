@@ -3,7 +3,7 @@
 
 // util.js:1310-1330 — `Numbas.util.nicePartName`.
 
-import { t } from "../i18n";
+import { t, type Locale } from "../i18n";
 import { letterOrdinal } from "../math";
 
 // util.js:1316
@@ -19,20 +19,20 @@ const re_path = /^p(\d+)(?:s(\d+))?(?:g(\d+))?(?:a(\d+))?$/;
  * conversione è esplicita. Un percorso che non combacia con `re_path` fa
  * andare upstream in `TypeError` su `m[1]`; qui si ritorna il percorso
  * stesso, che è comunque solo testo per un messaggio d'errore. */
-export function nicePartName(path: string | undefined): string {
+export function nicePartName(path: string | undefined, locale?: Locale): string {
   const m = re_path.exec(path ?? "");
   if (!m) {
     return path ?? "";
   }
-  let s = t("part") + " " + letterOrdinal(Number(m[1]));
+  let s = t("part", undefined, locale) + " " + letterOrdinal(Number(m[1]));
   if (m[2]) {
-    s += " " + t("step") + " " + m[2];
+    s += " " + t("step", undefined, locale) + " " + m[2];
   }
   if (m[3]) {
-    s += " " + t("gap") + " " + m[3];
+    s += " " + t("gap", undefined, locale) + " " + m[3];
   }
   if (m[4]) {
-    s += " " + t("alternative") + " " + m[4];
+    s += " " + t("alternative", undefined, locale) + " " + m[4];
   }
   return s;
 }

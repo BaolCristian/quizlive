@@ -6,7 +6,6 @@
 // studente e il risultato della correzione.
 
 import type { Scope } from "../jme/scope";
-import type { Locale } from "../i18n";
 import type { VariablesTodo } from "../variables/generate";
 
 /** I tipi di parte in ambito (inventario 05 §5).
@@ -190,6 +189,4 @@ export interface PartContext {
   scope: Scope;
   /** La domanda che contiene la parte, se c'è. */
   questionRef?: PartQuestion | undefined;
-  /** La lingua dei messaggi (il Task 9 la imposta con `setLocale`). */
-  locale?: Locale | undefined;
 }

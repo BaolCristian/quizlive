@@ -13,7 +13,8 @@
 
 import { JmeError } from "../jme/errors";
 import { builtinConstants, builtinScope } from "../jme/builtins";
-import { makeRng, Scope } from "../jme/scope";
+import { makeRng, Scope, type ScopeExtras } from "../jme/scope";
+import { getLocale } from "../i18n";
 import { makeConstants, makeFunctions, makeRulesets, type FunctionDef } from "../variables";
 import type { PartJSON } from "../parts";
 import type { LoadOptions, NumbasQuestionJSON, QuestionConstantJSON, QuestionVariableJSON } from "./types";
@@ -172,9 +173,14 @@ function parseBuiltinConstants(builtin_constants: NumbasQuestionJSON["builtin_co
  * delle parti attraverso di esso). */
 export function buildQuestionScope(parsed: ParsedQuestion, opts: LoadOptions, question: unknown): Scope {
   // upstream: `new jme.Scope(gscope)` con `gscope = Numbas.jme.builtinScope`
-  // (question.js:85-86). Il generatore casuale seminato è la sola aggiunta del
-  // port: upstream la casualità viene da `Math.random`. Vedi DIVERGENCES.md.
-  let scope = new Scope([builtinScope, { rng: makeRng(opts.seed) }]);
+  // (question.js:85-86). Il generatore casuale seminato e la lingua sono le
+  // due aggiunte del port: upstream la casualità viene da `Math.random` e la
+  // lingua da `Numbas.locale`, entrambe globali. Qui viaggiano sullo scope, e
+  // quello della domanda è l'unico punto in cui vengono fissate: ogni scope
+  // figlio (parti, script di correzione, lambda) le eredita.
+  // Vedi DIVERGENCES.md.
+  const extras: ScopeExtras = { rng: makeRng(opts.seed), locale: opts.locale ?? getLocale() };
+  let scope = new Scope([builtinScope, extras]);
   scope.question = question;
 
   makeConstants(builtinConstants, scope, parsed.enabledConstants);

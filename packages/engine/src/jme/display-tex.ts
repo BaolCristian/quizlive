@@ -11,8 +11,9 @@
 // chiamate con `.call(this, ...)` da `Texifier`, quindi dichiarano `this`.
 //
 // `Numbas.locale.default_list_separator` (10 usi upstream) non ha equivalente
-// qui: il motore non ha globali di locale (vedi DIVERGENCES.md), quindi il
-// separatore è sempre `,`.
+// qui: il motore non ha globali di FORMATO (vedi DIVERGENCES.md), quindi il
+// separatore è sempre `,`, in tutte le lingue. La lingua dei messaggi esiste,
+// ma viaggia sullo scope (`Scope.locale`) e non tocca la resa dei numeri.
 
 import * as math from "../math";
 // jme-display.js:187 — `const {isComplex, isNegative, hasRealPart, conjugate,

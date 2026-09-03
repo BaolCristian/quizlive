@@ -34,7 +34,13 @@ export interface LoadOptions {
    * upstream: non ha equivalente — `Math.random` non è seminato per domanda
    * (inventario 06 §3 punto 5). Vedi DIVERGENCES.md. */
   seed: string;
-  /** La lingua dei messaggi. Predefinita `"it"`. */
+  /** La lingua dei messaggi della domanda. Se manca, si usa la lingua
+   * predefinita del processo al momento del caricamento (`getLocale()`,
+   * `"it"` finché nessuno chiama `setLocale`).
+   *
+   * La lingua resta poi legata alla domanda — viaggia sul suo `Scope` — e non
+   * cambia più: caricare un'altra domanda in un'altra lingua, o cambiare la
+   * predefinita, non tocca le correzioni di questa. */
   locale?: Locale | undefined;
   /** Permettere le funzioni personalizzate scritte in JavaScript
    * (`language: "javascript"`)? Predefinito `true`. */

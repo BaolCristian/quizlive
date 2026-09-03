@@ -10,7 +10,7 @@
 // `mustmatchpattern` il parser dei pattern.
 
 import { findvars } from "../jme/evaluate";
-import { JmeError } from "../jme/errors";
+import { JmeError, errorMessageIn } from "../jme/errors";
 import { simplifyExpression, subvars as displaySubvars, treeToJME } from "../jme/display";
 import { compile } from "../jme/parser";
 import { patternParser } from "../jme/rules-parser";
@@ -303,7 +303,7 @@ export class JMEPart extends PartBase {
     } catch (e) {
       this.error(
         "part.jme.invalid value generator expression",
-        { name: name, expr: expr, message: e instanceof Error ? e.message : String(e) },
+        { name: name, expr: expr, message: errorMessageIn(e, this.locale) },
         e instanceof JmeError ? e : undefined,
       );
     }
