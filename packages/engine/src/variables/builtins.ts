@@ -5,14 +5,15 @@
 // rinviato dal Task 4b (`builtins/jme-introspection-2.ts:2454-2465`) perché
 // dipende da `jme.variables.makeVariables`, disponibile solo da qui.
 //
-// Non è avvolto in `functionSet(scope, {name:"jme",...}, ...)`: quell'insieme
-// è già chiuso da `jme/builtins/jme-introspection.ts` (che lo registra da
-// `jme/builtins/index.ts`) e `registry.ts` non espone un modo per riaprirlo
-// dall'esterno senza sovrascriverlo. `make_variables` è quindi registrata
-// direttamente sullo scope (raggiungibile, valutabile, presente in
-// `scope.allFunctions()`), ma non compare in `scope.getFunctionSet("jme")`
-// — un dettaglio che riguarda solo `add_function_sets`/l'editor (nessun test
-// upstream lo esercita per questa funzione).
+// Non è registrata dentro `functionSet(scope, {name:"jme",...}, ...)`:
+// quell'insieme è già chiuso da `jme/builtins/jme-introspection.ts` (che lo
+// registra da `jme/builtins/index.ts`) e `registry.ts` non espone un modo
+// per riaprirlo dall'esterno senza sovrascriverlo. `make_variables` è quindi
+// registrata direttamente sullo scope con `add(...)`, e poi AGGIUNTA A MANO
+// all'array `.functions` del `FunctionSet` "jme" già esistente (sotto): senza
+// questo passo, `add_function_sets(s, ["jme"])` — un builtin raggiungibile da
+// JME — costruirebbe uno scope senza `make_variables`, perché
+// `addFunctionSet` copia solo `set.functions`.
 
 import { add, sig } from "../jme/builtins/registry";
 import { findvars } from "../jme/evaluate";
@@ -22,7 +23,7 @@ import { makeVariables, type VariablesTodo } from "./generate";
 
 /** Registra `make_variables` sullo scope dato. */
 export function registerVariablesBuiltins(scope: Scope): void {
-  add(
+  const fn = add(
     scope,
     "make_variables",
     [sig.dict(sig.type("expression")), sig.optional(sig.type("range"))],
@@ -56,4 +57,10 @@ export function registerVariablesBuiltins(scope: Scope): void {
       random: undefined,
     },
   );
+  // v. il commento in testa al file: senza questo, `getFunctionSet("jme")`
+  // (quindi `add_function_sets(s, ["jme"])`) non conterrebbe `make_variables`.
+  const jmeSet = scope.getFunctionSet("jme");
+  if (jmeSet) {
+    jmeSet.functions.push(fn);
+  }
 }

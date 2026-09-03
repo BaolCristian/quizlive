@@ -5,9 +5,20 @@
 // di `Numbas.jme.builtin_constants`, registrate con
 // `Numbas.jme.variables.makeConstants` (jme-variables.js:585-605).
 //
-// `makeConstants` vive in `jme-variables.js` (Task 6): qui se ne riproduce la
-// sola parte che serve ai builtin (separazione dei nomi sulla virgola e
-// gestione di `enabled`), come funzione locale.
+// `variables/constants.ts` (Task 6) ha la vera `makeConstants` esportata,
+// con l'algebra completa su `def.enabled`/`enabled`. Qui sotto c'è una
+// SECONDA copia locale, deliberatamente duplicata (non importata da lì): il
+// tema `jme` di questo file è costruito da `jme/builtins/index.ts`, letto a
+// sua volta da `jme/index.ts` prima che `variables/` esista; importare
+// `variables/` da `jme/builtins/` chiuderebbe un ciclo `jme → variables →
+// jme` fra moduli ESM, la stessa classe di problema (inizializzazione in
+// ordine sbagliato, TDZ) già incontrata due volte in questo pacchetto (la
+// suddivisione di `display.ts` e quella di tokenizer/parser — v.
+// DIVERGENCES.md). Le ~15 righe qui sotto bastano al solo caso d'uso di
+// questo file (nessun `enabled` per-domanda, dato che i builtin non ne
+// hanno uno): è un sottoinsieme di `variables/constants.ts`, non
+// un'implementazione alternativa — le due vanno tenute in sincronia se
+// l'algebra su `def.enabled` cambia.
 
 import * as math from "../../math";
 import type { Scope, ConstantDefinition } from "../scope";

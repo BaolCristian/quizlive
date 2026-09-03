@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from "vitest";
 import { Scope, compile, findvars, findvarsOps, makeRng, type Token, TNum } from "../../src/jme";
-import { builtinScope } from "../../src/jme/builtins";
+import { builtinConstants, builtinScope } from "../../src/jme/builtins";
 import {
   makeConstants,
   makeFunction,
@@ -120,6 +120,7 @@ describe("makeFunction", () => {
     const scope = new Scope([builtinScope]);
     scope.addFunction(fn);
     expect((scope.evaluate("double(21)") as TNum).value).toBe(42);
+    delete findvarsOps["double"];
   });
 
   it("funzione personalizzata in JavaScript, usabile dallo scope", () => {
@@ -185,6 +186,29 @@ describe("makeFunction", () => {
     const scope = new Scope([builtinScope]);
     scope.addFunction(fn);
     expect(() => scope.evaluate("asyncfn()")).toThrow(JmeError);
+    try {
+      scope.evaluate("asyncfn()");
+    } catch (e) {
+      expect((e as JmeError).key).toBe("jme.variables.async function not supported");
+    }
+  });
+
+  it("una funzione JavaScript che non ritorna nulla lancia jme.user javascript.error, non la propria chiave interna", () => {
+    // upstream (jme-variables.js:113-132): `jme.user javascript.returned
+    // undefined` è lanciata DENTRO lo stesso try che la avvolge in
+    // `jme.user javascript.error` — non è mai osservabile come chiave a sé.
+    const fn = makeFunction(
+      { parameters: [], definition: "", name: "noop", language: "javascript", outtype: "number" },
+      builtinScope,
+    );
+    const scope = new Scope([builtinScope]);
+    scope.addFunction(fn);
+    expect(() => scope.evaluate("noop()")).toThrow(JmeError);
+    try {
+      scope.evaluate("noop()");
+    } catch (e) {
+      expect((e as JmeError).key).toBe("jme.user javascript.error");
+    }
   });
 });
 
@@ -217,6 +241,30 @@ describe("makeConstants", () => {
     makeConstants([{ name: "k", value: "5", tex: "k" }], scope2, { k: false });
     expect(scope2.getConstant("k")).toBeUndefined();
   });
+
+  // Pinnano il comportamento che il Task 9 riuserà (question.js:796):
+  // `makeConstants(Numbas.jme.builtin_constants, q.scope, enabled_constants)`.
+  // `builtinConstants` (jme/builtins/constants.ts) ha `j` con `enabled: false`
+  // (alias ingegneristico di `i`, disattivato di default) e `pi` senza
+  // `enabled` (quindi abilitata di default).
+  it("con `enabled` vuoto, cancella `j` (enabled:false) e definisce `pi`", () => {
+    const scope = new Scope(builtinScope);
+    makeConstants(builtinConstants, scope, {});
+    expect(scope.getConstant("j")).toBeUndefined();
+    expect(scope.getConstant("pi")).toBeDefined();
+  });
+
+  it("con `enabled: {j: true}`, `j` viene definita", () => {
+    const scope = new Scope(builtinScope);
+    makeConstants(builtinConstants, scope, { j: true });
+    expect(scope.getConstant("j")).toBeDefined();
+  });
+
+  it("una definizione con `value` stringa passa dal ramo `typeof value != 'object'`", () => {
+    const scope = new Scope(builtinScope);
+    makeConstants([{ name: "k", value: "2+3", tex: "k" }], scope);
+    expect((scope.getConstant("k")!.value as TNum).value).toBe(5);
+  });
 });
 
 describe("substituteHtml", () => {
@@ -229,6 +277,6 @@ describe("substituteHtml", () => {
   });
 
   it("sostituisce \\var{} dentro un blocco matematico", () => {
-    expect(substituteHtml("$\\var{1+1}$", builtinScope)).toContain("2");
+    expect(substituteHtml("$\\var{1+1}$", builtinScope)).toBe("${2}$");
   });
 });

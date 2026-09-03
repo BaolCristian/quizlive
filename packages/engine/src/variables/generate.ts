@@ -69,7 +69,11 @@ export function computeVariable(
     throw new JmeError("jme.variables.empty name");
   }
   if (p.includes(name)) {
-    throw new JmeError("jme.variables.circular reference", { name: name });
+    // upstream (jme-variables.js:205) passa anche `path` come parametro
+    // dell'errore: qui, dato che `Params` (i18n) accetta solo
+    // `string | number`, la catena di nomi è unita in una stringa invece
+    // dell'array upstream.
+    throw new JmeError("jme.variables.circular reference", { name: name, path: p.join(" -> ") });
   }
   const v = todo[name];
   if (v === undefined) {

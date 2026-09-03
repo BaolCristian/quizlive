@@ -57,7 +57,7 @@ interface CustomFuncObj extends FuncObj {
 // jme-variables.js:51-86
 /** Crea una funzione personalizzata scritta in JME: valuta gli argomenti in
  * un nuovo scope figlio, poi valuta `fn.definition` su quello scope. */
-export function makeJMEFunction(
+function makeJMEFunction(
   fn: CustomFuncObj,
   scope: Scope,
 ): (args: Token[] | Tree[], scope: Scope) => Token {
@@ -119,7 +119,7 @@ function looksLikePromise(v: unknown): boolean {
 /** Crea una funzione personalizzata scritta in JavaScript, con `new
  * Function(paramNames, fn.definition)` — l'unico punto del motore in cui
  * `new Function` è permesso (decisione 5 del brief). */
-export function makeJavascriptFunction(
+function makeJavascriptFunction(
   fn: CustomFuncObj,
   withEnv?: Record<string, unknown>,
 ): (args: Token[] | Tree[], scope: Scope) => Token {
@@ -168,7 +168,13 @@ export function makeJavascriptFunction(
       }
       return wrapped;
     } catch (e) {
-      if (e instanceof JmeError) {
+      // upstream (jme-variables.js:126-132) avvolge OGNI eccezione del
+      // corpo in `jme.user javascript.error`, incluso il proprio
+      // `jme.user javascript.returned undefined` lanciato nello stesso
+      // `try`. L'unica eccezione qui è `jme.variables.async function not
+      // supported` (non upstream, decisione 3): è la nostra divergenza
+      // deliberata, e avvolgerla ne nasconderebbe il motivo.
+      if (e instanceof JmeError && e.key === "jme.variables.async function not supported") {
         throw e;
       }
       const message = e instanceof Error ? e.message : String(e);
