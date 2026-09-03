@@ -495,7 +495,7 @@ export class JmeError extends Error {
 export type TokenType = "nothing"|"number"|"integer"|"rational"|"decimal"|"interval"|"string"|"boolean"|"list"|"keypair"|"dict"|"set"|"vector"|"matrix"|"range"|"name"|"function"|"op"|"lambda"|"punc"|"promise"|"expression"|"scope"|"html";
 export interface Tree { tok: Token; args?: Tree[]; bracketed?: boolean }
 export class TNum { readonly type = "number"; value: NumbasNumber; originalValue?: string; precisionType?: "dp"|"sigfig"; precision?: number; constructor(n: NumbasNumber) }
-export class TInt { readonly type = "integer"; value: bigint /* getter/setter con ensure_bigint */; originalValue?: string }
+export class TInt { readonly type = "integer"; bigValue: bigint; get value(): number /* Number(bigValue), come upstream jme.js:3743-3751 */; originalValue?: string }
 export class TRational, TDecimal, TInterval, TString (safe, latex, subjme, display_latex), TBool, TList, TKeyPair, TDict, TSet, TVector, TMatrix, TRange, TName (name, annotation, nameInfo), TFunc, TOp (name, postfix, prefix, vars, precedence, commutative, associative, negated), TLambda, TPunc, TPromise, TExpression, TScope, TNothing, THTML (opaco: value: string, nessun DOM)
 export type Token = TNum | TInt | ... | THTML;
 export const types: Record<TokenType, new (...a: any[]) => Token>;
@@ -510,7 +510,7 @@ export function parseSignature(s: string | SignatureInput): Signature; export fu
 
 // jme/tokenizer.ts
 export interface TokeniserOptions { closeMissingBrackets?: boolean; addMissingArguments?: boolean }
-export function tokenise(expr: string, options?: TokeniserOptions): Token[];
+export function tokenise(expr: string, options?: TokeniserOptions): Token[];   // implementato in parser.ts (classe Parser unica, come upstream), riesportato da jme/index.ts
 export const precedence: Record<string, number>, synonyms, prefixForm, postfixForm, commutative, associative, funcSynonyms, opSynonyms, relations, converseOps;
 export function normaliseName(name: string, settings?: { caseSensitive?: boolean }): string;
 
@@ -531,14 +531,14 @@ export class Scope {
   clone(): Scope; setVariable(name, value): void; getVariable(name): Token | undefined; deleteVariable(name, opts?): void; setConstant(name, data): void; getConstant(name); isConstant(tok): boolean;
   addFunction(fn): FuncObj; getFunction(name): FuncObj[]; deleteFunction(name): void; addFunctionSet, getRuleset(name), setRuleset(name, ruleset), allVariables(), allFunctions(), allConstants(), allRulesets(), collectVariables()...
   matchFunctionToArguments(tok: Token, args: Token[]): { fn: FuncObj; signature: SignatureResult } | null;
-  evaluate(expr: string | Tree, variables?: Record<string, unknown>, noSubstitution?: boolean): Token;
+  evaluate(expr: string | Tree, variables?: Record<string, unknown>, noSubstitution?: boolean): Token | null;   // null per espressione vuota, come upstream (ruling post-review Task 2)
   expandJuxtapositions(tree: Tree, options?: JuxtapositionOptions): Tree;   // implementato in juxtapositions.ts
 }
 export function makeRng(seed: string): Rng;   // seedrandom(seed) → () => number
 
 // jme/evaluate.ts
-export function evaluate(tree: Tree | string, scope: Scope): Token;
-export function substituteTree(tree: Tree, scope: Scope, allowUnbound?: boolean, unwrapExpressions?: boolean): Tree;
+export function evaluate(tree: Tree | string, scope: Scope): Token | null;
+export function substituteTree(tree: Tree | null, scope: Scope, allowUnbound?: boolean, unwrapExpressions?: boolean): Tree | null;
 export function findvars(tree: Tree, boundvars?: string[], scope?: Scope): string[];
 export function isType(tok: Token, type: string): boolean; export function castToType(tok: Token, type: string | TypeDescription): Token; export function findCompatibleType(a: string, b: string): string | undefined;
 export function wrapValue(v: unknown, typeHint?: string): Token;   // null/undefined → TString("") come upstream (§7.8)
