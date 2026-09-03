@@ -18,13 +18,27 @@ import { describe, expect, it } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";
 import { Scope } from "../../src/jme/scope";
 import { TNum } from "../../src/jme/tokens";
-import { contentsubvars, subvars } from "../../src/jme/subvars";
+import { contentsubvars, displayHooks, subvars } from "../../src/jme/subvars";
 import { raisesJmeError } from "./jme-helpers";
 // riempie `displayHooks`: senza questo import i rami di visualizzazione di
 // `subvars`/`contentsubvars` lanciano `jme.subvars.display not available`.
 import "../../src/jme/display";
 
 describe("Subvars", () => {
+  // Non c'è un test upstream corrispondente: verifica il meccanismo che
+  // sostituisce la dipendenza in avanti `jme.js → jme-display.js`
+  // (DIVERGENCES.md, riga "Dipendenza `jme → jme.display`").
+  it("importare il modulo jme riempie tutti i ganci di visualizzazione", async () => {
+    await import("../../src/jme");
+    expect(Object.keys(displayHooks).sort()).toEqual([
+      "collectRuleset",
+      "exprToLaTeX",
+      "subvars",
+      "texify",
+      "treeToJME",
+    ]);
+  });
+
   // jme-tests.mjs:83-93
   it("subvars", () => {
     expect(subvars("{1}a{", builtinScope, true), "lascia stare le graffe non chiuse").toBe("1a{");

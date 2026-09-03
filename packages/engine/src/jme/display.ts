@@ -39,6 +39,9 @@ export {
   type CircleConstant,
   type CommonConstants,
 } from "./display-texifier";
+// `treeToJME` sta in `display-jme.ts`, ma la superficie pubblica del modulo
+// di visualizzazione è questa (upstream è tutta `Numbas.jme.display.*`).
+export { treeToJME } from "./display-jme";
 
 // ---------------------------------------------------------------------------
 // jme-display.js:26-149 — l'API di alto livello.
