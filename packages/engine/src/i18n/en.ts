@@ -186,6 +186,7 @@ export const en: Record<string, string> = {
   "part.jme.answer missing": "Correct answer is missing",
   "part.jme.invalid value generator expression":
     "Invalid value generator expression for variable <code>{name}</code>: {message}",
+  "part.mcq.invalid layout": "The layout for this part is not valid (type: {layoutType}).",
   "part.mcq.matrix cell empty": "Part {part} marking matrix cell ({row},{column}) is empty",
   "part.mcq.matrix jme error": "Part {part} marking matrix cell ({row},{column}) gives a JME error: {error}",
   "part.mcq.matrix not a list": "Marking matrix, defined by JME expression, is not a list but it should be.",

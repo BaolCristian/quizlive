@@ -305,8 +305,12 @@ function handleAdaptiveError(
   try {
     part.error(errorMessage(e), {}, e);
   } catch (pe) {
+    // upstream (part.js:1170) interpola `e.message`, l'errore ORIGINALE, non
+    // `pe` (il `part.error` appena costruito): il messaggio mostrato allo
+    // studente non deve avere il prefisso col nome della parte. `pe` finisce
+    // solo in `script_result.state_errors.mark`.
     const errorFeedback: FeedbackItem[] = [
-      feedback.feedback(t("part.marking.error in adaptive marking", { message: errorMessage(pe) })),
+      feedback.feedback(t("part.marking.error in adaptive marking", { message: errorMessage(e) })),
     ];
     if (!result) {
       return emptyErrorResult(errorFeedback, asError(pe));

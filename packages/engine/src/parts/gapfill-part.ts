@@ -106,11 +106,16 @@ export class GapFillPart extends PartBase {
   }
 
   // gapfill.js:167-171
-  override storeAnswer(answer: Answer): void {
+  /** upstream inoltra `answer[i]` INVARIATO: se l'array è più corto della lista
+   * dei gap, il gap riceve `undefined`, cioè "nessuna risposta"
+   * (`hasStagedAnswer` è falso). Sostituirlo con `null` darebbe alla parte una
+   * risposta letterale — per un `numberentry` la stringa `"null"`, perché
+   * `cleanAnswer` fa `String(answer).trim()`. */
+  override storeAnswer(answer: Answer | undefined): void {
     super.storeAnswer(answer);
-    const answers = (answer ?? []) as Answer[];
+    const answers = (answer ?? []) as Array<Answer | undefined>;
     this.gaps.forEach((g, i) => {
-      g.storeAnswer(answers[i] ?? null);
+      g.storeAnswer(answers[i]);
     });
   }
 

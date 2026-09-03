@@ -312,7 +312,7 @@ export abstract class PartBase {
     // decisione 2 del brief: gli step non sono portati. Il campo è
     // riconosciuto e ignorato, con un avviso una volta sola per parte.
     if ("steps" in data && Array.isArray(data["steps"]) && data["steps"].length > 0) {
-      warnStepsIgnored(this.path);
+      warnStepsIgnored(this.path, this.question);
     }
     const alternatives = tryGet(data, "alternatives") as PartJSON[] | undefined;
     if (alternatives) {
@@ -322,6 +322,9 @@ export abstract class PartBase {
       });
     }
     tryLoad(data, "alternativeFeedbackMessage", self);
+    // upstream `part.js` non legge MAI il campo `prompt` (lo usano solo il tema
+    // e `exam-to-xml.js:658`): questa riga non ha un corrispettivo upstream, ma
+    // l'API pubblica della spec vuole il testo sulla parte. Vedi DIVERGENCES.md.
     tryLoad(data, "prompt", self, "promptHtml");
     const marking: Record<string, unknown> = {};
     tryLoad(data, ["customMarkingAlgorithm", "extendBaseMarkingAlgorithm"], marking);
@@ -499,15 +502,26 @@ export abstract class PartBase {
   // ------------------------------------------------------------------
 
   // part.js:999-1015
-  /** Registra la risposta dello studente, senza correggerla. */
-  storeAnswer(answer: Answer): void {
+  /** Registra la risposta dello studente, senza correggerla.
+   *
+   * Il tipo del brief era `Answer`; qui accetta anche `undefined`, che è quel
+   * che `GapFillPart#storeAnswer` inoltra a un gap senza risposta
+   * (gapfill.js:167-171 passa `answer[i]` invariato). `hasStagedAnswer` tratta
+   * `undefined` e `null` allo stesso modo. */
+  storeAnswer(answer: Answer | undefined): void {
     this.stagedAnswer = answer;
     this.setDirty(true);
     this.removeWarnings();
   }
 
   // part.js:1021-1030
-  /** Segna la parte come modificata (o no) dall'ultimo invio. */
+  /** Segna la parte come modificata (o no) dall'ultimo invio.
+   *
+   * upstream la propagazione alla parte madre è DENTRO `if(this.display)`
+   * (part.js:1024-1029): senza oggetto di display il flag `isDirty` del
+   * genitore non viene mai aggiornato. Qui non c'è display e la propagazione è
+   * incondizionata — cambia un flag visibile nell'API, quindi è in
+   * DIVERGENCES.md. */
   setDirty(dirty: boolean): void {
     this.isDirty = dirty;
     if (dirty && this.parentPart && !this.isStep && !this.parentPart.submitting) {
@@ -516,9 +530,15 @@ export abstract class PartBase {
   }
 
   // part.js:1368-1370
-  /** Lo studente ha inserito una risposta? */
+  /** Lo studente ha inserito una risposta?
+   *
+   * upstream: `return !(this.stagedAnswer == undefined)` — un confronto LASCO,
+   * quindi anche `null` conta come "nessuna risposta". Portato com'è: `Answer`
+   * ammette `null` (una parte `information` non ha risposta), e trattarlo come
+   * una risposta vera farebbe proseguire la correzione su un valore che i
+   * `setStudentAnswer` dei tipi non sanno gestire. */
   hasStagedAnswer(): boolean {
-    return this.stagedAnswer !== undefined;
+    return this.stagedAnswer !== undefined && this.stagedAnswer !== null;
   }
 
   // part.js:892-896
@@ -722,6 +742,9 @@ export abstract class PartBase {
     for (let i = 0; i < replace.length; i++) {
       const vr = replace[i] as VariableReplacementJSON;
       const p2 = question.getPart(vr.part) as PartBase | undefined;
+      // upstream (part.js:1637) fa `p2.shouldUseInAdaptiveMarking()` senza
+      // controlli: una parte inesistente dà un `TypeError` con un messaggio
+      // illeggibile. La chiave è nostra, vedi DIVERGENCES.md.
       if (!p2) {
         throw new JmeError("part.marking.variable replacement part not found", { part: vr.part });
       }
@@ -878,15 +901,27 @@ function publicFeedbackType(reason: FeedbackReason | undefined): FeedbackItemPub
   }
 }
 
-/** I percorsi per cui l'avviso "gli step sono ignorati" è già stato dato. */
+/** Le domande per cui l'avviso "gli step sono ignorati" è già stato dato. */
+let warnedStepQuestions = new WeakSet<object>();
+/** I percorsi per cui l'avviso è già stato dato, quando non c'è una domanda. */
 const warnedStepPaths = new Set<string>();
 
-/** Avvisa una volta sola per percorso che il campo `steps` è ignorato. */
-function warnStepsIgnored(path: string): void {
-  if (warnedStepPaths.has(path)) {
-    return;
+/** Avvisa una volta sola per domanda (decisione 2 del brief del Task 8) che il
+ * campo `steps` è ignorato. Una parte costruita fuori da una domanda non ha un
+ * contenitore su cui contare: in quel caso l'avviso è dato una volta per
+ * percorso. */
+function warnStepsIgnored(path: string, question: PartQuestion | undefined): void {
+  if (question) {
+    if (warnedStepQuestions.has(question)) {
+      return;
+    }
+    warnedStepQuestions.add(question);
+  } else {
+    if (warnedStepPaths.has(path)) {
+      return;
+    }
+    warnedStepPaths.add(path);
   }
-  warnedStepPaths.add(path);
   // eslint-disable-next-line no-console
   console.warn(
     `[@savint/engine] la parte ${path} definisce "steps": la feature non è portata e il campo è ignorato.`,
@@ -896,6 +931,7 @@ function warnStepsIgnored(path: string): void {
 /** Azzera la memoria degli avvisi sugli step (per i test). */
 export function resetStepsWarnings(): void {
   warnedStepPaths.clear();
+  warnedStepQuestions = new WeakSet<object>();
 }
 
 /** Un item di feedback prodotto dal motore di correzione. */

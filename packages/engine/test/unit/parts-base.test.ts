@@ -20,7 +20,10 @@ import { unwrapValue } from "../../src/jme/evaluate";
 import { StatefulScope, makeMarkingScope } from "../../src/marking";
 import { createPartFromJSON, partErrorKeys, nicePartName, resetStepsWarnings } from "../../src/parts";
 import type { PartBase } from "../../src/parts/part-base";
+import type { PartQuestion } from "../../src/parts/types";
 import { createPart, freshScope, attachFakeQuestion } from "./parts-helpers";
+import { t } from "../../src/i18n";
+import type { MarkingResult, PartJSON } from "../../src/parts/types";
 
 describe("Part", () => {
   it("legge i punti dal JSON", () => {
@@ -63,20 +66,41 @@ describe("Part", () => {
     expect(nicePartName("p0a1")).toBe("parte a alternativa 1");
   });
 
-  it("il campo steps è riconosciuto e ignorato, con un avviso una volta sola", () => {
+  const stepsData = {
+    type: "numberentry" as const,
+    marks: 1,
+    minValue: "1",
+    maxValue: "1",
+    steps: [{ type: "information" as const }],
+  };
+
+  it("il campo steps è riconosciuto e ignorato", () => {
     resetStepsWarnings();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const data = {
-      type: "numberentry" as const,
-      marks: 1,
-      minValue: "1",
-      maxValue: "1",
-      steps: [{ type: "information" as const }],
-    };
-    const p1 = createPart(data);
-    const p2 = createPart(data);
-    expect(p1.steps).toHaveLength(0);
-    expect(p2.steps).toHaveLength(0);
+    const p = createPart(stepsData);
+    expect(p.steps).toHaveLength(0);
+    warn.mockRestore();
+  });
+
+  it("l'avviso sugli step è dato una volta per domanda", () => {
+    resetStepsWarnings();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const q1: PartQuestion = { getPart: () => undefined };
+    const q2: PartQuestion = { getPart: () => undefined };
+    createPartFromJSON(0, stepsData, "p0", { scope: freshScope(), questionRef: q1 });
+    createPartFromJSON(1, stepsData, "p1", { scope: freshScope(), questionRef: q1 });
+    expect(warn).toHaveBeenCalledTimes(1);
+    // una seconda domanda avvisa di nuovo, anche con lo stesso percorso
+    createPartFromJSON(0, stepsData, "p0", { scope: freshScope(), questionRef: q2 });
+    expect(warn).toHaveBeenCalledTimes(2);
+    warn.mockRestore();
+  });
+
+  it("senza domanda l'avviso sugli step è dato una volta per percorso", () => {
+    resetStepsWarnings();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    createPart(stepsData);
+    createPart(stepsData);
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
@@ -130,6 +154,34 @@ describe("Part", () => {
     const res = p.submit("1");
     expect(res.credit).toBe(1);
     expect(res.feedback.filter((f) => f.type !== "warning")).toHaveLength(0);
+  });
+
+  it("submit(null) è trattato come nessuna risposta, non come una risposta", () => {
+    // part.js:1368-1370 — il confronto lasco `stagedAnswer == undefined` fa sì
+    // che `null` conti come "nessuna risposta".
+    const cases: Array<[string, PartJSON]> = [
+      ["numberentry", { type: "numberentry", marks: 1, minValue: "1", maxValue: "1" }],
+      ["patternmatch", { type: "patternmatch", marks: 1, answer: "hi+", displayAnswer: "hi" }],
+      ["jme", { type: "jme", marks: 1, answer: "x+2" }],
+      ["1_n_2", { type: "1_n_2", choices: ["a", "b"], matrix: [[1], [0]] }],
+      ["m_n_2", { type: "m_n_2", choices: ["a", "b"], matrix: [[1], [1]] }],
+      ["m_n_x", { type: "m_n_x", choices: ["a", "b"], answers: ["A", "B"], matrix: [[1, 0], [0, 1]] }],
+      [
+        "gapfill",
+        { type: "gapfill", gaps: [{ type: "numberentry", marks: 1, minValue: "1", maxValue: "1" }] },
+      ],
+    ];
+    for (const [name, data] of cases) {
+      const p = createPart(data);
+      let res: MarkingResult | undefined;
+      expect(() => {
+        res = p.submit(null);
+      }, name).not.toThrow();
+      expect(p.hasStagedAnswer(), name).toBe(false);
+      expect(res!.valid, name).toBe(false);
+      expect(res!.credit, name).toBe(0);
+      expect(res!.feedback.map((f) => f.message), name).toContain(t("part.marking.not submitted"));
+    }
   });
 
   it("una parte information non corregge nulla", () => {

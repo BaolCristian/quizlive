@@ -199,6 +199,7 @@ export const it: Record<string, string> = {
   "part.jme.answer missing": "Manca la risposta corretta",
   "part.jme.invalid value generator expression":
     "Espressione non valida per il generatore di valori della variabile <code>{name}</code>: {message}",
+  "part.mcq.invalid layout": "La disposizione delle celle di questa parte non è valida (tipo: {layoutType}).",
   "part.mcq.matrix cell empty": "La cella ({row},{column}) della matrice dei punteggi di {part} è vuota",
   "part.mcq.matrix jme error": "La cella ({row},{column}) della matrice dei punteggi di {part} dà un errore JME: {error}",
   "part.mcq.matrix not a list": "La matrice dei punteggi, definita da un'espressione JME, non è una lista.",

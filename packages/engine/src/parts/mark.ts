@@ -198,6 +198,10 @@ function annotateCreditChanges(part: PartBase): void {
       const availableMarks = part.availableMarks();
       let change = action.credit * availableMarks;
       credit_change = action.credit;
+      // upstream (part.js:1830-1834) riscala qui `change`/`credit_change` se la
+      // voce porta un indice di gap (`action.gap`). Nessun punto di `part.js` o
+      // `marking.js` scrive quel campo: il ramo è irraggiungibile e non è
+      // portato. Vedi DIVERGENCES.md.
       const ot = total;
       total += change;
       change = total - ot;

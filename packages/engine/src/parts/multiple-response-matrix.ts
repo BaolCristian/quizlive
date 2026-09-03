@@ -213,14 +213,19 @@ export function buildLayout(part: MultipleResponsePart, scope: Scope): boolean[]
       // contrario di tutto il resto della parte.
       const value = scope.evaluate(settings.layoutExpression);
       if (!value) {
-        part.error("part.mcq.matrix not a list");
+        // upstream (multipleresponse.js:508) fa `jme.unwrapValue(jme.evaluate(...))`
+        // senza controlli e va in `TypeError`. La chiave è nostra: non è un
+        // problema della MATRICE DEI PUNTEGGI ma della griglia.
+        part.error("part.mcq.invalid layout", { layoutType: settings.layoutType });
       }
       const layoutMatrix = unwrapBooleanGrid(value);
       layoutFunction = (row, column) => layoutMatrix[row]?.[column] === true;
     } else {
       const fn = layoutTypes[settings.layoutType];
       if (!fn) {
-        part.error("part.mcq.matrix not a list");
+        // upstream (multipleresponse.js:510) prende `layoutTypes[...]`
+        // indefinito e va in `TypeError` alla prima cella. Chiave nostra.
+        part.error("part.mcq.invalid layout", { layoutType: settings.layoutType });
       }
       layoutFunction = fn;
     }

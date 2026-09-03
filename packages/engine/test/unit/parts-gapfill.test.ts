@@ -91,6 +91,55 @@ describe("Gapfill", () => {
     expect(unwrapValue(p.rawStudentAnswerAsJME()!)).toEqual(["1", "2"]);
   });
 
+  it("un array di risposte più corto lascia i gap in eccesso senza risposta", () => {
+    // gapfill.js:167-171 inoltra `answer[i]` INVARIATO: il gap che non ha una
+    // voce riceve `undefined`, non `null`. Con un `patternmatch` che ammette la
+    // risposta vuota la differenza è visibile nel credito, perché
+    // `String(null).trim()` sarebbe la stringa letterale "null".
+    const p = createPartWithQuestion({
+      type: "gapfill",
+      gaps: [
+        { type: "patternmatch", marks: 1, answer: "hi+", displayAnswer: "hi" },
+        { type: "patternmatch", marks: 1, answer: "a*", displayAnswer: "aaaa", allowEmpty: true },
+      ],
+    });
+    expect(p.gaps[1]!.hasStagedAnswer()).toBe(false);
+    p.storeAnswer(["hi"]);
+    expect(p.gaps[1]!.stagedAnswer).toBeUndefined();
+    expect(p.gaps[1]!.hasStagedAnswer()).toBe(false);
+    // il secondo gap resta senza risposta: nessuna eccezione, nessun "null"
+    const absent = markPart(p, ["hi"]);
+    expect(absent.valid).toBe(true);
+    expect(absent.credit).toBe(0.5);
+    // una risposta VUOTA è un'altra cosa: `a*` la accetta e vale il punto
+    expect(markPart(p, ["hi", ""]).credit).toBe(1);
+  });
+
+  it("un gap numerico senza risposta non riceve la stringa \"null\"", () => {
+    const p = createPartWithQuestion({
+      type: "gapfill",
+      gaps: [
+        { type: "numberentry", marks: 1, minValue: "1", maxValue: "1" },
+        { type: "numberentry", marks: 1, minValue: "2", maxValue: "2" },
+      ],
+    });
+    p.storeAnswer(["1"]);
+    p.setStudentAnswer();
+    expect((p.gaps[1] as unknown as { studentAnswer: string }).studentAnswer).toBe("");
+    expect(markPart(p, ["1"]).credit).toBe(0.5);
+  });
+
+  it("submit(null) su un gapfill non lancia e vale come nessuna risposta", () => {
+    const p = createPartWithQuestion({
+      type: "gapfill",
+      gaps: [{ type: "numberentry", marks: 1, minValue: "1", maxValue: "1" }],
+    });
+    const res = p.submit(null);
+    expect(res.valid).toBe(false);
+    expect(res.credit).toBe(0);
+    expect(p.gaps[0]!.hasStagedAnswer()).toBe(false);
+  });
+
   it("sortAnswers ordina le risposte prima di correggerle", () => {
     const gaps = [
       { type: "numberentry" as const, minValue: "1", maxValue: "1", marks: 1 },

@@ -326,12 +326,12 @@ export class MultipleResponsePart extends PartBase {
    * un indice per `1_n_2`, una lista di booleani per `m_n_2`, una matrice
    * `[scelta][risposta]` per `m_n_x` (risoluzione 1 del Task 8). Le due forme
    * si distinguono dalla forma del valore. */
-  override storeAnswer(answer: Answer): void {
+  override storeAnswer(answer: Answer | undefined): void {
     super.storeAnswer(this.normaliseAnswer(answer));
   }
 
   /** Traduce le forme pubbliche nella matrice `ticks`. */
-  private normaliseAnswer(answer: Answer): Answer {
+  private normaliseAnswer(answer: Answer | undefined): Answer | undefined {
     if (answer === null || answer === undefined) {
       return answer;
     }
