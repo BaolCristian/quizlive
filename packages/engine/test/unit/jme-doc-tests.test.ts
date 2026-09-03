@@ -27,6 +27,8 @@ import { treeToJME } from "../../src/jme/display-jme";
 // riempie tutti i ganci di `displayHooks`: `latex`, `render` e `string` su
 // un'espressione ne hanno bisogno.
 import "../../src/jme/display";
+// registra `make_variables` su `builtinScope` (Task 6, rinviato dal Task 4b).
+import "../../src/variables";
 import docTestsJson from "../fixtures/upstream/doc-tests.json";
 
 /** Una funzione documentata. */
@@ -51,15 +53,15 @@ const docTests = docTestsJson as DocSection[];
  * Le prime cinque toccano il DOM (tema `html`, jme-builtins.js:2769-2924) e
  * upstream non hanno esempi, quindi non generano un test: restano elencate
  * perché servono al controllo di copertura, come `fetch_text`/`fetch_json`
- * (tema `http`) e `then` (tema `promises`). `make_variables` ha un esempio ed
- * è rimandata al Task 6. Vedi DIVERGENCES.md. */
+ * (tema `http`) e `then` (tema `promises`). `make_variables` (Task 6) è
+ * registrata da `../../src/variables` (importato sopra) e non è più qui.
+ * Vedi DIVERGENCES.md. */
 const SKIP = new Map<string, string>([
   ["html", "costruisce nodi del DOM (jme-builtins.js:2770-2784)"],
   ["image", "costruisce un elemento <img> (jme-builtins.js:2788-2809)"],
   ["table", "costruisce un elemento <table> (jme-builtins.js:2829-2911)"],
   ["max_width", "attributo di stile su un nodo del DOM (jme-builtins.js:2913-2916)"],
   ["max_height", "attributo di stile su un nodo del DOM (jme-builtins.js:2917-2921)"],
-  ["make_variables", "generatore di variabili di domanda, Task 6 (jme-builtins.js:2374-2408)"],
   ["fetch_text", "tema http, richiede la rete (jme-builtins.js:3801-3806)"],
   ["fetch_json", "tema http, richiede la rete (jme-builtins.js:3807-3815)"],
   ["then", "tema promises, funzioni JME asincrone (jme-builtins.js:3816-3824)"],

@@ -41,6 +41,14 @@ export const it: Record<string, string> = {
   "jme.matrix.reports bad size": "La matrice dichiara una dimensione diversa da quella reale",
   "jme.matrix.value not the right type": "Valore di tipo sbagliato nella costruzione di una matrice",
   "jme.parse signature.invalid signature string": "Firma di funzione non valida: {str}",
+  "jme.script.error parsing notes": "Errore nell'analisi delle note: {message}",
+  "jme.script.note.compilation error": "Errore di compilazione nella nota {name}: {message}",
+  "jme.script.note.empty expression": "La nota {name} non ha un'espressione",
+  "jme.script.note.invalid definition": 'Definizione di nota non valida: "{source}".{hint}',
+  "jme.script.note.invalid definition.description missing closing bracket":
+    " Manca la parentesi chiusa della descrizione.",
+  "jme.script.note.invalid definition.missing colon":
+    " Manca il segno dei due punti che separa nome ed espressione.",
   "jme.shunt.expected argument before comma": "Manca un argomento prima della virgola",
   "jme.shunt.keypair in wrong place": "Coppia chiave-valore fuori posto: serve un dizionario o un pattern",
   "jme.shunt.list mixed argument types":
@@ -81,7 +89,21 @@ export const it: Record<string, string> = {
     "Numero di argomenti sbagliato per questa funzione anonima",
   "jme.typecheck.wrong names for anonymous function":
     "Nomi di argomento non validi per una funzione anonima: {names_type}",
+  "jme.user javascript.error": "Errore nella funzione JavaScript {name}: {message}",
+  "jme.user javascript.returned undefined": "La funzione JavaScript {name} non ha restituito un valore",
+  "jme.variables.async function not supported": "La funzione {name} è asincrona: non è supportata",
+  "jme.variables.circular reference": "Riferimento circolare nel calcolo di {name}",
+  "jme.variables.empty definition": "La variabile {name} non ha una definizione",
+  "jme.variables.empty name": "Il nome di una variabile non può essere vuoto",
+  "jme.variables.error computing dependency": "Errore nel calcolo della dipendenza {name}: {message}",
+  "jme.variables.error evaluating variable": "Errore nel valutare la variabile {name}: {message}",
+  "jme.variables.error making function": "Errore nel creare la funzione {name}: {message}",
+  "jme.variables.invalid function language": "Linguaggio di funzione non valido: {language}",
+  "jme.variables.javascript function not allowed": "Le funzioni JavaScript non sono permesse qui ({name})",
+  "jme.variables.syntax error in function definition": "Errore di sintassi nella definizione della funzione",
   "jme.variables.variable not defined": "La variabile {name} non è definita",
   "jme.vector.value not an array of numbers": "Un vettore va costruito da un array di numeri",
+  "ruleset.circular reference": "Riferimento circolare nell'insieme di regole {name}",
+  "ruleset.set not defined": "L'insieme di regole {name} non è definito",
   "util.equality not defined for type": "Uguaglianza non definita per il tipo {type}",
 };

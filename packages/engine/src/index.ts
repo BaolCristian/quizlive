@@ -6,3 +6,5 @@ export const UPSTREAM_COMMIT = "0f0ea3337196cb8e98d4edf04f1afaedc8cf8df5";
 export * as math from "./math";
 export * as jme from "./jme";
 export * as i18n from "./i18n";
+// side-effect: registra il builtin `make_variables` su `builtinScope`.
+export * as variables from "./variables";
