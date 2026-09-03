@@ -130,6 +130,15 @@ risposte e rinvia le parti già risposte (nell'ordine giusto, se una dipende
 dalla risposta a un'altra). Se lo stato dice `revealed`, le risposte corrette
 vengono rivelate e la domanda risulta bloccata.
 
+**Lo stato porta il seme, non la lingua.** I numeri si riproducono esatti;
+la lingua no, a meno di ripassarla: `restoreQuestion(json, state, { locale })`.
+Senza, si prende la predefinita del processo al momento del ripristino, che
+può non essere quella con cui la domanda era stata caricata. È un'asimmetria
+voluta — la lingua è una scelta di chi mostra la domanda, e uno stato salvato
+deve poter essere riaperto in un'altra lingua — ma sorprende, ora che la lingua
+è una proprietà della domanda: chi vuole la stessa di prima salvi `q.locale`
+accanto allo stato.
+
 ### Rivelare le risposte
 
 ```ts
@@ -163,6 +172,14 @@ riproducibile, la si semina esplicitamente — `seedrandom("seme", expr)` in JME
 oppure uno `Scope` proprio con `{ rng: makeRng("seme") }`. `loadQuestion`, che
 un seme lo prende, non ha questo problema: ogni domanda ha il suo generatore.
 
+Stessa forma per la lingua: `evaluate` non ne prende una, e i suoi eventuali
+messaggi d'errore escono nella **predefinita del processo** (`setLocale`). È il
+comportamento giusto per un'utilità senza domanda — non c'è nessuno scope da
+cui ereditarla — ma è un cambiamento rispetto a prima, quando la lingua era una
+globale che `loadQuestion` riscriveva: allora `evaluate` seguiva, senza dirlo,
+l'ultima domanda caricata. `renderLatex` invece la lingua la accetta
+(`renderLatex(expr, { locale: "en" })`).
+
 ### `Decimal`
 
 `math.Decimal` esportato da questo pacchetto **non è** la classe di
@@ -190,6 +207,22 @@ caricamento; `q.locale` dice quale lingua ha una domanda.
 
 La lingua non cambia la resa dei numeri, che è sempre quella "plain"
 (`12345.6789`, separatore di lista `,`).
+
+### Il parser JME
+
+`jme.compile(expr)` e `jme.tokenise(expr)` usano `jme.standardParser`, uno
+solo per processo. Un `new jme.Parser()` invece parte da un'istantanea delle
+tabelle e si può estendere (`addBinaryOperator`, …) senza toccare nessun altro.
+
+⚠️ Le tabelle della grammatica che il namespace espone — `jme.ops`,
+`jme.precedence`, `jme.arity`, `jme.commutative`, `jme.associative`,
+`jme.synonyms` e le altre — sono gli **oggetti vivi** dello `standardParser`,
+non copie: sono lì per essere letti (che operatori esistono, con che
+precedenza). Scriverci dentro cambia il modo in cui viene interpretata ogni
+espressione JME di ogni domanda del processo, e non c'è modo di annullarlo. Per
+questo le funzioni libere che lo facevano per conto tuo (`addBinaryOperator` e
+compagnia sullo `standardParser`) non sono esportate: restano i metodi
+omonimi di `Parser`, che agiscono su un'istanza tua.
 
 ### Cosa non è supportato
 

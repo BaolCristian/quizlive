@@ -42,7 +42,9 @@
     "seedrandom": "^3.0.5"
   },
   "devDependencies": {
-    "@types/seedrandom": "^3.0.8"
+    "@types/seedrandom": "^3.0.8",
+    "jsdom": "^27.0.1",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",

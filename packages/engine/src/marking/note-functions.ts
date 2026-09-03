@@ -66,13 +66,19 @@ export function stateFn(
   args: SignatureInput[],
   outcons: TokenConstructor,
   fn: StateFnBody | StateFnScopedBody,
-  options?: { scoped?: boolean },
+  options?: { scoped?: true },
 ): FuncObj {
   return new FuncObj(name, args, outcons, null, {
     evaluate: function (fnargs: Token[] | Tree[], scope: Scope): Token {
       let res: StateFnResult;
       if (lazyOps.indexOf(name) >= 0) {
-        // le funzioni pigre ricevono gli alberi e lo scope, non i valori
+        // le funzioni pigre ricevono gli alberi e lo scope, non i valori:
+        // `options.scoped` qui è IGNORATO, e va bene perché lo scope è già il
+        // secondo argomento che il corpo riceve. Oggi l'unica funzione di
+        // stato che sta anche in `lazyOps` è `apply`, che `scoped` non lo usa;
+        // se un giorno una funzione fosse insieme pigra e `scoped`, il corpo
+        // riceverebbe `(alberi, scope)` invece di `(scope, ...valori)` e il
+        // posto in cui accorgersene è questo.
         res = (fn as unknown as (a: Tree[], s: Scope) => StateFnResult)(fnargs as Tree[], scope);
       } else {
         const values = (fnargs as Token[]).map((a) => unwrapValue(a));
