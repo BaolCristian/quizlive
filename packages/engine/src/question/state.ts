@@ -39,9 +39,20 @@ export interface StatefulQuestion {
   updateScore(): void;
 }
 
-/** Una risposta è registrabile nello stato? `undefined` significa "nessuna
- * risposta" e non va serializzato (`exactOptionalPropertyTypes`). */
+/** La risposta da registrare nello stato, se ce n'è una.
+ *
+ * Non basta guardare `stagedAnswer`: ogni tipo di parte lo inizializza al
+ * proprio valore vuoto (`""` per `numberentry`/`jme`, numberentry.js:77;
+ * `[]` per le scelte multiple, multipleresponse.js:346), quindi una parte mai
+ * toccata avrebbe comunque una "risposta". Si registra solo se lo studente ha
+ * scritto qualcosa (`isDirty`) o se la parte è già stata corretta almeno una
+ * volta (`result`); altrimenti lo stato resta pulito e il ripristino non
+ * sporca `isDirty` di una parte intatta. */
 function storedAnswer(part: PartBase): Answer | undefined {
+  const touched = part.isDirty || part.result !== undefined;
+  if (!touched) {
+    return undefined;
+  }
   const staged = part.stagedAnswer;
   return staged === undefined ? undefined : (staged as Answer);
 }

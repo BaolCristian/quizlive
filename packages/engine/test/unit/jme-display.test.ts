@@ -28,7 +28,8 @@
 //     `treeToJME` di un `html(...)` non riporta l'attributo
 //     `data-interactive="false"` che upstream legge dall'elemento.
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { setLocale, t } from "../../src/i18n";
 import * as math from "../../src/math";
 import { builtinScope } from "../../src/jme/builtins";
 import { compile } from "../../src/jme/parser";
@@ -67,6 +68,12 @@ function tex(expr: string, rules?: unknown, scope: Scope = builtinScope): string
 }
 
 describe("Display", () => {
+  // il Task 9 introduce una lingua corrente globale: i test che la cambiano
+  // la riportano all'italiano predefinito.
+  afterEach(() => {
+    setLocale("it");
+  });
+
   // jme-tests.mjs:2284-2313
   it("tokens with precision", () => {
     /** `test_expression` upstream (2285-2288). */
@@ -359,6 +366,32 @@ describe("Display", () => {
     expect(tex("set([1,2,3])")).toBe("\\left\\{ 1, 2, 3 \\right\\}");
     expect(tex("12345.6789")).toBe("12345.6789");
     expect((ev("scientificnumberlatex(12345)") as { value: string }).value).toBe("1.2345 \\times 10^{4}");
+  });
+
+  // Estensione del Task 9: adesso che il motore HA una macchina di
+  // localizzazione (`setLocale`/`t`, usata da `loadQuestion`), si verifica che
+  // NON tocchi la resa dei numeri — upstream sarebbe `Numbas.locale
+  // .default_number_notation`/`default_list_separator` a cambiarla, e quelle
+  // globali non sono portate (DIVERGENCES.md). La lingua sposta i messaggi,
+  // non il LaTeX.
+  it("cambiare lingua non cambia la resa dei numeri", () => {
+    const renderings = () => [
+      tex("f(1,2,3)"),
+      tex("[1,2,3]"),
+      tex("set(1,2,3)"),
+      tex("12345.6789"),
+      (ev("scientificnumberlatex(12345)") as { value: string }).value,
+      treeToJME(compile("1.234") as Tree),
+      (ev('let(x,1.2, "{x}y = "+string(expression("{x}y")))') as { value: string }).value,
+    ];
+    setLocale("it");
+    const italian = renderings();
+    const italianMessage = t("part.marking.correct");
+    setLocale("en");
+    expect(renderings(), "la resa LaTeX/JME non dipende dalla lingua").toEqual(italian);
+    expect(t("part.marking.correct"), "i messaggi invece sì").not.toBe(italianMessage);
+    expect(italian[3], "il separatore decimale resta il punto").toBe("12345.6789");
+    expect(italian[0], "il separatore di lista resta la virgola").toContain(", ");
   });
 
   // jme-tests.mjs:2650-2655

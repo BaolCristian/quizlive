@@ -48,6 +48,19 @@ export function computeNote(
     } catch (e) {
       const error = e instanceof Error ? e : new Error(String(e));
       stateful_scope.stateErrors[name] = error;
+      if (todo[name] === undefined) {
+        // upstream (marking.js:545) fa `todo[name].vars` senza controlli: con
+        // un nome che NON è una nota va in `TypeError`, che esce da
+        // `compute_note` e che `computeVariable` riavvolge in
+        // `jme.variables.error computing dependency` (jme-variables.js:227).
+        // È un `TypeError` per sbaglio, ma l'effetto — una nota inesistente
+        // fa fallire chi la riferisce — è quello su cui contano i test
+        // upstream ('Error in mark note', part-tests.mjs:1250-1261, che
+        // verifica `notOk(p.marking_result.answered)`); ignorare l'errore
+        // renderebbe valida una `mark` che non ha prodotto niente. Qui si
+        // rilancia l'errore vero invece del `TypeError`. Vedi DIVERGENCES.md.
+        throw error;
+      }
       let invalid_dep: string | null = null;
       for (const x of todo[name]?.vars ?? []) {
         if (x in todo && !stateful_scope.stateValid[x]) {

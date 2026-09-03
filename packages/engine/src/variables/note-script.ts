@@ -76,7 +76,7 @@ export class ScriptNote {
  * che il Task 7 osserva, non il tipo generico. */
 export interface NoteScript<TResult> {
   notes: Record<string, ScriptNote>;
-  evaluate(scope: Scope, variables?: Record<string, Token>): TResult;
+  evaluate(scope: Scope, variables?: Record<string, Token>, targets?: string[]): TResult;
   evaluate_note(
     note: string,
     scope: Scope,
@@ -151,9 +151,13 @@ export function noteScriptConstructor<TResult>(
     }
 
     // jme-variables.js:911-918
-    evaluate(scope: Scope, variables?: Record<string, Token>): TResult {
+    /** `targets` non è upstream: `makeVariables` lo accetta gia\u0300
+     * (jme-variables.js:343), ma `Script.evaluate` passa sempre tutte le note.
+     * Serve a chi valuta uno script deve saltarne una (il Task 9 salta
+     * `pre_submit`: v. `MarkingScript`). Senza, si calcolano tutte. */
+    evaluate(scope: Scope, variables?: Record<string, Token>, targets?: string[]): TResult {
       const s = this.buildEvaluateScope(scope, variables);
-      const result = makeVariables(this.notes, s, null, computeNote);
+      const result = makeVariables(this.notes, s, null, computeNote, targets);
       return processResult(result, s);
     }
 

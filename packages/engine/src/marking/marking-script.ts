@@ -68,6 +68,24 @@ export class MarkingScript extends MarkingScriptBase {
   /** Il sorgente dello script. */
   declare source: string;
 
+  // marking.js:582-597 + part.js:1904-1945 (`do_pre_submit_tasks`)
+  /** Valuta lo script **saltando la nota `pre_submit`**.
+   *
+   * upstream la nota `pre_submit` serve a compiti asincroni (`check_pre_submit`
+   * ritorna un `TPromise`, marking.js:348-366): `mark_answer` la valuta a
+   * parte con `evaluate_note` (part.js:1963) e poi `markingScript.evaluate` la
+   * ricalcola insieme a tutte le altre. Il port è solo sincrono (risoluzione 2
+   * del Task 8) e `check_pre_submit` non esiste: la nota fallirebbe **dopo**
+   * aver rieseguito i `submit_part` sui gap di un `gapfill`, lasciando quei
+   * gap in uno stato che upstream ripulisce nell'iterazione successiva (che
+   * qui non arriva mai, perché l'errore interrompe la `map`). Il risultato
+   * osservabile era un `shouldResubmit` acceso a sproposito. Saltarla toglie
+   * sia la divergenza sia il doppio invio. Vedi DIVERGENCES.md. */
+  override evaluate(scope: Scope, variables?: Record<string, Token>): MarkingScriptResult {
+    const targets = Object.keys(this.notes).filter((name) => name !== "pre_submit");
+    return super.evaluate(scope, variables, targets);
+  }
+
   // jme-variables.js:920-926, ristretto: `construct_scope` di uno script di
   // correzione produce sempre uno `StatefulScope`, ed è da lì che il Task 8
   // legge `stateErrors.pre_submit` (part.js:1917-1921).

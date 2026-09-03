@@ -223,13 +223,15 @@ describe("Part", () => {
     expect(p.promptHtml).toBe("<p>Quanto fa {a}?</p>");
   });
 
-  it("un errore in una nota dipendente è registrato in stateErrors senza fermare mark", () => {
+  it("una nota che ne riferisce una inesistente fa fallire anche `mark`", () => {
     // part-tests.mjs:1250-1261 ("Error in mark note"): `apply(z)` si riferisce
-    // a una nota che non esiste. Upstream `compute_note` inghiotte l'errore
-    // (`ignore_note_errors`), quindi la nota `mark` viene comunque calcolata e
-    // produce uno stato vuoto: qui si verifica proprio quello. L'asserzione
-    // upstream su `marking_result.answered` passa da `question_test` e resta
-    // al Task 9.
+    // a una nota che non esiste. `ignore_note_errors` rende non valida la nota
+    // che fallisce, ma NON copre un nome che non è una nota: upstream
+    // `compute_note` va in `TypeError` su `todo[name].vars` e l'errore risale
+    // fino a `mark`, che risulta non valida. Verificato sull'oracolo
+    // (`packages/engine/oracle`, commit 0f0ea33): `state_errors` contiene
+    // `a`, `q`, `z` e `mark`, e `marking_result.answered` è falso — il caso a
+    // livello di domanda è in question-parts.test.ts.
     const p = createPart({
       type: "jme",
       marks: 1,
@@ -241,10 +243,12 @@ describe("Part", () => {
     p.storeAnswer("x");
     p.setStudentAnswer();
     const res = p.mark_answer(p.rawStudentAnswerAsJME(), p.getScope());
-    expect(Object.keys(res.stateErrors)).toEqual(expect.arrayContaining(["a", "z"]));
-    expect(res.stateValid["mark"]).toBe(true);
+    expect(Object.keys(res.stateErrors)).toEqual(expect.arrayContaining(["a", "q", "z", "mark"]));
+    expect(res.stateValid["mark"]).toBe(false);
     expect(res.states["mark"]).toEqual([]);
-    expect(p.submit("x").credit).toBe(0);
+    const result = p.submit("x");
+    expect(result.credit).toBe(0);
+    expect(result.valid, "la parte non risulta risposta").toBe(false);
   });
 
   it("uno script di correzione senza la nota mark è un errore di caricamento", () => {
