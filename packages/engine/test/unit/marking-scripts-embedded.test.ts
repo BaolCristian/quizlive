@@ -10,7 +10,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-// @ts-expect-error — il generatore è uno script Node puro, senza tipi.
+// il generatore è uno script Node puro: `allowJs` lo risolve, i tipi sono inferiti.
 import { generateMarkingScriptsModule, OUTPUT_PATH, SCRIPTS_DIR, MARKING_SCRIPT_NAMES } from "../../../../scripts/engine/embed-marking-scripts.mjs";
 import { markingScripts } from "../../src/marking/scripts";
 
