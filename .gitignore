@@ -70,3 +70,6 @@ docs/plans/
 
 # upstream Numbas source (script: scripts/engine/fetch-upstream.sh)
 .numbas-upstream/
+
+# node_modules dei pacchetti workspace
+packages/*/node_modules/
