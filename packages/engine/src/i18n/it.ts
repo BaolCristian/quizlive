@@ -144,4 +144,71 @@ export const it: Record<string, string> = {
   "ruleset.circular reference": "Riferimento circolare nell'insieme di regole {name}",
   "ruleset.set not defined": "L'insieme di regole {name} non è definito",
   "util.equality not defined for type": "Uguaglianza non definita per il tipo {type}",
+  // part.js e parts/*.js — le chiavi usate dal modulo `parts/` (inventario 05
+  // §6.4). Le chiavi "letterali" (`You have not given your answer...`,
+  // `minimum value`, `maximum value`) sono l'idioma Numbas: la chiave È il
+  // testo inglese, e `R()` ripiega su di essa quando non è nel dizionario.
+  "alternative": "alternativa",
+  "gap": "spazio",
+  "part": "parte",
+  "step": "passaggio",
+  "minimum value": "valore minimo",
+  "maximum value": "valore massimo",
+  "You have not given your answer to the correct precision.":
+    "Non hai dato la risposta con la precisione richiesta.",
+  "feedback.you were awarded": "Hai ottenuto <strong>{count}</strong> punti.",
+  "feedback.taken away": "Ti sono stati tolti <strong>{count}</strong> punti.",
+  "part.error": "{path}: {message}",
+  "part.missing type attribute": "{part}: manca il tipo della parte",
+  "part.unknown type": "{part}: tipo di parte sconosciuto {type}",
+  "part.setting not present": "L'impostazione '{property}' non è definita",
+  "part.marking.did not answer": "Non hai risposto a questa domanda.",
+  "part.marking.error in adaptive marking":
+    "C'è stato un errore nella correzione adattiva di questa parte. Segnalalo. {message}",
+  "part.marking.error in marking script":
+    "C'è stato un errore nell'algoritmo di correzione di questa parte. Segnalalo. {message}",
+  "part.marking.maximum scaled down":
+    "Il massimo che puoi ottenere per questa parte è <strong>{count}</strong> punti. I punteggi saranno riscalati.",
+  "part.marking.maximum score applied": "Il punteggio massimo per questa parte è <strong>{score}</strong>.",
+  "part.marking.minimum score applied": "Il punteggio minimo per questa parte è <strong>{score}</strong>.",
+  "part.marking.missing required note": "L'algoritmo di correzione non definisce la nota <code>{note}</code>",
+  "part.marking.no result after replacement":
+    "Non è stato possibile correggere questa parte con le tue risposte alle parti precedenti.",
+  "part.marking.not submitted": "Nessuna risposta inviata.",
+  "part.marking.parameter already in scope":
+    "C'è una variabile di nome <code>{name}</code>, che è anche il nome di un parametro di correzione. Rinomina la variabile.",
+  "part.marking.resubmit because of variable replacement":
+    "La correzione di questa parte dipende dalle tue risposte ad altre parti, che hai cambiato. Invia di nuovo la risposta per aggiornare il punteggio.",
+  "part.marking.uncaught error": "Errore durante la correzione: {message}",
+  "part.marking.used variable replacements":
+    "Questa parte è stata corretta usando le tue risposte alle parti precedenti.",
+  "part.marking.variable replacement part not answered": "Devi prima rispondere a {part}.",
+  "part.marking.variable replacement part not found": "Non trovo la parte {part}.",
+  "part.marking.adaptive marking use condition not a boolean":
+    "La condizione d'uso nella correzione adattiva vale {type} invece di un booleano.",
+  "part.marking.adaptive variable replacement does not satisfy condition":
+    "La tua risposta a <strong>{name}</strong> non è stata usata perché non soddisfa la condizione.",
+  "part.marking.adaptive variable replacement does not satisfy condition message":
+    "La tua risposta a <strong>{name}</strong> non è stata usata: {message}",
+  "part.marking.adaptive variable replacement refers to self":
+    "Questa parte si riferisce a sé stessa in una sostituzione di variabile per la correzione adattiva.",
+  "part.marking.adaptive variable replacement refers to nothing":
+    "Questa parte contiene una sostituzione di variabile non valida per la correzione adattiva.",
+  "part.gapfill.cyclic adaptive marking":
+    "C'è un ciclo nella correzione adattiva di questa parte: <strong>{name1}</strong> dipende da <strong>{name2}</strong>, che a sua volta dipende da <strong>{name1}</strong>.",
+  "part.jme.answer missing": "Manca la risposta corretta",
+  "part.jme.invalid value generator expression":
+    "Espressione non valida per il generatore di valori della variabile <code>{name}</code>: {message}",
+  "part.mcq.matrix cell empty": "La cella ({row},{column}) della matrice dei punteggi di {part} è vuota",
+  "part.mcq.matrix jme error": "La cella ({row},{column}) della matrice dei punteggi di {part} dà un errore JME: {error}",
+  "part.mcq.matrix not a list": "La matrice dei punteggi, definita da un'espressione JME, non è una lista.",
+  "part.mcq.matrix not a number": "La cella ({row},{column}) della matrice dei punteggi di {part} non vale un numero",
+  "part.mcq.matrix wrong size": "La matrice dei punteggi ha le dimensioni sbagliate.",
+  "part.mcq.options def not a list": "L'espressione che definisce {properties} non è una lista.",
+  "part.numberentry.display answer wrong type":
+    "La risposta mostrata per questa parte è di tipo <code>{got_type}</code>, ma dovrebbe essere <code>{want_type}</code>.",
+  "part.numberentry.negative decimal places":
+    "Questa parte arrotonderebbe la risposta a un numero negativo di decimali, il che non ha senso.",
+  "part.numberentry.zero sig fig":
+    "Questa parte arrotonderebbe la risposta a zero cifre significative, il che non ha senso.",
 };

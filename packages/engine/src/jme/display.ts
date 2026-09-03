@@ -128,8 +128,13 @@ export function simplifyTree(tree: Tree, ruleset: Ruleset, scope: Scope, allowUn
 // jme-notations.js:71-113 (`Notation.prototype.subvars`), che
 // jme-display.js:144-148 si limita a delegare.
 /** Sostituisce i valori nelle graffe di un'espressione JME e ne restituisce
- * l'albero. */
-export function subvars(expr: string, scope: Scope): Tree {
+ * l'albero.
+ *
+ * `parser` corrisponde a `this.compile` della `Notation` upstream: senza, si
+ * usa il parser standard. Serve al tipo di parte `jme`, che compila il pattern
+ * di `mustmatchpattern` con il parser dei pattern
+ * (parts/jme.js:344-345, `jme.notations.pattern_matching`). */
+export function subvars(expr: string, scope: Scope, parser?: Parser): Tree {
   const sbits = math.splitbrackets(expr, "{", "}");
   let wrapped_expr = "";
   const subs: Tree[] = [];
@@ -149,7 +154,7 @@ export function subvars(expr: string, scope: Scope): Tree {
     }
   }
 
-  const tree = compile(wrapped_expr);
+  const tree = parser ? parser.compile(wrapped_expr) : compile(wrapped_expr);
   if (!tree) {
     return tree as unknown as Tree;
   }
@@ -180,4 +185,4 @@ export function subvars(expr: string, scope: Scope): Tree {
 // `display-jme.ts`.
 displayHooks.texify = texify as (tree: Tree, settings: unknown, scope: Scope) => string;
 displayHooks.exprToLaTeX = exprToLaTeX as unknown as (expr: string, ruleset: unknown, scope: Scope) => string;
-displayHooks.subvars = subvars;
+displayHooks.subvars = subvars as (expr: string, scope: Scope) => Tree;

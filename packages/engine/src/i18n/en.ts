@@ -133,4 +133,69 @@ export const en: Record<string, string> = {
   "ruleset.circular reference": "Circular reference in the ruleset {name}",
   "ruleset.set not defined": "The ruleset {name} is not defined",
   "util.equality not defined for type": "Equality is not defined for the type {type}",
+  // part.js and parts/*.js — see the Italian file for the note on the
+  // "literal" keys.
+  "alternative": "alternative",
+  "gap": "gap",
+  "part": "part",
+  "step": "step",
+  "minimum value": "minimum value",
+  "maximum value": "maximum value",
+  "You have not given your answer to the correct precision.":
+    "You have not given your answer to the correct precision.",
+  "feedback.you were awarded": "You were awarded <strong>{count}</strong> marks.",
+  "feedback.taken away": "<strong>{count}</strong> marks were taken away.",
+  "part.error": "{path}: {message}",
+  "part.missing type attribute": "{part}: Missing part type attribute",
+  "part.unknown type": "{part}: Unrecognised part type {type}",
+  "part.setting not present": "Property '{property}' not set",
+  "part.marking.did not answer": "You did not answer this question.",
+  "part.marking.error in adaptive marking":
+    "There was an error in the adaptive marking for this part. Please report this. {message}",
+  "part.marking.error in marking script":
+    "There was an error in this part's marking algorithm. Please report this. {message}",
+  "part.marking.maximum scaled down":
+    "The maximum you can score for this part is <strong>{count}</strong> marks. Your scores will be scaled down accordingly.",
+  "part.marking.maximum score applied": "The maximum score for this part is <strong>{score}</strong>.",
+  "part.marking.minimum score applied": "The minimum score for this part is <strong>{score}</strong>.",
+  "part.marking.missing required note": "The marking algorithm does not define the note <code>{note}</code>",
+  "part.marking.no result after replacement":
+    "This part could not be marked using your answers to previous parts.",
+  "part.marking.not submitted": "No answer submitted.",
+  "part.marking.parameter already in scope":
+    "There is a variable named <code>{name}</code>, which is also the name of a marking parameter. Please rename the variable.",
+  "part.marking.resubmit because of variable replacement":
+    "This part's marking depends on your answers to other parts, which you have changed. Save your answer to this part again to update your score.",
+  "part.marking.uncaught error": "Error when marking: {message}",
+  "part.marking.used variable replacements":
+    "This part was marked using your answers to previous parts.",
+  "part.marking.variable replacement part not answered": "You must answer {part} first.",
+  "part.marking.variable replacement part not found": "Can't find part {part}.",
+  "part.marking.adaptive marking use condition not a boolean":
+    "The adaptive marking use condition evaluates to {type} instead of a boolean.",
+  "part.marking.adaptive variable replacement does not satisfy condition":
+    "Your answer to <strong>{name}</strong> was not used because it did not satisfy the condition.",
+  "part.marking.adaptive variable replacement does not satisfy condition message":
+    "Your answer to <strong>{name}</strong> was not used: {message}",
+  "part.marking.adaptive variable replacement refers to self":
+    "This part refers to itself in a variable replacement for adaptive marking.",
+  "part.marking.adaptive variable replacement refers to nothing":
+    "This part contains an invalid variable replacement for adaptive marking.",
+  "part.gapfill.cyclic adaptive marking":
+    "There is a cycle in the adaptive marking for this part: <strong>{name1}</strong> relies on <strong>{name2}</strong>, which eventually relies on <strong>{name1}</strong>.",
+  "part.jme.answer missing": "Correct answer is missing",
+  "part.jme.invalid value generator expression":
+    "Invalid value generator expression for variable <code>{name}</code>: {message}",
+  "part.mcq.matrix cell empty": "Part {part} marking matrix cell ({row},{column}) is empty",
+  "part.mcq.matrix jme error": "Part {part} marking matrix cell ({row},{column}) gives a JME error: {error}",
+  "part.mcq.matrix not a list": "Marking matrix, defined by JME expression, is not a list but it should be.",
+  "part.mcq.matrix not a number": "Part {part} marking matrix cell ({row},{column}) does not evaluate to a number",
+  "part.mcq.matrix wrong size": "Marking matrix is the wrong size.",
+  "part.mcq.options def not a list": "The expression defining the {properties} is not a list.",
+  "part.numberentry.display answer wrong type":
+    "The display answer for this part is a value of type <code>{got_type}</code>, but should be a <code>{want_type}</code>.",
+  "part.numberentry.negative decimal places":
+    "This part is set up to round the student's answer to a negative number of decimal places, which has no meaning.",
+  "part.numberentry.zero sig fig":
+    "This part is set up to round the student's answer to zero significant figures, which has no meaning.",
 };
