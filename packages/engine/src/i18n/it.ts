@@ -11,11 +11,20 @@
 // sono nella forma `{nome}` (vedi `t()` in i18n/index.ts).
 
 export const it: Record<string, string> = {
+  "jme.calculus.unknown derivative": "Non si sa derivare {tree}",
   "jme.compile list.mismatched bracket": "Parentesi non corrispondenti nella lista di espressioni",
   "jme.compile list.missing right bracket": "Manca una parentesi chiusa nella lista di espressioni",
+  "jme.display.collectRuleset.no sets": "Per comporre un insieme di regole serve la lista degli insiemi definiti",
+  "jme.display.collectRuleset.set not defined": "L'insieme di regole {name} non è definito",
+  "jme.display.simplifyTree.stuck in a loop":
+    "La semplificazione di {expr} è entrata in un ciclo: le regole si annullano a vicenda",
   "jme.evaluate.no scope given": "Per valutare un'espressione serve uno scope",
   "jme.makeFast.no fast definition of function":
     "La funzione {name} non ha una definizione utilizzabile in forma veloce",
+  "jme.matchTree.group name not a name":
+    "Il nome di un gruppo catturato deve essere un nome o una coppia chiave-valore",
+  "jme.matchTree.match macro first argument not a dictionary":
+    "Il primo argomento di `@ deve essere un dizionario di sotto-pattern",
   "jme.matrix.reports bad size": "La matrice dichiara una dimensione diversa da quella reale",
   "jme.matrix.value not the right type": "Valore di tipo sbagliato nella costruzione di una matrice",
   "jme.parse signature.invalid signature string": "Firma di funzione non valida: {str}",

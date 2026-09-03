@@ -42,6 +42,27 @@ export function mergeUnique<T>(a: readonly T[], arr: readonly T[], sortfn?: (x: 
   return out;
 }
 
+// util.js:71-80 (`Numbas.util.extend_object`)
+/** Copia in `destination` le proprietà proprie delle sorgenti, **saltando i
+ * valori `undefined`**: è questo che permette a `Ruleset` di ereditare da
+ * `displayFlags` senza sovrascrivere le flag già impostate. */
+export function extendObject<T extends Record<string, unknown>>(
+  destination: T,
+  ...sources: Array<Record<string, unknown> | undefined>
+): T {
+  for (const source of sources) {
+    if (!source) {
+      continue;
+    }
+    for (const key of Object.keys(source)) {
+      if (source[key] !== undefined) {
+        (destination as Record<string, unknown>)[key] = source[key];
+      }
+    }
+  }
+  return destination;
+}
+
 // util.js:1728-1740 (`Numbas.util.sortBy`), qui nella sola forma usata da
 // jme.js: `var fnSort = util.sortBy('id')` (jme.js:2469), il comparatore con
 // cui `getFunction`/`allFunctions` fondono liste di `FuncObj`.

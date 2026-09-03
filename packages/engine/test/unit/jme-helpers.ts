@@ -132,6 +132,58 @@ export function makeToyScope(): Scope {
   return scope;
 }
 
+/** Lo scope giocattolo del Task 3: `makeToyScope()` più le costanti (`pi`,
+ * `e`, `i`, `infinity`) e le funzioni che i rule-set di semplificazione
+ * valutano nelle condizioni `` `where `` e nei blocchi `eval(...)`
+ * (`im`, `re`, `isint`, `gcd_without_pi_or_i`, `sin`, `cos`, `ln`).
+ *
+ * Sta a parte da `makeToyScope()` perché le costanti cambiano il risultato di
+ * `findvars` e della valutazione dei nomi: i test dei Task 1-2 assumono uno
+ * scope senza costanti. */
+export function makePatternScope(): Scope {
+  const scope = makeToyScope();
+  scope.setConstant("pi", { value: new TNum(Math.PI) });
+  scope.setConstant("e", { value: new TNum(Math.E) });
+  scope.setConstant("i", { value: new TNum(math.complex(0, 1) as math.Complex) });
+  scope.setConstant("infinity", { value: new TNum(Infinity) });
+
+  /** Registra una funzione unaria da numero a numero. */
+  function unop(name: string, fn: (a: math.NumbasNumber) => math.NumbasNumber): void {
+    scope.addFunction(new FuncObj(name, [TNum], TNum, fn as (...args: never[]) => unknown, { random: false }));
+  }
+  unop("im", (a) => math.im(a));
+  unop("re", (a) => math.re(a));
+  unop("sin", math.sin);
+  unop("cos", math.cos);
+  unop("ln", math.log);
+  scope.addFunction(
+    new FuncObj("isint", [TNum], TBool, ((a: math.NumbasNumber) => math.isInt(a)) as (...args: never[]) => unknown, {
+      random: false,
+    }),
+  );
+  // jme-builtins.js:480-489 — toglie i fattori di pi o i prima del gcd.
+  scope.addFunction(
+    new FuncObj(
+      "gcd_without_pi_or_i",
+      [TNum, TNum],
+      TNum,
+      ((a: math.NumbasNumber, b: math.NumbasNumber) => {
+        if (math.isComplex(a) && a.re === 0) {
+          a = a.im;
+        }
+        if (math.isComplex(b) && b.re === 0) {
+          b = b.im;
+        }
+        a = (a as number) / (math.pow(Math.PI, math.piDegree(a)) as number);
+        b = (b as number) / (math.pow(Math.PI, math.piDegree(b)) as number);
+        return math.gcf(a, b);
+      }) as (...args: never[]) => unknown,
+      { random: false },
+    ),
+  );
+  return scope;
+}
+
 /** Valuta l'espressione e verifica che il risultato non sia nullo: dalla
  * revisione del Task 2 `Scope.evaluate` dichiara `Token | null`, e ritorna
  * `null` solo per un'espressione vuota. */

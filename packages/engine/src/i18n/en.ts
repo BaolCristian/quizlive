@@ -8,10 +8,17 @@
 // use the `{name}` form read by `t()`.
 
 export const en: Record<string, string> = {
+  "jme.calculus.unknown derivative": "I don't know how to differentiate {tree}",
   "jme.compile list.mismatched bracket": "Mismatched brackets in the list of expressions",
   "jme.compile list.missing right bracket": "A closing bracket is missing in the list of expressions",
+  "jme.display.collectRuleset.no sets": "Collecting a ruleset needs the list of the rulesets in scope",
+  "jme.display.collectRuleset.set not defined": "The ruleset {name} is not defined",
+  "jme.display.simplifyTree.stuck in a loop": "Simplifying {expr} got stuck in a loop: the rules undo each other",
   "jme.evaluate.no scope given": "Evaluating an expression needs a scope",
   "jme.makeFast.no fast definition of function": "The function {name} has no definition that can be made fast",
+  "jme.matchTree.group name not a name": "The name of a captured group must be a name or a key-value pair",
+  "jme.matchTree.match macro first argument not a dictionary":
+    "The first argument of `@ must be a dictionary of sub-patterns",
   "jme.matrix.reports bad size": "The matrix reports a size which does not match its contents",
   "jme.matrix.value not the right type": "Value of the wrong type used to build a matrix",
   "jme.parse signature.invalid signature string": "Invalid function signature: {str}",

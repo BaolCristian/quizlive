@@ -498,8 +498,16 @@ export function compareTrees(a: Tree, b: Tree): number {
       /** L'albero ha la forma `?^?`, `?*(?^?)` o `?/(?^?)`? */
       function is_pow(t: Tree): boolean {
         const name = (t.tok as { name?: string }).name;
-        const second = t.args ? ((t.args[1] as Tree).tok as { name?: string }).name : undefined;
-        return name === "^" || (name === "*" && second === "^") || (name === "/" && second === "^");
+        // upstream (jme.js:5239) legge `t.args[1]` solo dopo aver verificato
+        // che l'operatore sia `*` o `/`, grazie al corto circuito di `&&`: su
+        // un operatore unario (`-u`) il secondo argomento non esiste.
+        if (name === "^") {
+          return true;
+        }
+        if (name !== "*" && name !== "/") {
+          return false;
+        }
+        return (((t.args as Tree[])[1] as Tree).tok as { name?: string }).name === "^";
       }
       const pa = is_pow(a);
       const pb = is_pow(b);
