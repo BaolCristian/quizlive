@@ -55,6 +55,11 @@ function val(t: Token): unknown {
   return (t as { value?: unknown }).value;
 }
 
+// `toEqual` di vitest confronta anche le proprietà extra `rows`/`columns`
+// attaccate all'array esterno di una `Matrix` (a differenza del `deepEqual` di
+// QUnit): si confronta il solo contenuto numerico.
+const plainMatrix = (m: unknown): unknown[][] => (m as unknown[][]).map((row) => [...row]);
+
 /** Gli errori di `math/` sono `Error` semplici con la chiave come messaggio
  * (Task 1), non `JmeError`: `raisesNumbasError` upstream si traduce così. */
 function raisesMathError(fn: () => unknown, key: string, message?: string): void {
@@ -205,10 +210,50 @@ describe("Evaluating > Arithmetic", () => {
 
   it("vettori e matrici", () => {
     deepCloseEqual(val(ev("vector(1,2)+vector(2,3)")), [3, 5], "vector(1,2)+vector(2,3)");
+    deepCloseEqual(
+      plainMatrix(val(ev("matrix([1,0],[0,1])+matrix([0,1],[1,0])"))),
+      [
+        [1, 1],
+        [1, 1],
+      ],
+      "matrix([1,0],[0,1])+matrix([0,1],[1,0])",
+    );
     deepCloseEqual(val(ev("vector(1,2)-vector(5,5)")), [-4, -3], "vector(1,2)-vector(5,5)");
+    deepCloseEqual(
+      plainMatrix(val(ev("matrix([1,0],[0,1])-matrix([2,1],[2,1])"))),
+      [
+        [-1, -1],
+        [-2, 0],
+      ],
+      "matrix([1,0],[0,1])-matrix([2,1],[2,1])",
+    );
     deepCloseEqual(val(ev("5*vector(1,2)")), [5, 10], "5*vector(1,2)");
     deepCloseEqual(val(ev("vector(1,2)*5")), [5, 10], "vector(1,2)*5");
     deepCloseEqual(val(ev("matrix([1,1],[3,2])*vector(1,2)")), [3, 7], "matrix([1,1],[3,2])*vector(1,2)");
+    deepCloseEqual(
+      plainMatrix(val(ev("5*matrix([1,0],[0,1])"))),
+      [
+        [5, 0],
+        [0, 5],
+      ],
+      "5*matrix([1,0],[0,1])",
+    );
+    deepCloseEqual(
+      plainMatrix(val(ev("matrix([1,0],[0,1])*5"))),
+      [
+        [5, 0],
+        [0, 5],
+      ],
+      "matrix([1,0],[0,1])*5",
+    );
+    deepCloseEqual(
+      plainMatrix(val(ev("matrix([1,2],[1,1])*matrix([2,3],[4,5])"))),
+      [
+        [10, 13],
+        [6, 8],
+      ],
+      "matrix([1,2],[1,1])*matrix([2,3],[4,5])",
+    );
   });
 });
 
