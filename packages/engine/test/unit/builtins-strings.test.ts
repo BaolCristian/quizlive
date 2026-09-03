@@ -8,23 +8,23 @@
 // Task 4a aveva rimandato, e la copertura del resto del tema `strings`
 // (jme-builtins.js:1662-1812) e di `html` puro (2785, 2810).
 //
-// RIMANDATO AL TASK 5 (serve `jme.display`, cioè i ganci `displayHooks`):
+// RIATTIVATO DAL TASK 5 (ora i ganci `displayHooks` sono riempiti):
+//   - `latex(expression, ...)` e `string(expression, ...)` del tema
+//     `type_casting` (jme-builtins.js:1879-1913), che chiamano
+//     `displayHooks.texify`/`treeToJME`.
+//   - `render` su un valore numerico, il cui `tokenToDisplayString` passa dal
+//     `JMEifier`.
+//
+// ANCORA FUORI:
 //   - i due assert di `HTML` (1574-1575) su `table(...)`: `table` costruisce
 //     nodi del DOM e non è portato (vedi DIVERGENCES.md).
-//   - `formatstring`/`join`/`render` su valori il cui `tokenToDisplayString`
-//     passa dal gancio `treeToJME` (number, decimal, liste, espressioni): qui
-//     si esercitano solo i tipi che `typeToDisplayString` sa rendere da solo
-//     (`string`, `integer`, `rational`, `html`).
-//   - `latex(expression)` e `string(expression, ...)` del tema `type_casting`
-//     (jme-builtins.js:1879-1913): chiamano `displayHooks.texify` /
-//     `treeToJME` e senza il Task 5 lanciano `jme.subvars.display not
-//     available`. Qui si verifica solo che lancino quella chiave.
 
 import { describe, it, expect } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";
 import type { Token } from "../../src/jme/tokens";
 import { closeEqual, deepCloseEqual } from "./math-helpers";
-import { raisesJmeError } from "./jme-helpers";
+// riempie `displayHooks`: `latex`/`string`/`render` ne hanno bisogno.
+import "../../src/jme/display";
 
 /** Valuta nello scope dei builtin. */
 function ev(expr: string, variables?: Record<string, unknown>): Token {
@@ -171,16 +171,19 @@ describe("Evaluating > Type casting", () => {
     expect(val(ev('vector(1,2)[0] isa "number"')), 'vector(1,2)[0] isa "number"').toBe(true);
   });
 
-  it("latex e string su un'espressione richiedono il modulo di visualizzazione (Task 5)", () => {
-    raisesJmeError(
-      () => ev('latex(expression("x+1"))'),
-      "jme.subvars.display not available",
-      "latex(expression) senza il Task 5",
+  // jme-builtins.js:1879-1913 — riattivati dal Task 5.
+  it("latex e string su un'espressione", () => {
+    expect(val(ev('latex(expression("x+1"))')), "latex(expression)").toBe("x + 1");
+    expect(val(ev('string(expression("x+1"))')), "string(expression)").toBe("x + 1");
+    expect(val(ev('latex(expression("1/2"),"fractionnumbers")')), "latex con un ruleset").toBe(
+      "\\frac{ 1 }{ 2 }",
     );
-    raisesJmeError(
-      () => ev('string(expression("x+1"))'),
-      "jme.subvars.display not available",
-      "string(expression) senza il Task 5",
-    );
+    expect(val(ev('string(expression("1*x"))')), "string omette il simbolo di moltiplicazione").toBe("1x");
+    const t = ev('latex(expression("x"))') as { latex?: boolean; display_latex?: boolean };
+    expect(t.latex, "latex marca la stringa come LaTeX").toBe(true);
+    expect(t.display_latex, "latex marca la stringa come da mostrare").toBe(true);
+    // jme-builtins.js:1700 — `render` passa da `tokenToDisplayString`, che per
+    // i numeri costruisce un `JMEifier`.
+    expect(val(ev('render(safe("{x}"), ["x": 1.5])')), "render di un numero").toBe("1.5");
   });
 });

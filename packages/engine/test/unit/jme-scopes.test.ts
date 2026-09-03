@@ -154,7 +154,7 @@ describe("Scopes", () => {
 
   it("Constants", () => {
     // upstream verifica le costanti dei builtin (pi, e, i); la loro resa in
-    // LaTeX resta al Task 5.
+    // LaTeX è verificata dal Task 5 in jme-display.test.ts.
     expect((evaluated(builtinScope, "pi") as TNum).value, "pi è la costante del cerchio").toBe(Math.PI);
     expect((evaluated(builtinScope, "e") as TNum).value, "e è la base del logaritmo naturale").toBe(Math.E);
     expect((evaluated(builtinScope, "i") as TNum).value, "i è la radice di -1").toEqual(math.complex(0, 1));

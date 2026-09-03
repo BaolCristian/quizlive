@@ -12,12 +12,12 @@
 //   - `Arithmetic` (698): `[1,2]+[3,4]`, `[1,2]+3`, `["x","y"]+"z"`.
 //   - `Number functions` (845): `abs([1,2,3,4])`.
 //
-// RIMANDATO AL TASK 5 (serve `jme.display`):
+// NOTE:
 //   - `sort([expression('5'),expression('3')])` e
 //     `sort_destinations([expression('5'),expression('3')])` sono tradotti,
-//     perché `compareTokens` sugli `expression` non passa dal display; è
-//     `jme_string`/`string(expression)` che ne ha bisogno, e quello è nel
-//     Task 5.
+//     perché `compareTokens` sugli `expression` non passa dal display;
+//     `jme_string`/`string(expression)` invece sì, e sono tradotti dal Task 5
+//     in builtins-subexpressions.test.ts e builtins-strings.test.ts.
 //   - `transpose([[1,2],[3,4,5]])` è già coperto da
 //     builtins-linear-algebra.test.ts (Task 4a).
 

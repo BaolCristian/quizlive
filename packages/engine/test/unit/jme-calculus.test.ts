@@ -5,31 +5,33 @@
 // Traduzione del test QUnit `Evaluating > Calculus` (tests/jme/jme-tests.mjs:
 // 1578-1607): 20 casi di derivazione simbolica.
 //
-// Upstream ogni caso passa dal builtin `diff`, che semplifica il risultato col
-// ruleset `all` (jme-builtins.js:3755-3761) e lo confronta come stringa JME.
-// Qui il confronto è strutturale (`treesSame`) fra i due membri semplificati
-// con lo stesso ruleset, perché `treeToJME` arriva col Task 5.
+// Come upstream, ogni caso passa dal builtin `diff` — che semplifica il
+// risultato col ruleset `all` (jme-builtins.js:3755-3761) — e confronta la
+// stringa JME resa da `treeToJME`. Il Task 4b confrontava invece gli alberi
+// con `treesSame`, perché `treeToJME` arriva col Task 5.
 
 import { describe, expect, it } from "vitest";
 import { compile } from "../../src/jme/parser";
-import { treesSame } from "../../src/jme/compare";
-import type { Tree } from "../../src/jme/tokens";
-import { simplify } from "../../src/jme/rules";
+import type { Token, Tree } from "../../src/jme/tokens";
 import { differentiate } from "../../src/jme/calculus";
 import { raisesJmeError } from "./jme-helpers";
 import { builtinScope } from "../../src/jme/builtins";
+import { treeToJME } from "../../src/jme/display-jme";
 
 // dal Task 4b lo scope è quello dei builtin, come upstream (prima era
 // `makeSimplifyScope()`, uno scope giocattolo).
 const scope = builtinScope;
 
-/** Deriva `expr` rispetto a `wrt` e confronta con `expected`, semplificando
- * entrambi i membri col ruleset `all` come fa il builtin `diff`. */
+/** `diff(expr, wrt)` upstream (jme-tests.mjs:1579-1582). */
+function diff(expr: string, wrt: string): string {
+  const v = scope.evaluate(`diff(expression("${expr}"),"${wrt}")`);
+  expect(v, `diff(${expr}, ${wrt}) non deve valutare a null`).not.toBeNull();
+  return treeToJME({ tok: v as Token });
+}
+
+/** `diff_equals` upstream (jme-tests.mjs:1583-1585). */
 function diffEquals(expr: string, wrt: string, expected: string): void {
-  const d = differentiate(compile(expr) as Tree, wrt, scope);
-  const got = simplify(d, "all", scope);
-  const want = simplify(compile(expected) as Tree, "all", scope);
-  expect(treesSame(got, want, scope), `diff(${expr}, ${wrt}) = ${expected}`).toBe(true);
+  expect(diff(expr, wrt), `diff(${expr}, ${wrt})`).toBe(expected);
 }
 
 describe("Evaluating > Calculus", () => {
@@ -63,12 +65,10 @@ describe("Evaluating > Calculus", () => {
     diffEquals("sin(x^2)", "x", "2x*cos(x^2)");
   });
 
-  // I due casi restanti (jme-tests.mjs:1595 e 1596) danno alberi equivalenti
-  // ma non identici: i due membri differiscono per l'associatività di `+` e
-  // per il tipo del token `1` (number contro integer), quindi `treesSame` è
-  // falso anche se `treeToJME` dà la stessa stringa upstream.
-  // Verifica via treeToJME nel Task 5.
-  it.skip("somme miste (verifica via treeToJME nel Task 5)", () => {
+  // jme-tests.mjs:1595-1596 — rimandati dal Task 4b perché i due membri
+  // danno alberi equivalenti ma non identici (associatività di `+`, tipo del
+  // token `1`): con il confronto per stringa dell'upstream tornano.
+  it("somme miste", () => {
     diffEquals("x+y+x*y+y^2*x^2", "y", "1 + x + 2*x^2*y");
     diffEquals("2x^3*y^4 + 5x^6 + 7y^8 + 9*x*y", "y", "8*x^3*y^3 + 56*y^7 + 9x");
   });

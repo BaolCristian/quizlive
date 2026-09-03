@@ -297,6 +297,10 @@ registerType(
 export class TDecimal extends TokenBase {
   readonly type = "decimal";
   value: math.ComplexDecimal;
+  /** `"dp"` o `"sigfig"`: com'è espressa la precisione nota del numero. */
+  declare precisionType?: "dp" | "sigfig" | undefined;
+  /** Quante cifre di precisione ha il numero. */
+  declare precision?: number | undefined;
   constructor(value: math.ComplexDecimal | math.Decimal) {
     super();
     this.value =

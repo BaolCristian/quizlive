@@ -8,21 +8,18 @@
 // `pattern_matching` (2639-2766), `calculus` (3753-3766) e `marking`
 // (3769-3782).
 //
-// RIMANDATO AL TASK 5 (serve `jme.display`, cioè i ganci `displayHooks`):
-//   - `String from any type` (680-685) per intero: `jme_string` chiama
-//     `treeToJME`.
+// RIATTIVATI DAL TASK 5 (ora i ganci `displayHooks` sono riempiti):
+//   - `String from any type` (683-687): `jme_string` chiama `treeToJME`.
 //   - i tre assert di `Sub-expressions` che sostituiscono dentro la stringa
 //     di `expression` (`expression("2{b}cos(x)")`, `expression("t*{f}")`,
-//     `expression("t*({f})")`) e l'ultimo (`Numbas.jme.display.subvars`): la
-//     sostituzione `subjme` passa da `displayHooks.treeToJME`/`subvars`, che
-//     il Task 5 riempie. Qui resta `expression` senza graffe.
-//   - `Calculus` (1578-1607): tutti gli assert confrontano il risultato di
-//     `diff(...)` reso con `treeToJME`. Qui `diff` è verificato valutando la
-//     derivata in un punto; la tabella completa resta al Task 5.
-//   - `simplify(expression, ...)` e `parse(str, notation)`: la prima è
-//     verificata sull'albero, la seconda solo nel ramo d'errore, perché le
-//     notazioni alternative (`jme-notations.js`) non sono portate in questo
-//     batch (vedi DIVERGENCES.md).
+//     `expression("t*({f})")`) e l'ultimo (`Numbas.jme.display.subvars`).
+//
+// ANCORA FUORI:
+//   - `Calculus` (1578-1607) è tradotto per intero in jme-calculus.test.ts;
+//     qui resta la verifica numerica del builtin `diff`.
+//   - `parse(str, notation)` solo nel ramo d'errore, perché le notazioni
+//     alternative (`jme-notations.js`) non sono portate (vedi
+//     DIVERGENCES.md).
 
 import { describe, it, expect } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";
@@ -32,6 +29,7 @@ import { Scope } from "../../src/jme/scope";
 import { TExpression, TScope, type Token, type Tree } from "../../src/jme/tokens";
 import { closeEqual, deepCloseEqual } from "./math-helpers";
 import { raisesJmeError, treesEqual } from "./jme-helpers";
+import { subvars as displaySubvars } from "../../src/jme/display";
 
 /** Valuta nello scope dei builtin. */
 function ev(expr: string, variables?: Record<string, unknown>): Token {
@@ -59,6 +57,33 @@ describe("Evaluating > Sub-expressions", () => {
     treesEqual(tree(res), compile("sin(1)") as Tree, 'fn=function("sin"); exec(fn,[1])');
 
     treesEqual(tree(scope.evaluate('expression("x+1")') as Token), compile("x+1") as Tree, "expression senza graffe");
+
+    // jme-tests.mjs:1614-1623 — riattivati dal Task 5: la sostituzione dentro
+    // la stringa di `expression` passa da `displayHooks.treeToJME`.
+    const expr = scope.evaluate('expression("2{b}cos(x)")', { b: scope.evaluate("-2") as Token }) as Token;
+    treesEqual(tree(expr), compile("2*(-2)*cos(x)") as Tree, "sostituzione dentro le stringhe di expression");
+
+    const target = compile("t*(2t+5)") as Tree;
+    scope.setVariable("f", builtinScope.evaluate('expression("2t+5")') as Token);
+    treesEqual(
+      tree(scope.evaluate('expression("t*{f}")') as Token),
+      target,
+      "sostituzione in expression senza parentesi",
+    );
+    treesEqual(
+      tree(scope.evaluate('expression("t*({f})")') as Token),
+      target,
+      "sostituzione in expression con parentesi",
+    );
+    treesEqual(displaySubvars("t*({f})", scope), target, "jme.display.subvars");
+  });
+
+  // jme-tests.mjs:683-687 — `String from any type`, rimandato dal Task 4b
+  // perché `jme_string` chiama `treeToJME`.
+  it("String from any type", () => {
+    expect(val(ev("jme_string(1)")), "jme_string(1)").toBe("1");
+    expect(val(ev('jme_string(expression("x+y"))')), 'jme_string(expression("x+y"))').toBe("x + y");
+    expect(val(ev("jme_string(vector(1,2,3))")), "jme_string(vector(1,2,3))").toBe("vector(1,2,3)");
   });
 
   it("parse, args, type, name, op e function", () => {
@@ -202,9 +227,9 @@ describe("Evaluating > Pattern matching", () => {
 
 describe("Evaluating > Calculus e marking", () => {
   it("diff deriva e semplifica", () => {
-    // il confronto è numerico: la forma dell'albero (integer contro number)
-    // dipende dalla semplificazione, e la tabella upstream si legge solo con
-    // `treeToJME` (Task 5).
+    // il confronto è numerico: la tabella upstream di `Calculus`
+    // (jme-tests.mjs:1578-1607), che legge il risultato con `treeToJME`, è
+    // tradotta in jme-calculus.test.ts.
     closeEqual(val(ev('eval(diff(expression("x^2"),"x"), ["x": 3])')), 6, 'diff(x^2, "x") in x=3');
     closeEqual(val(ev('eval(diff(expression("x"),"x"))')), 1, 'diff(x, "x")');
     closeEqual(val(ev('eval(diff(expression("x"),"y"))')), 0, 'diff(x, "y")');

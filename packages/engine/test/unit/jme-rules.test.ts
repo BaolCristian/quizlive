@@ -10,9 +10,9 @@
 // (prima era `makePatternScope()`, uno scope giocattolo con le sole costanti e
 // funzioni che i matcher valutano).
 //
-// Due assert (2055-2056) verificano che `treeToJME` non perda le parentesi
-// attorno agli operatori di pattern: si traducono nel Task 5, insieme al
-// modulo di visualizzazione.
+// I due assert (2055-2056) che verificano che `treeToJME` non perda le
+// parentesi attorno agli operatori di pattern, e i due confronti per stringa
+// di `Rule.replace`/`replaceAll` (2222, 2233), sono riattivati dal Task 5.
 
 import { describe, expect, it } from "vitest";
 import { compile } from "../../src/jme/parser";
@@ -26,6 +26,7 @@ import { Rule } from "../../src/jme/rules-transform";
 import { treesSame } from "../../src/jme/compare";
 import { evaluated } from "./jme-helpers";
 import { builtinScope } from "../../src/jme/builtins";
+import { treeToJME } from "../../src/jme/display-jme";
 
 const scope = builtinScope;
 
@@ -71,6 +72,16 @@ describe("Pattern-matching > matchExpression", () => {
     // jme-tests.mjs:2053-2054
     const tokens = patternParser.tokenise("`+-x");
     expect(isOp(tokens[0] as Token, "`+-"), "il primo token di `+-x è `+-").toBe(true);
+
+    // jme-tests.mjs:2055-2056
+    expect(
+      treeToJME(patternParser.compile("(2 `| 3)^x") as Tree),
+      "le parentesi non si perdono rendendo gli operatori di pattern",
+    ).toBe("(2 `| 3)^x");
+    expect(
+      treeToJME(patternParser.compile("(2 `| 3) + 5`?") as Tree),
+      "le parentesi non si perdono rendendo gli operatori di pattern",
+    ).toBe("(2 `| 3) + 5`?");
   });
 
   it("nomi speciali", () => {
@@ -356,12 +367,12 @@ describe("Pattern-matching > replace", () => {
   }
 
   it("riscrive l'espressione quando la regola corrisponde", () => {
-    // jme-tests.mjs:2219-2233 — upstream confronta `treeToJME(res.expression)`
-    // con una stringa; qui il confronto è strutturale (il Task 5 porta
-    // `treeToJME`).
+    // jme-tests.mjs:2219-2233 — come upstream, il confronto è sulla stringa
+    // JME resa da `treeToJME`; resta anche quello strutturale del Task 3.
     let res = replace("?;x+?;y", "x*y", "acg", "1+2");
     expect(res.changed, "1+2 cambia").toBe(true);
     expect(treesSame(res.expression, compile("1*2") as Tree, scope), "1+2 diventa 1*2").toBe(true);
+    expect(treeToJME(res.expression), "1+2 diventa 1*2").toBe("1*2");
 
     res = replace("?;x+?;y", "x*y", "acg", "1*2");
     expect(res.changed, "1*2 non cambia").toBe(false);
@@ -375,5 +386,6 @@ describe("Pattern-matching > replace", () => {
       treesSame(res.expression, compile("(1+2)+(3+4)") as Tree, scope),
       "1*2+3*4 diventa (1+2)+(3+4)",
     ).toBe(true);
+    expect(treeToJME(res.expression), "1*2+3*4 diventa 1 + 2 + 3 + 4").toBe("1 + 2 + 3 + 4");
   });
 });

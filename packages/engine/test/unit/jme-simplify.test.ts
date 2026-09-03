@@ -4,7 +4,8 @@
 
 // `Scopes > Rulesets` (tests/jme/jme-tests.mjs:1935-1940) più i test nostri su
 // `collectRuleset` e `Ruleset.simplify`, che upstream sono coperti solo di
-// rimbalzo dal modulo `Display` (che arriva col Task 5).
+// rimbalzo dal modulo `Display` (tradotto dal Task 5 in
+// jme-display.test.ts).
 //
 // I risultati attesi sono stati verificati contro il runtime upstream
 // (`.numbas-upstream/tests/jme-runtime.js`, commit 0f0ea33).

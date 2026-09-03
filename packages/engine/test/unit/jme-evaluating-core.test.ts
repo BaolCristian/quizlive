@@ -31,8 +31,7 @@
 //     builtins-strings.test.ts (qui resta la prova diretta di `makeSafe`).
 //   - `Sub-expressions`: `function("sin")` ed `exec` sono tradotti dal Task 4b
 //     in builtins-subexpressions.test.ts; `expression("2{b}cos(x)")` e
-//     `jme.display.subvars` restano al Task 5 (la sostituzione `subjme` passa
-//     dai `displayHooks`).
+//     `jme.display.subvars` dal Task 5, nello stesso file.
 
 import { describe, it, expect } from "vitest";
 import * as math from "../../src/math";

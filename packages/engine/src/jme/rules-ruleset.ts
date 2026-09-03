@@ -112,8 +112,14 @@ export class Ruleset {
 
 /** Quello che `collectRuleset` accetta come descrizione di un insieme di
  * regole: una stringa con i nomi separati da virgole, un `Ruleset` già
- * costruito, o un array di nomi/regole/insiemi. */
-export type RulesetSpec = string | Ruleset | Array<string | Rule | Ruleset>;
+ * costruito, un array di nomi/regole/insiemi, o un oggetto con le sole
+ * `flags` (i test di visualizzazione upstream passano `{flags:{...}}`,
+ * jme-tests.mjs:2484). */
+export type RulesetSpec =
+  | string
+  | Ruleset
+  | Array<string | Rule | Ruleset>
+  | { flags?: Record<string, boolean>; rules?: Array<string | Rule | Ruleset> };
 
 // jme-rules.js:2051-2108
 /** Compone un `Ruleset` a partire da una lista di nomi o di insiemi.
@@ -141,7 +147,10 @@ export function collectRuleset(set: RulesetSpec, scopeSets: Record<string, Rules
     items = set;
   } else {
     flags = extendObject(flags, set.flags);
-    items = set.rules;
+    // jme-rules.js:2067-2069 — upstream sostituisce `set` con `set.rules` solo
+    // se c'è: altrimenti resta l'oggetto, la cui `length` è `undefined` e il
+    // ciclo non parte. Qui l'equivalente è la lista vuota.
+    items = set.rules ?? [];
   }
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
