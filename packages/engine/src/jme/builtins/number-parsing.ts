@@ -227,12 +227,14 @@ export function registerNumberConversion(scope: Scope): void {
   // DOM: qui la stessa marcatura come stringa.
   add(scope, "scientificnumberhtml", [TDecimal], THTML, (n: math.ComplexDecimal) => {
     const bits = math.parseScientific(n.re.toExponential()) as { significand: number; exponent: number };
-    return new THTML(
+    // upstream ritorna l'elemento `<span>`, che `FuncObj` avvolge poi in un
+    // `THTML`: qui il valore grezzo è la sorgente HTML, non il token.
+    return (
       '<span data-interactive="false">' +
-        math.niceRealNumber(bits.significand) +
-        " × 10<sup>" +
-        bits.exponent +
-        "</sup></span>",
+      math.niceRealNumber(bits.significand) +
+      " × 10<sup>" +
+      bits.exponent +
+      "</sup></span>"
     );
   });
   add(scope, "scientificnumberhtml", [TNum], THTML, (n: math.NumbasNumber) => {
@@ -243,12 +245,12 @@ export function registerNumberConversion(scope: Scope): void {
       significand: number;
       exponent: number;
     };
-    return new THTML(
+    return (
       '<span data-interactive="false">' +
-        math.niceRealNumber(bits.significand) +
-        " × 10<sup>" +
-        bits.exponent +
-        "</sup></span>",
+      math.niceRealNumber(bits.significand) +
+      " × 10<sup>" +
+      bits.exponent +
+      "</sup></span>"
     );
   });
 
