@@ -11,12 +11,14 @@
 // RIMANDATO AL TASK 5 (serve `jme.display`, cioè i ganci `displayHooks`):
 //   - `String from any type` (680-685) per intero: `jme_string` chiama
 //     `treeToJME`.
-//   - l'ultimo assert di `Sub-expressions` (`Numbas.jme.display.subvars`):
-//     `jme.display` arriva col Task 5.
+//   - i tre assert di `Sub-expressions` che sostituiscono dentro la stringa
+//     di `expression` (`expression("2{b}cos(x)")`, `expression("t*{f}")`,
+//     `expression("t*({f})")`) e l'ultimo (`Numbas.jme.display.subvars`): la
+//     sostituzione `subjme` passa da `displayHooks.treeToJME`/`subvars`, che
+//     il Task 5 riempie. Qui resta `expression` senza graffe.
 //   - `Calculus` (1578-1607): tutti gli assert confrontano il risultato di
-//     `diff(...)` reso con `treeToJME`. Qui `diff` è verificato per struttura
-//     dell'albero (`treesEqual`) sui casi che la semplificazione lascia in
-//     forma canonica; la tabella completa resta al Task 5.
+//     `diff(...)` reso con `treeToJME`. Qui `diff` è verificato valutando la
+//     derivata in un punto; la tabella completa resta al Task 5.
 //   - `simplify(expression, ...)` e `parse(str, notation)`: la prima è
 //     verificata sull'albero, la seconda solo nel ramo d'errore, perché le
 //     notazioni alternative (`jme-notations.js`) non sono portate in questo
