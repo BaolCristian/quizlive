@@ -14,6 +14,8 @@
 import * as math from "../math";
 import { JmeError } from "./errors";
 import type { Scope } from "./scope";
+// import di solo tipo: nessun ciclo a runtime
+import type { Ruleset, RulesetSpec } from "./rules-ruleset";
 import type { Token, Tree } from "./tokens";
 import { isType } from "./evaluate";
 import { escape } from "./util";
@@ -28,8 +30,8 @@ export const displayHooks: {
   exprToLaTeX?: (expr: string, ruleset: unknown, scope: Scope) => string;
   /** Sostituisce le variabili in una stringa con semantica JME. */
   subvars?: (str: string, scope: Scope) => Tree;
-  /** Raccoglie un ruleset a partire da una descrizione (jme/rules.ts, Task 3). */
-  collectRuleset?: (name: string, rulesets: Record<string, unknown>) => unknown;
+  /** Raccoglie un ruleset a partire da una descrizione (jme/rules.ts). */
+  collectRuleset?: (set: RulesetSpec, scopeSets: Record<string, Ruleset>) => Ruleset;
 } = {};
 
 /** Il gancio richiesto, o un errore se il modulo di visualizzazione manca. */

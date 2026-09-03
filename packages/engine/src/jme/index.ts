@@ -20,3 +20,7 @@ export * from "./compare";
 export * from "./equality";
 export * from "./infer";
 export * from "./subvars";
+// `./rules` va importato sempre: il modulo registra `collectRuleset` fra i
+// `displayHooks`, di cui `Scope.evaluate` e `contentsubvars` hanno bisogno.
+export * from "./rules";
+export * as calculus from "./calculus";

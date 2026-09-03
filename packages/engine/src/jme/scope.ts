@@ -27,6 +27,8 @@ import {
   type SignatureResultArgument,
 } from "./funcobj";
 import { Parser, standardParser } from "./parser";
+// import di solo tipo: non crea un ciclo a runtime (il Task 3 importa scope.ts)
+import type { Ruleset } from "./rules-ruleset";
 import { funcSynonyms, normaliseName } from "./tokenizer";
 import { castArgumentsToSignature, substituteTree, wrapValue } from "./evaluate";
 import { eq } from "./equality";
@@ -64,7 +66,7 @@ export interface ScopeExtras {
   constants?: Record<string, ConstantDefinition>;
   functions?: Record<string, FuncObj[]>;
   function_sets?: Record<string, FunctionSet>;
-  rulesets?: Record<string, unknown>;
+  rulesets?: Record<string, Ruleset>;
   caseSensitive?: boolean;
   rng?: Rng;
   question?: unknown;
@@ -158,8 +160,8 @@ export class Scope {
   functions: Record<string, FuncObj[]>;
   /** Cache di `getFunction`. */
   _resolved_functions: Record<string, FuncObj[]>;
-  /** I ruleset definiti a questo livello (il tipo `Ruleset` arriva col Task 3). */
-  rulesets: Record<string, unknown>;
+  /** I ruleset definiti a questo livello. */
+  rulesets: Record<string, Ruleset>;
   /** I nomi cancellati a questo livello, per collezione. */
   deleted: Record<string, Record<string, boolean>>;
   /** Lo scope distingue maiuscole e minuscole nei nomi? */
@@ -325,7 +327,7 @@ export class Scope {
 
   // jme.js:2738-2741
   /** Aggiunge un ruleset allo scope. */
-  addRuleset(name: string, set: unknown): void {
+  addRuleset(name: string, set: Ruleset): void {
     this.rulesets[name] = set;
     this.setDeleted("rulesets", name, false);
   }
@@ -574,13 +576,13 @@ export class Scope {
 
   // jme.js:3013-3015
   /** Il ruleset con il nome dato. */
-  getRuleset(name: string): unknown {
-    return this.resolve("rulesets", name);
+  getRuleset(name: string): Ruleset | undefined {
+    return this.resolve("rulesets", name) as Ruleset | undefined;
   }
 
   // jme.js:3021-3025
   /** Definisce un ruleset. */
-  setRuleset(name: string, rules: unknown): void {
+  setRuleset(name: string, rules: Ruleset): void {
     name = normaliseName(name, this);
     this.rulesets[name] = rules;
     this.setDeleted("rulesets", name, false);
@@ -626,8 +628,8 @@ export class Scope {
     return this.collect("variables") as Record<string, Token>;
   }
   /** Tutti i ruleset visibili da questo scope. */
-  allRulesets(): Record<string, unknown> {
-    return this.collect("rulesets");
+  allRulesets(): Record<string, Ruleset> {
+    return this.collect("rulesets") as Record<string, Ruleset>;
   }
 
   // jme.js:3076-3097

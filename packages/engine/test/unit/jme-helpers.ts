@@ -12,6 +12,7 @@ import { JmeError } from "../../src/jme/errors";
 import { FuncObj } from "../../src/jme/funcobj";
 import { lazyOps, Scope } from "../../src/jme/scope";
 import { TBool, TNum, type Token, type Tree } from "../../src/jme/tokens";
+import { simplificationRules } from "../../src/jme/rules-simplify";
 
 /** Verifica che `fn` lanci un `JmeError` con la chiave upstream data. */
 export function raisesJmeError(fn: () => unknown, key: string, message?: string): void {
@@ -182,6 +183,12 @@ export function makePatternScope(): Scope {
     ),
   );
   return scope;
+}
+
+/** `makePatternScope()` più i ruleset di semplificazione, che upstream vivono
+ * in `Numbas.jme.builtinScope` (jme-builtins.js:41). */
+export function makeSimplifyScope(): Scope {
+  return new Scope([makePatternScope(), { rulesets: simplificationRules }]);
 }
 
 /** Valuta l'espressione e verifica che il risultato non sia nullo: dalla
