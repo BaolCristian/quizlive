@@ -9,7 +9,7 @@
 // use the `{name}` form read by `t()`.
 
 export const en: Record<string, string> = {
-  // math.js, util.js — the error keys thrown by `math/` (49 sites); the text is
+  // math.js, util.js — the 31 error keys thrown by `math/` (49 sites); the text is
   // the upstream en-GB catalogue's, verbatim. The two marked "ours" carry an
   // upstream key that has no upstream text.
   "math.choose.empty selection": "Empty selection given to random function",
@@ -41,7 +41,11 @@ export const en: Record<string, string> = {
     "The number formatting syntax <code>{syntax}</code> is not recognised.",
   "util.permutations.r bigger than n": "Can't take more elements than the list has.", // ours
   "util.product.non list": "Passed a non-list to <code>Numbas.util.product</code>",
+  "vectormath.cross.matrix too big":
+    "Can't calculate cross product of a matrix which isn't $1 \\times N$ or $N \\times 1$.",
   "vectormath.cross.not 3d": "Can only take the cross product of 3-dimensional vectors.",
+  "vectormath.dot.matrix too big":
+    "Can't calculate dot product of a matrix which isn't $1 \\times N$ or $N \\times 1$.",
 
   "jme.calculus.unknown derivative": "I don't know how to differentiate {tree}",
   "jme.compile list.mismatched bracket": "Mismatched brackets in the list of expressions",

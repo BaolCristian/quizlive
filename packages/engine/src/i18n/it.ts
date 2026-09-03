@@ -12,7 +12,7 @@
 // sono nella forma `{nome}` (vedi `t()` in i18n/index.ts).
 
 export const it: Record<string, string> = {
-  // math.js, util.js — le chiavi degli errori lanciati da `math/` (49 siti).
+  // math.js, util.js — le 31 chiavi degli errori lanciati da `math/` (49 siti).
   // upstream sono `new Numbas.Error(chiave)` come tutte le altre; nel port
   // erano `new Error(chiave)`, cioè la chiave grezza come messaggio, che
   // arrivava fino al feedback dello studente. Le due marcate "nostra" hanno la
@@ -47,7 +47,11 @@ export const it: Record<string, string> = {
     "La sintassi di formattazione numerica <code>{syntax}</code> non è riconosciuta.",
   "util.permutations.r bigger than n": "Non si possono prendere più elementi di quanti ne ha la lista.", // nostra
   "util.product.non list": "Passato a <code>product</code> un valore che non è una lista",
+  "vectormath.cross.matrix too big":
+    "Non posso calcolare il prodotto vettoriale di una matrice che non sia $1 \\times N$ o $N \\times 1$.",
   "vectormath.cross.not 3d": "Il prodotto vettoriale è definito solo per vettori tridimensionali.",
+  "vectormath.dot.matrix too big":
+    "Non posso calcolare il prodotto scalare di una matrice che non sia $1 \\times N$ o $N \\times 1$.",
 
   "jme.calculus.unknown derivative": "Non si sa derivare {tree}",
   "jme.compile list.mismatched bracket": "Parentesi non corrispondenti nella lista di espressioni",

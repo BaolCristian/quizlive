@@ -37,6 +37,29 @@ import { closeEqual, deepCloseEqual } from "./math-helpers";
 import { engineErrorKeys, errorMessageIn, MathError } from "../../src/errors";
 import { it as itDict } from "../../src/i18n/it";
 import { en as enDict } from "../../src/i18n/en";
+import { readFileSync, readdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/** Le chiavi d'errore che `src/math/` può lanciare, LETTE DAL SORGENTE.
+ *
+ * Si cercano i letterali che hanno la forma di una chiave upstream ovunque
+ * compaiano, non solo dentro un `throw new MathError("...")`: `vectormath.ts`
+ * passa la chiave ad `asVector` come parametro, e una lista scritta a mano
+ * l'aveva mancata. */
+function mathErrorKeysInSource(): string[] {
+  const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "src", "math");
+  const re = /"((?:math|matrixmath|vectormath|setmath|util)\.[^"\n]+)"/g;
+  const keys = new Set<string>();
+  for (const name of readdirSync(dir)) {
+    if (!name.endsWith(".ts")) continue;
+    const source = readFileSync(join(dir, name), "utf8");
+    for (const m of source.matchAll(re)) {
+      keys.add(m[1] as string);
+    }
+  }
+  return [...keys].sort();
+}
 
 /** La prima chiave d'errore lanciata da `fn` (gli errori di `math/` portano la
  * chiave upstream in `err.key`, il messaggio è tradotto). */
@@ -910,42 +933,38 @@ describe("Errori di math/", () => {
     expect(errorMessageIn(caught, "en")).toBe("The size of the partition must be between 1 and 3.");
   });
 
+  it("il prodotto scalare di una matrice troppo grande porta la sua chiave", () => {
+    // la chiave qui NON è un letterale al punto di `throw`: `asVector` la
+    // riceve come parametro. È il motivo per cui le due chiavi
+    // `vectormath.*.matrix too big` erano sfuggite ai cataloghi.
+    const big = math.makeMatrix([
+      [1, 2],
+      [3, 4],
+    ]);
+    expect(errorKey(() => math.vectormath.dot(big, [1, 2]))).toBe("vectormath.dot.matrix too big");
+    expect(errorKey(() => math.vectormath.cross(big, [1, 2, 3]))).toBe("vectormath.cross.matrix too big");
+    let caught: unknown;
+    try {
+      math.vectormath.dot(big, [1, 2]);
+    } catch (e) {
+      caught = e;
+    }
+    expect(errorMessageIn(caught, "en")).toContain("dot product");
+    expect(errorMessageIn(caught, "it")).toContain("prodotto scalare");
+  });
+
   it("ogni chiave lanciata da math/ è nei due cataloghi", () => {
-    // la lista è quella dei `throw new MathError("...")` di src/math/
-    const keys = [
-      "math.choose.empty selection",
-      "math.combinations.complex",
-      "math.combinations.k less than zero",
-      "math.combinations.n less than k",
-      "math.combinations.n less than zero",
-      "math.gcf.complex",
-      "math.lcm.complex",
-      "math.niceNumber.undefined",
-      "math.order complex numbers",
-      "math.permutations.complex",
-      "math.permutations.k less than zero",
-      "math.permutations.n less than k",
-      "math.permutations.n less than zero",
-      "math.precround.complex",
-      "math.random_integer_partition.invalid k",
-      "math.rangeToList.zero step size",
-      "math.real interval.invalid string",
-      "math.shuffle_together.lists not all the same length",
-      "math.siground.complex",
-      "math.toNearest.complex",
-      "matrixmath.abs.non-square",
-      "matrixmath.abs.too big",
-      "matrixmath.mul.different sizes",
-      "matrixmath.not invertible",
-      "matrixmath.not square",
-      "util.formatNumberNotation.unrecognised syntax",
-      "util.permutations.r bigger than n",
-      "util.product.non list",
-      "vectormath.cross.not 3d",
-    ];
+    // la lista è DERIVATA dal sorgente, non scritta a mano: una chiave nuova
+    // (o spostata dal punto di `throw` a un parametro, come le due
+    // `vectormath.*.matrix too big`) deve far fallire questo caso da sola.
+    const keys = mathErrorKeysInSource();
+    expect(keys.length, "nessuna chiave trovata: la regex non combacia più").toBeGreaterThanOrEqual(31);
     for (const key of keys) {
       expect(itDict[key], `it: ${key}`).toBeDefined();
       expect(enDict[key], `en: ${key}`).toBeDefined();
     }
+    // e nessuna chiave `math.*` nei cataloghi che il sorgente non lanci più
+    const catalogued = Object.keys(itDict).filter((k) => /^(math|matrixmath|vectormath|setmath)\./.test(k));
+    expect(catalogued.sort()).toEqual(keys.filter((k) => !k.startsWith("util.")).sort());
   });
 });
