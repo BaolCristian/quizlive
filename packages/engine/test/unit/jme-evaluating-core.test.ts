@@ -20,7 +20,9 @@
 //     dipende dalle definizioni di `+`, `/`, `^`, `except` dei builtin.
 //   - `jme.inferVariableTypes`/`jme.inferExpressionType`: i casi con `det`,
 //     `cross`, `dot`, `vector`, `log`, `random`, `id`, `countdp`, `gcd`,
-//     `transpose`.
+//     `transpose` — RIATTIVATI dal Task 4a nei due `it` "(con builtinScope)".
+//     Gli altri assert di `Number-like types` sono tradotti in
+//     builtins-numeric.test.ts.
 //   - `Safe strings`: la funzione `safe` (qui si prova direttamente
 //     `makeSafe`, che è quel che `safe` chiama).
 //   - `Annotations`: `dot:x=x` e `dot:bar:x=bar:dot:x`, che chiedono un `=`
@@ -60,6 +62,7 @@ import {
 } from "../../src/jme/tokens";
 import { closeEqual } from "./math-helpers";
 import { evaluated, makeToyScope, raisesJmeError, treesEqual } from "./jme-helpers";
+import { builtinScope } from "../../src/jme/builtins";
 
 /** Un albero compilato, con la certezza che non sia `null`. */
 function c(expr: string): Tree {
@@ -161,6 +164,36 @@ describe("Evaluating (meccanismo)", () => {
     expect(infer("x+y"), "x+y dà x e y number").toEqual({ x: "number", y: "number" });
   });
 
+  // riattivato dal Task 4a: gli assert upstream che usano `det`, `cross`,
+  // `dot`, `vector`, `log`, `random`, `id`, `countdp`, `gcd`, `transpose`.
+  it("jme.inferVariableTypes (con builtinScope)", () => {
+    /** I tipi inferiti per le variabili libere dell'espressione. */
+    function infer(expr: string): Record<string, string> {
+      return inferVariableTypes(c(expr), builtinScope);
+    }
+    expect(infer("x"), "x non dice nulla").toEqual({});
+    expect(infer("1"), "1 non dice nulla").toEqual({});
+    expect(infer("x+x"), "x+x dà x number").toEqual({ x: "number" });
+    expect(infer("x+sin(x)"), "x+sin(x) dà x number").toEqual({ x: "number" });
+    expect(infer("k*det(x)"), "k*det(x)").toEqual({ x: "matrix", k: "number" });
+    expect(infer("dot(vector(1,2,3),a)"), "dot(vector(1,2,3),a)").toEqual({ a: "vector" });
+    expect(infer("log(abs(x+1),e) + log(abs(x-1),e)"), "log(abs(x+1),e) + log(abs(x-1),e)").toEqual({ x: "number" });
+    expect(infer("cross(x+y,vector(z,1,2))"), "cross(x+y,vector(z,1,2))").toEqual({
+      x: "vector",
+      y: "vector",
+      z: "number",
+    });
+    expect(
+      infer("16*sin(u)*vector(sin(u)*cos(v),sin(u)*sin(v),cos(u))"),
+      "16*sin(u)*vector(...)",
+    ).toEqual({ u: "number", v: "number" });
+    expect(infer("random(a+b,c,i+f)"), "random(a+b,c,i+f)").toEqual({ a: "number", b: "number", f: "number" });
+    expect(
+      infer("det(id(countdp(x)))*cross(a,b*gcd(f,g))[j]"),
+      "det(id(countdp(x)))*cross(a,b*gcd(f,g))[j]",
+    ).toEqual({ a: "vector", b: "vector", f: "number", g: "number", j: "number", x: "string" });
+  });
+
   it("jme.inferExpressionType", () => {
     const scope = makeToyScope();
     scope.setConstant("pi", { value: new TNum(Math.PI) });
@@ -172,6 +205,18 @@ describe("Evaluating (meccanismo)", () => {
     expect(infer("pi"), "pi dà number").toBe("number");
     expect(infer("a*pi"), "a*pi dà number").toBe("number");
     expect(infer("x<1"), "x<1 dà boolean").toBe("boolean");
+  });
+
+  // riattivato dal Task 4a: l'assert upstream su `transpose`.
+  it("jme.inferExpressionType (con builtinScope)", () => {
+    /** Il tipo inferito per l'espressione. */
+    function infer(expr: string): string | undefined {
+      return inferExpressionType(c(expr), builtinScope);
+    }
+    expect(infer("1"), "1 dà integer").toBe("integer");
+    expect(infer("pi"), "pi dà number").toBe("number");
+    expect(infer("a*pi"), "a*pi dà number").toBe("number");
+    expect(infer("transpose(pi*z)"), "transpose(pi*z) dà matrix").toBe("matrix");
   });
 
   it("Safe strings", () => {

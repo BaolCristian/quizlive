@@ -4,7 +4,8 @@
 
 // Traduzione del modulo QUnit `Compiling` di tests/jme/jme-tests.mjs:140-456
 // (20 test). Le `assert` che valutano espressioni con funzioni builtin sono
-// segnalate volta per volta: quelle sono coperte dal Task 4.
+// segnalate volta per volta: quelle sono coperte dal Task 4. `Pipe operator`
+// e `Case sensitivity` sono state riattivate contro `builtinScope` dal Task 4a.
 
 import { describe, it, expect } from "vitest";
 import { compile, Parser, tokenise } from "../../src/jme/parser";
@@ -13,6 +14,7 @@ import { Scope } from "../../src/jme/scope";
 import { TBool, TInt, TName, TNum, TOp, TPunc, TString, type Token, type Tree } from "../../src/jme/tokens";
 import { closeEqual } from "./math-helpers";
 import { makeToyScope, raisesJmeError, tokWithPos, treesEqual } from "./jme-helpers";
+import { builtinScope } from "../../src/jme/builtins";
 
 /** Un albero compilato, con la certezza che non sia `null`. */
 function c(expr: string): Tree {
@@ -270,9 +272,13 @@ describe("Compiling", () => {
   });
 
   it("Pipe operator", () => {
-    // upstream verifica anche `3.3145 |> precround(2) |> clamp(1,4)`: usa i
-    // builtin `precround`/`clamp`/`random` — coperta dal Task 4.
     treesEqual(c("3.3145 |> precround(2)"), c("precround(3.3145, 2)"), "il pipe diventa una chiamata");
+    // riattivata dal Task 4a: `precround`/`clamp`/`random` sono nei builtin.
+    closeEqual(
+      (builtinScope.evaluate("3.3145 |> precround(2) |> clamp(1,4)") as TNum).value,
+      (builtinScope.evaluate("clamp(precround(random(3.3145),2),1,4)") as TNum).value,
+      "3.3145 |> precround(2) |> clamp(1,4)",
+    );
     const scope = makeToyScope();
     closeEqual(
       (scope.evaluate("2 |> (x -> 3x)") as TNum).value,
@@ -353,12 +359,11 @@ describe("Compiling", () => {
   });
 
   it("Case sensitivity", () => {
-    const scope = makeToyScope();
+    // riattivata dal Task 4a: upstream usa `builtinScope` e `SIN(1)`.
+    const scope = new Scope([builtinScope]);
     scope.caseSensitive = true;
     expect(scope.parser.compile("X")).not.toEqual(scope.parser.compile("x"));
-    // upstream usa `SIN(1)`: qui `ABS` è la funzione equivalente dello scope
-    // giocattolo (`sin` arriva col Task 4).
-    raisesJmeError(() => scope.evaluate("ABS(1)"), "jme.typecheck.function not defined", "ABS(1)");
+    raisesJmeError(() => scope.evaluate("SIN(1)"), "jme.typecheck.function not defined", "SIN(1)");
     closeEqual(
       (scope.evaluate("w*W", { w: scope.evaluate("1"), W: scope.evaluate("2") }) as TNum).value,
       2,

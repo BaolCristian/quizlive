@@ -334,7 +334,10 @@ export function lu_decomposition(m: Matrix): [Matrix, Matrix] {
 // math.js:3582-3591
 /** Converte una matrice di numeri in una matrice di `Fraction`. */
 export function fraction_matrix(matrix: Matrix): FractionMatrix {
-  const o = matrix.map((r) => r.map((c) => (c instanceof Fraction ? c : new Fraction(c as number, 1n))));
+  // il denominatore va passato come `number` (upstream: `new Fraction(c, 1)`):
+  // con `1n` il costruttore salta il ciclo di raddoppi che rende interi
+  // numeratore e denominatore, e ogni cella non intera diventerebbe 0.
+  const o = matrix.map((r) => r.map((c) => (c instanceof Fraction ? c : new Fraction(c as number, 1))));
   return makeFractionMatrix(o);
 }
 

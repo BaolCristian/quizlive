@@ -23,8 +23,10 @@ import { registerNumberTheory } from "./number-theory";
 import { registerComparison } from "./comparison";
 import { registerLinearAlgebra } from "./linear-algebra";
 import { registerBooleans } from "./booleans";
+import { registerSetsIntervals } from "./sets-intervals";
 import { registerRanges } from "./ranges";
 import { registerNumberParsing } from "./number-parsing";
+import { registerRandomisation } from "./randomisation";
 
 export * from "./registry";
 export { registerConstants, builtinConstants } from "./constants";
@@ -36,8 +38,10 @@ export { registerNumberTheory } from "./number-theory";
 export { registerComparison } from "./comparison";
 export { registerLinearAlgebra } from "./linear-algebra";
 export { registerBooleans } from "./booleans";
+export { registerSetsIntervals } from "./sets-intervals";
 export { registerRanges, best_number_type_for_range } from "./ranges";
 export { registerNumberParsing } from "./number-parsing";
+export { registerRandomisation } from "./randomisation";
 
 /** Registra nello scope le costanti e tutte le funzioni predefinite, nello
  * stesso ordine di `jme-builtins.js`. Si può rieseguire su uno scope nuovo. */
@@ -51,8 +55,10 @@ export function registerBuiltins(scope: Scope): void {
   registerComparison(scope);
   registerLinearAlgebra(scope);
   registerBooleans(scope);
+  registerSetsIntervals(scope);
   registerRanges(scope);
   registerNumberParsing(scope);
+  registerRandomisation(scope);
 }
 
 // jme-builtins.js:41 — `new Scope({rulesets: jme.rules.simplificationRules})`.
