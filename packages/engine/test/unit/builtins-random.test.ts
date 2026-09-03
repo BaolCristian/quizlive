@@ -8,9 +8,10 @@
 // monkey-patching — `seedrandom(seed, expr)` valuta in uno scope figlio con
 // `rng = makeRng(seed)`).
 //
-// ASSERT RIMANDATI AL TASK 4b:
-//   - `8.45 in repeat(random(8.15..8.45#0.1),100)`: `repeat` sta nel tema
-//     `lists` (jme-builtins.js:1284).
+// ASSERT TRADOTTO DAL TASK 4b IN builtins-control-flow.test.ts:
+//   - `8.45 in repeat(random(8.15..8.45#0.1),100)` (1171): `repeat` sta nel
+//     tema `lists` (jme-builtins.js:1284), portato dal Task 4b, ed è
+//     verificato insieme agli altri assert su `repeat` di `Repetition`.
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { builtinScope } from "../../src/jme/builtins";

@@ -493,6 +493,13 @@ export function registerComprehensions(scope: ScopeType): void {
   findvarsOps["take"] = function (tree, boundvars, s) {
     return findvars_args(take_make_lambda(tree.args as Tree[]), boundvars, s);
   };
+  // upstream (3709-3715) copia UNA SECONDA VOLTA `tree.args` in un `args`
+  // locale, sostituisce lì dentro e ritorna `{tok, args}` — ma
+  // `jme.substituteTree` (jme.js:247-251) scarta il valore di ritorno del
+  // gestore e usa l'albero che ha copiato lui: upstream la sostituzione in
+  // `take` non ha quindi alcun effetto. Qui si muta la copia del chiamante,
+  // come fanno gli altri otto gestori, così `take` si comporta come `map` e
+  // `for:`. Vedi DIVERGENCES.md.
   substituteTreeOps["take"] = function (tree, s, allowUnbound) {
     const args = tree.args as Tree[];
     const list_index = (args[1] as Tree).tok.type == "lambda" ? 2 : 3;

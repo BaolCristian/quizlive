@@ -11,6 +11,9 @@
 //
 // `Boolean operations` era rimandato dal Task 4a (builtins-numeric.test.ts):
 // tutti e cinque gli assert usano `let` (control_flow) e `len` (lists).
+// Qui è riattivato anche l'ultimo assert di `Random numbers` (1171),
+// `8.45 in repeat(random(8.15..8.45#0.1),100)`, che il Task 4a aveva
+// rimandato perché `repeat` sta nel tema `lists` (jme-builtins.js:1284).
 //
 // RIMANDATO AL TASK 5 (serve `jme.display`):
 //   - nessun assert di questi blocchi. I due assert di `findvars` che
@@ -23,6 +26,7 @@ import {
   findvars,
   findvarsOps,
   isDeterministicOps,
+  substituteTree,
   substituteTreeOps,
   unwrapValue,
 } from "../../src/jme/evaluate";
@@ -105,6 +109,13 @@ describe("Evaluating > Repetition", () => {
     closeEqual((val(ev("repeat(random(3..6),5)")) as Token[]).length, 5, "repeat(random(3..6),5) produce 5 valori");
     const n = val(ev("repeat(random(3..6),5)[4]")) as number;
     expect(n >= 3 && n <= 6, "l'ultimo elemento di repeat(random(3..6),5) è nell'intervallo").toBe(true);
+    // ultimo assert di `Random numbers` (jme-tests.mjs:1171), rimandato dal
+    // Task 4a perché `repeat` è del tema `lists`: con un passo non intero
+    // l'estremo superiore del range deve restare estraibile.
+    expect(
+      val(ev("8.45 in repeat(random(8.15..8.45#0.1),100)")),
+      "8.45 in repeat(random(8.15..8.45#0.1),100)",
+    ).toBe(true);
     deepCloseEqual(
       values("let(x, 2, y, 4, x+y for: y of: 1..3)"),
       [3, 4, 5],
@@ -216,6 +227,30 @@ describe("Evaluating > substitute into for: .. of: ..", () => {
       unwrapValue(scope.evaluate("[3,4]") as Token),
       "map si può valutare due volte con liste diverse",
     );
+
+    tree = compile("take(4,x>0,x,y)") as Tree;
+    scope.evaluate(tree, { y: scope.evaluate("[1,2]") });
+    deepCloseEqual(
+      unwrapValue(scope.evaluate(tree, { y: scope.evaluate("[3,4]") }) as Token),
+      unwrapValue(scope.evaluate("[3,4]") as Token),
+      "take si può valutare due volte con liste diverse",
+    );
+
+    // `substituteTreeOps.take`: upstream il gestore sostituisce dentro una
+    // copia che poi butta via, quindi il valore non arriva mai nell'albero
+    // (vedi DIVERGENCES.md). Con `take` pigra la differenza non si vede
+    // valutando — il nome è comunque legato nello scope — quindi si guarda
+    // l'albero sostituito, come per `map` e `for:`.
+    const withList = new Scope([builtinScope, { variables: { y: ev("[1,2]") } }]);
+    const substituted = substituteTree(compile("take(4,x>0,x,y)") as Tree, withList, true) as Tree;
+    expect(
+      ((substituted.args as Tree[])[3] as Tree).tok.type,
+      "substituteTree porta la lista dentro take",
+    ).toBe("list");
+    expect(
+      ((substituteTree(compile("map(x,x,y)") as Tree, withList, true) as Tree).args as Tree[])[2]?.tok.type,
+      "come fa per map",
+    ).toBe("list");
   });
 });
 
