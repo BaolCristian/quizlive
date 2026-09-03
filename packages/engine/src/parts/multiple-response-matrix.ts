@@ -5,6 +5,7 @@
 // punteggi e la combinazione "perfetta" di spunte) e 819-839
 // (`layoutTypes`), separati dalla classe per non superare le 1000 righe.
 
+import { errorMessageIn } from "../errors";
 import { JmeError } from "../jme/errors";
 import { castToType, isType } from "../jme/evaluate";
 import { signature } from "../jme/funcobj";
@@ -106,7 +107,7 @@ function matrixFromArray(part: MultipleResponsePart, scope: Scope): NumbasNumber
             part: part.path,
             row: i,
             column: j,
-            error: e instanceof Error ? e.message : String(e),
+            error: errorMessageIn(e, scope.locale),
           });
         }
         if (!isFloat(value)) {
