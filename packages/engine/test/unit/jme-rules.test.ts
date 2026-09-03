@@ -6,9 +6,9 @@
 // (righe 2032-2233): i test `matchExpression` (2033-2208) e `replace`
 // (2209-2233).
 //
-// Upstream lo scope è `Numbas.jme.builtinScope`; qui è `makePatternScope()`,
-// che registra le costanti e le poche funzioni che i matcher valutano
-// (il Task 4 porta i builtin veri).
+// Upstream lo scope è `Numbas.jme.builtinScope`; dal Task 4b lo è anche qui
+// (prima era `makePatternScope()`, uno scope giocattolo con le sole costanti e
+// funzioni che i matcher valutano).
 //
 // Due assert (2055-2056) verificano che `treeToJME` non perda le parentesi
 // attorno agli operatori di pattern: si traducono nel Task 5, insieme al
@@ -24,9 +24,10 @@ import { matchExpression as matchExpressionRaw, patternParser } from "../../src/
 import { extendOptions, type MatchTreeOptions } from "../../src/jme/rules-terms";
 import { Rule } from "../../src/jme/rules-transform";
 import { treesSame } from "../../src/jme/compare";
-import { evaluated, makePatternScope } from "./jme-helpers";
+import { evaluated } from "./jme-helpers";
+import { builtinScope } from "../../src/jme/builtins";
 
-const scope = makePatternScope();
+const scope = builtinScope;
 
 // jme-tests.mjs:2034-2036
 /** `matchExpression` con lo scope di prova già impostato. */

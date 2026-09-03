@@ -21,9 +21,13 @@ import {
   simplificationRules,
   simplify,
 } from "../../src/jme/rules";
-import { makeSimplifyScope, raisesJmeError } from "./jme-helpers";
+import { raisesJmeError } from "./jme-helpers";
+import { builtinScope } from "../../src/jme/builtins";
 
-const scope = makeSimplifyScope();
+// dal Task 4b lo scope è quello dei builtin, come upstream: prima era
+// `makeSimplifyScope()`, che registrava a mano le costanti e le funzioni
+// valutate dalle condizioni `` `where `` delle regole.
+const scope = builtinScope;
 
 /** Semplifica l'espressione e verifica che sia l'albero atteso. */
 function simplifiesTo(expr: string, ruleset: string | string[] | Ruleset, expected: string, message: string): void {
@@ -116,6 +120,15 @@ describe("simplify", () => {
 
   it("zeroTerm toglie gli addendi nulli", () => {
     simplifiesTo("x+0", "zeroTerm", "x", "x+0 diventa x");
+  });
+
+  it("i ruleset in conflitto vanno chiesti per nome", () => {
+    // jme-rules.js:131-138 (inventario §8.4): `canonicalOrder` valuta la
+    // condizione `` `where canonical_compare(x,y)=1 ``, cioè un builtin del
+    // tema `jme` — prima del Task 4b non era esercitabile.
+    simplifiesTo("y+x", "canonicalOrder", "x+y", "canonicalOrder riordina la somma");
+    simplifiesTo("(x+y)*z", "expandBrackets", "x*z+y*z", "expandBrackets distribuisce");
+    simplifiesTo("y+x", "all", "y+x", '"all" non include canonicalOrder');
   });
 
   it("accetta un Ruleset già costruito e un array di nomi", () => {

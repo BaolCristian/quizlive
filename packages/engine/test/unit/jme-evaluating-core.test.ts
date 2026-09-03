@@ -26,9 +26,13 @@
 //   - `Safe strings`: la funzione `safe` (qui si prova direttamente
 //     `makeSafe`, che è quel che `safe` chiama).
 //   - `Annotations`: `dot:x=x` e `dot:bar:x=bar:dot:x`, che chiedono un `=`
-//     definito su `?,?`.
-//   - `Sub-expressions`: `function("sin")`, `exec`, `expression("2{b}cos(x)")`
-//     e `jme.display.subvars` (quest'ultimo è del Task 5).
+//     definito su `?,?` — RIATTIVATI dal Task 4b in fondo al blocco.
+//   - `Safe strings`: la funzione `safe` è tradotta dal Task 4b in
+//     builtins-strings.test.ts (qui resta la prova diretta di `makeSafe`).
+//   - `Sub-expressions`: `function("sin")` ed `exec` sono tradotti dal Task 4b
+//     in builtins-subexpressions.test.ts; `expression("2{b}cos(x)")` e
+//     `jme.display.subvars` restano al Task 5 (la sostituzione `subjme` passa
+//     dai `displayHooks`).
 
 import { describe, it, expect } from "vitest";
 import * as math from "../../src/math";
@@ -50,6 +54,7 @@ import {
 } from "../../src/jme/evaluate";
 import { treesSame } from "../../src/jme/compare";
 import {
+  TBool,
   TDict,
   TExpression,
   TInt,
@@ -254,6 +259,15 @@ describe("Evaluating (meccanismo)", () => {
     // upstream: `dot:sin(1)` non è definita; qui la funzione dello scope
     // giocattolo è `abs`.
     raisesJmeError(() => scope.evaluate("dot:abs(1)"), "jme.typecheck.function not defined", "dot:abs(1)");
+
+    // riattivati dal Task 4b: servono l'`=` su `?,?` del tema `comparison`.
+    expect((builtinScope.evaluate("dot:x=x") as TBool).value, "dot:x=x").toBe(false);
+    expect((builtinScope.evaluate("dot:bar:x=bar:dot:x") as TBool).value, "dot:bar:x=bar:dot:x").toBe(false);
+    raisesJmeError(
+      () => builtinScope.evaluate("dot:sin(1)"),
+      "jme.typecheck.function not defined",
+      "dot:sin(1) non è definita",
+    );
   });
 
   it("wrapValue", () => {

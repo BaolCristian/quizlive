@@ -9,17 +9,19 @@
 // `Rounding` (1036), `Converting numbers to strings` (1134),
 // `Exponentials` (1174), `Trigonometry` (1206).
 //
-// BLOCCHI E ASSERT RIMANDATI AL TASK 4b (funzioni di temi non portati qui):
+// BLOCCHI E ASSERT TRADOTTI DAL TASK 4b (funzioni di temi non portati qui):
 //   - `Currency` (1125) per intero: `currency` sta nel tema `strings`
-//     (jme-builtins.js:1759), che è del Task 4b.
+//     (jme-builtins.js:1759) → builtins-strings.test.ts.
 //   - `Boolean operations` (1483) per intero: tutti e 5 gli assert usano
-//     `let` (control_flow) e `len` (lists), entrambi del Task 4b. Il tema
-//     `booleans` è portato qui, ma questi assert non lo esercitano da soli.
-//   - `Arithmetic`: gli assert su liste e stringhe (`[1,2]+[3,4]`, `[1,2]+3`,
-//     `["x","y"]+"z"`, `"hi "+"there"`, `"n: "+1`, `2+" things"`) usano gli
-//     overload di `+` dei temi `lists`/`strings`.
-//   - `Number functions`: `abs([1,2,3,4])` (tema `lists`) e i due `award`
-//     (tema `marking`).
+//     `let` (control_flow) e `len` (lists) → builtins-control-flow.test.ts.
+//     Il tema `booleans` è portato qui, ma questi assert non lo esercitano da
+//     soli.
+//   - `Arithmetic`: gli assert su liste (`[1,2]+[3,4]`, `[1,2]+3`,
+//     `["x","y"]+"z"`) → builtins-lists.test.ts; quelli su stringhe
+//     (`"hi "+"there"`, `"n: "+1`, `2+" things"`) → builtins-strings.test.ts.
+//   - `Number functions`: `abs([1,2,3,4])` (tema `lists`) →
+//     builtins-lists.test.ts; i due `award` (tema `marking`) →
+//     builtins-subexpressions.test.ts.
 //   - `Rounding`: nessuno.
 //
 // DIVERGENZE DI TRADUZIONE:

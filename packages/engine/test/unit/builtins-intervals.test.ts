@@ -12,7 +12,7 @@
 // tabelle). Qui le stesse tabelle passano dai builtin `interval`, `union`,
 // `intersection`, `complement`, `difference`, che nel Task 1 non esistevano.
 //
-// ASSERT RIMANDATI AL TASK 4b:
+// ASSERT TRADOTTI DAL TASK 4b IN builtins-lists.test.ts:
 //   - `-2..11 except [1,2,3,5,8]`, `-2..11 except []` e `-2..2 except
 //     [1,"a",0]`: con una lista di tipo misto (o vuota) la firma
 //     `except [TRange, list of number]` non combacia e vince

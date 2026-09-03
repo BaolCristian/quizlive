@@ -7,9 +7,10 @@
 // valutati contro `builtinScope`.
 //
 // ASSERT NON TRADOTTI QUI:
-//   - i tre `type(...)` (`type(combine_vertically(...))`, ecc.): la funzione
-//     `type` sta nel tema `jme` (jme-builtins.js:2394), Task 4b. Il tipo del
-//     token è comunque verificato con `.type` in TypeScript.
+//   - i tre `type(...)` (`type(combine_vertically(...))`, ecc.) sono
+//     RIATTIVATI dal Task 4b, che porta `type` nel tema `jme`
+//     (jme-builtins.js:2394); il tipo del token resta verificato anche con
+//     `.type` in TypeScript.
 //   - i due costruttori `new TVector(1)` / `new TVector([1,[2],[3]])`: sono
 //     asserzioni sul tipo `TVector` (Task 2), non sui builtin.
 //   - i tre "input not mutated" su `matrixmath.combine_*`: già tradotti dal
@@ -145,6 +146,9 @@ describe("Evaluating > Vector and Matrix operations", () => {
       "con padding",
     );
     expect(ev("combine_vertically(matrix([[1,2], [3,4]]), matrix([[5,6]]))").type).toBe("matrix");
+    expect(val(ev("type(combine_vertically(matrix([[1,2], [3,4]]), matrix([[5,6]])))")), "type(combine_vertically)").toBe(
+      "matrix",
+    );
     closeEqual(val(ev("numrows(combine_vertically(matrix([[1,2], [3,4]]), matrix([[5,6]])))")), 3, "numrows");
     closeEqual(val(ev("numcolumns(combine_vertically(matrix([[1,2], [3,4]]), matrix([[5,6]])))")), 2, "numcolumns");
   });
@@ -176,6 +180,10 @@ describe("Evaluating > Vector and Matrix operations", () => {
       "con padding",
     );
     expect(ev("combine_horizontally(matrix([[1,2], [3,4]]), matrix([[5,6]]))").type).toBe("matrix");
+    expect(
+      val(ev("type(combine_horizontally(matrix([[1,2], [3,4]]), matrix([[5,6]])))")),
+      "type(combine_horizontally)",
+    ).toBe("matrix");
     closeEqual(val(ev("numrows(combine_horizontally(matrix([[1,2], [3,4]]), matrix([[5,6]])))")), 2, "numrows");
     closeEqual(val(ev("numcolumns(combine_horizontally(matrix([[1,2], [3,4]]), matrix([[5,6]])))")), 4, "numcolumns");
   });
@@ -229,6 +237,7 @@ describe("Evaluating > Vector and Matrix operations", () => {
     );
     expect(val(ev("combine_diagonally(id(1),id(1))=id(2)")), "combine_diagonally(id(1),id(1))=id(2)").toBe(true);
     expect(ev("combine_diagonally(id(1),id(1))").type).toBe("matrix");
+    expect(val(ev("type(combine_diagonally(id(1),id(1)))")), "type(combine_diagonally)").toBe("matrix");
     closeEqual(val(ev("numrows(combine_diagonally(id(1),id(1)))")), 2, "numrows");
     closeEqual(val(ev("numcolumns(combine_diagonally(id(1),id(1)))")), 2, "numcolumns");
   });
@@ -245,11 +254,16 @@ describe("Evaluating > Vector and Matrix operations", () => {
   });
 
   it("inverse di una matrice con componenti non intere", () => {
-    // upstream usa `let(m, ..., precround(m*inverse(m),10))`: `let` è del
-    // Task 4b, qui la matrice passa dal dizionario di variabili.
-    const m = ev("matrix([0.1, 0.12, 0.123],[0.1234, 0.12345, 0.123456],[0.1234567, 0.12345678, 0.123456789])");
+    // upstream usa `let(m, ..., precround(m*inverse(m),10))`: `let` arriva col
+    // Task 4b, quindi ora si può usare la forma originale.
     deepCloseEqual(
-      plainMatrix(val(ev("precround(m*inverse(m),10)", { m }))),
+      plainMatrix(
+        val(
+          ev(
+            "let(m, matrix([0.1, 0.12, 0.123],[0.1234, 0.12345, 0.123456],[0.1234567, 0.12345678, 0.123456789]), precround(m*inverse(m),10))",
+          ),
+        ),
+      ),
       [
         [1, 0, 0],
         [0, 1, 0],

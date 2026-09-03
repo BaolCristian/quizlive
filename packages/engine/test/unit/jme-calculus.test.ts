@@ -16,9 +16,12 @@ import { treesSame } from "../../src/jme/compare";
 import type { Tree } from "../../src/jme/tokens";
 import { simplify } from "../../src/jme/rules";
 import { differentiate } from "../../src/jme/calculus";
-import { makeSimplifyScope, raisesJmeError } from "./jme-helpers";
+import { raisesJmeError } from "./jme-helpers";
+import { builtinScope } from "../../src/jme/builtins";
 
-const scope = makeSimplifyScope();
+// dal Task 4b lo scope è quello dei builtin, come upstream (prima era
+// `makeSimplifyScope()`, uno scope giocattolo).
+const scope = builtinScope;
 
 /** Deriva `expr` rispetto a `wrt` e confronta con `expected`, semplificando
  * entrambi i membri col ruleset `all` come fa il builtin `diff`. */

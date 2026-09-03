@@ -140,7 +140,11 @@ export function makeToyScope(): Scope {
  *
  * Sta a parte da `makeToyScope()` perché le costanti cambiano il risultato di
  * `findvars` e della valutazione dei nomi: i test dei Task 1-2 assumono uno
- * scope senza costanti. */
+ * scope senza costanti.
+ *
+ * Dal Task 4b i test di pattern-matching, semplificazione e derivazione usano
+ * `builtinScope`, come upstream: questo scope resta come alternativa "senza
+ * builtin" per chi debba esercitare il meccanismo in isolamento. */
 export function makePatternScope(): Scope {
   const scope = makeToyScope();
   scope.setConstant("pi", { value: new TNum(Math.PI) });

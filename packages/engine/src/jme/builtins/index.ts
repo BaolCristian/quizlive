@@ -14,10 +14,7 @@
 //
 // I temi `http` (3785-3812) e `promises` (3815-3824) non sono portati, e del
 // tema `html` (2769-2924) restano solo `isnonemptyhtml` ed `escape_html`:
-// vedi DIVERGENCES.md. I temi `jme` (2213-2636), `pattern_matching`
-// (2639-2766), `control_flow` (3015-3224), `comprehensions` (3227-3750),
-// `calculus` (3753-3766) e `marking` (3769-3782) arrivano nel passo
-// successivo.
+// vedi DIVERGENCES.md.
 
 import { simplificationRules } from "../rules-simplify";
 import { makeRng, Scope, setBuiltinScope } from "../scope";
@@ -44,8 +41,14 @@ import {
   registerNumberFormatting,
   registerPrecision,
 } from "./number-parsing";
+import { registerJmeIntrospection } from "./jme-introspection";
+import { registerPatternMatching } from "./pattern-matching";
 import { registerHtmlPure } from "./html-pure";
 import { registerRandomisation } from "./randomisation";
+import { registerControlFlow } from "./control-flow";
+import { registerComprehensions } from "./comprehensions";
+import { registerDifferentiation } from "./differentiation";
+import { registerMarking } from "./marking-builtins";
 
 export * from "./registry";
 export { registerConstants, builtinConstants } from "./constants";
@@ -74,8 +77,14 @@ export {
   registerPrecision,
   registerJson,
 } from "./number-parsing";
+export { registerJmeIntrospection } from "./jme-introspection";
+export { registerPatternMatching } from "./pattern-matching";
 export { registerHtmlPure } from "./html-pure";
 export { registerRandomisation } from "./randomisation";
+export { registerControlFlow } from "./control-flow";
+export { registerComprehensions, mapFunctions } from "./comprehensions";
+export { registerDifferentiation } from "./differentiation";
+export { registerMarking } from "./marking-builtins";
 
 /** Registra nello scope le costanti e tutte le funzioni predefinite, nello
  * stesso ordine di `jme-builtins.js`. Si può rieseguire su uno scope nuovo. */
@@ -103,8 +112,14 @@ export function registerBuiltins(scope: Scope): void {
   });
   functionSet(scope, { name: "precision", description: "Testing precision" }, registerPrecision);
   functionSet(scope, { name: "json", description: "JSON" }, registerJson);
+  functionSet(scope, { name: "jme", description: "Working with JME expressions" }, registerJmeIntrospection);
+  functionSet(scope, { name: "pattern_matching", description: "Pattern-matching expressions" }, registerPatternMatching);
   functionSet(scope, { name: "html", description: "HTML" }, registerHtmlPure);
   functionSet(scope, { name: "randomisation", description: "Random" }, registerRandomisation);
+  functionSet(scope, { name: "control_flow", description: "Control flow" }, registerControlFlow);
+  functionSet(scope, { name: "comprehensions", description: "List comprehensions" }, registerComprehensions);
+  functionSet(scope, { name: "calculus", description: "Calculus" }, registerDifferentiation);
+  functionSet(scope, { name: "marking", description: "Marking utility functions" }, registerMarking);
 }
 
 // jme-builtins.js:41 — `new Scope({rulesets: jme.rules.simplificationRules})`.

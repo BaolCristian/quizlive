@@ -3,22 +3,31 @@
  * Licensed under the Apache License, Version 2.0. Ported to TypeScript for SAVINT; see packages/engine/NOTICE. */
 
 // Traduzione del modulo QUnit `Scopes` di tests/jme/jme-tests.mjs:1856-2017.
-// `Rulesets` (1937) non è tradotto: richiede `jme.rules.Ruleset` — Task 3.
-// Dove upstream usa `Numbas.jme.builtinScope` o i function set dei builtin, si
-// usa `makeToyScope()` o un insieme costruito nel test: i builtin arrivano col
-// Task 4.
+// `Rulesets` (1937) è tradotto in jme-simplify.test.ts (Task 3).
+//
+// Il Task 4b ha sostituito `makeToyScope()` con `builtinScope` ovunque
+// upstream usi `Numbas.jme.builtinScope` o i suoi function set: `Functions`,
+// `Function sets`, `Scope JME functions`, `Constants` e `unset`. Restano sullo
+// scope giocattolo solo i test che verificano la meccanica dello `Scope` con
+// funzioni costruite apposta (`Custom parser`, i test di `resolve`/`deleted`).
+//
+// RIMANDATO AL TASK 5: gli assert di `Constants` che passano da
+// `jme.display.exprToLaTeX`/`texify` (il tex di una costante ridefinita).
 
 import { describe, it, expect } from "vitest";
 import { FuncObj } from "../../src/jme/funcobj";
 import { FunctionSet, makeRng, Scope } from "../../src/jme/scope";
 import { Parser } from "../../src/jme/parser";
-import { TBool, TNum, TString, type Token } from "../../src/jme/tokens";
+import { TBool, TNum, TScope, TString, type Token } from "../../src/jme/tokens";
+import * as math from "../../src/math";
 import { substituteTree } from "../../src/jme/evaluate";
 import { closeEqual } from "./math-helpers";
+import { builtinScope } from "../../src/jme/builtins";
 import { evaluated, makeToyScope, raisesJmeError } from "./jme-helpers";
 
 describe("Scopes", () => {
   it("Variables", () => {
+    expect(builtinScope.variables, "lo scope dei builtin non ha variabili").toEqual({});
     expect(new Scope().variables, "uno scope appena costruito non ha variabili").toEqual({});
     const scope = new Scope({
       variables: {
@@ -35,8 +44,8 @@ describe("Scopes", () => {
   it("Functions", () => {
     expect(new Scope().functions, "uno scope appena costruito non ha funzioni").toEqual({});
 
-    const base = makeToyScope();
-    expect(base.getFunction("+").length, "lo scope giocattolo ha delle funzioni").toBeGreaterThan(0);
+    const base = builtinScope;
+    expect(base.getFunction("+").length, "lo scope dei builtin ha delle funzioni").toBeGreaterThan(0);
 
     const scope = new Scope([
       base,
@@ -61,11 +70,10 @@ describe("Scopes", () => {
   });
 
   it("Function sets", () => {
-    // upstream usa `Numbas.jme.function_sets.arithmetic`: qui l'insieme è
-    // costruito nel test, perché i builtin arrivano col Task 4.
-    const arithmetic = new FunctionSet({ name: "arithmetic" }, (set) => {
-      set.add_function("+", [TNum, TNum], TNum, ((a: number, b: number) => a + b) as (...a: never[]) => unknown);
-    });
+    // upstream usa `Numbas.jme.function_sets.arithmetic`: qui gli insiemi dei
+    // temi vivono nello scope dei builtin (`functionSet` in builtins/registry.ts).
+    const arithmetic = builtinScope.getFunctionSet("arithmetic") as FunctionSet;
+    expect(arithmetic, "l'insieme arithmetic è raggiungibile per nome").toBeTruthy();
     const s = new Scope({});
     s.addFunctionSet(arithmetic);
     expect(s.getFunction("+").length > 0, "+ è definita").toBe(true);
@@ -74,27 +82,59 @@ describe("Scopes", () => {
   });
 
   it("Scope JME functions", () => {
-    // upstream valuta `scope()`, `eval(...)` e `add_functions(...)`, che sono
-    // builtin (Task 4); qui si esercita direttamente la stessa meccanica.
-    const blank = new Scope();
+    const blank = (evaluated(builtinScope, "scope()") as TScope).scope;
     expect(Object.keys(blank.allFunctions()).length, "uno scope vuoto non ha funzioni").toBe(0);
     expect(Object.keys(blank.allVariables()).length, "uno scope vuoto non ha variabili").toBe(0);
 
-    expect((blank.evaluate("1") as TNum).value, "un letterale si valuta anche in uno scope vuoto").toBe(1);
-    expect(evaluated(blank, "x").type, "un nome in uno scope vuoto resta un nome").toBe("name");
+    expect(
+      (evaluated(builtinScope, 'eval(expression("1"), scope())') as TNum).value,
+      "un letterale si valuta anche in uno scope vuoto",
+    ).toBe(1);
+    expect(
+      evaluated(builtinScope, 'eval(expression("x"), scope())').type,
+      "un nome in uno scope vuoto resta un nome",
+    ).toBe("name");
 
     raisesJmeError(
-      () => blank.evaluate("1+1"),
+      () => builtinScope.evaluate('eval(expression("1+1"), scope())'),
       "jme.typecheck.op not defined",
       "+ non è definita in uno scope vuoto",
     );
 
-    const withPlus = new Scope([blank, { functions: { "+": makeToyScope().getFunction("+") } }]);
-    expect((withPlus.evaluate("1+1") as TNum).value, "+ è definita dopo averla aggiunta").toBe(2);
+    expect(
+      evaluated(builtinScope, 'eval(expression("1+1"), scope() |> add_functions(["+"]))'),
+      "+ è definita dopo averla aggiunta",
+    ).toBeTruthy();
     raisesJmeError(
-      () => withPlus.evaluate("1-1"),
+      () => builtinScope.evaluate('eval(expression("1-1"), scope() |> add_functions(["+"]))'),
       "jme.typecheck.op not defined",
       "- non è definita dopo aver aggiunto solo +",
+    );
+
+    expect(
+      evaluated(builtinScope, 'eval(expression("1 + 2 - 3"), scope() |> add_function_sets(["arithmetic"]))'),
+      "+ e - sono definite dopo aver aggiunto l'insieme arithmetic",
+    ).toBeTruthy();
+    raisesJmeError(
+      () => builtinScope.evaluate('eval(expression("sin(1)"), scope() |> add_function_sets(["arithmetic"]))'),
+      "jme.typecheck.function not defined",
+      "sin non è nell'insieme arithmetic",
+    );
+
+    expect(
+      evaluated(
+        builtinScope,
+        'eval(expression("1 + 2"), scope() |> add_function_sets(["arithmetic"]) |> remove_functions(["-"]))',
+      ),
+      "+ resta definita dopo aver tolto -",
+    ).toBeTruthy();
+    raisesJmeError(
+      () =>
+        builtinScope.evaluate(
+          'eval(expression("1 - 2"), scope() |> add_function_sets(["arithmetic"]) |> remove_functions(["-"]))',
+        ),
+      "jme.typecheck.op not defined",
+      "- non è più definita dopo remove_functions",
     );
   });
 
@@ -113,13 +153,16 @@ describe("Scopes", () => {
   });
 
   it("Constants", () => {
-    // upstream verifica le costanti dei builtin (pi, e, i) e la loro resa in
-    // LaTeX: qui le costanti sono definite nel test, e il LaTeX è del Task 5.
-    const s = new Scope([makeToyScope()]);
-    s.setConstant("pi", { value: new TNum(Math.PI) });
+    // upstream verifica le costanti dei builtin (pi, e, i); la loro resa in
+    // LaTeX resta al Task 5.
+    expect((evaluated(builtinScope, "pi") as TNum).value, "pi è la costante del cerchio").toBe(Math.PI);
+    expect((evaluated(builtinScope, "e") as TNum).value, "e è la base del logaritmo naturale").toBe(Math.E);
+    expect((evaluated(builtinScope, "i") as TNum).value, "i è la radice di -1").toEqual(math.complex(0, 1));
+    expect(builtinScope.getConstant("j"), "j non è attiva di default").toBeUndefined();
+
+    const s = new Scope([builtinScope]);
     expect((s.evaluate("pi") as TNum).value, "pi si valuta al valore della costante").toBe(Math.PI);
-    expect(s.getConstant("j"), "j non è una costante definita").toBeUndefined();
-    expect(s.getConstant("pi")?.tex, "il tex di default è il nome stesso").toBe("pi");
+    expect(s.getConstant("pi")?.tex, "il tex della costante dei builtin").toBe("\\pi");
 
     const child = new Scope([s]);
     child.deleteConstant("pi");
@@ -134,13 +177,13 @@ describe("Scopes", () => {
   });
 
   it("unset", () => {
-    const scope = new Scope([makeToyScope()]);
-    scope.setConstant("e", { value: new TNum(Math.E) });
+    const scope = new Scope([builtinScope]);
     scope.setVariable("e", evaluated(scope, "3"));
     const unset_scope = scope.unset({ variables: ["e"] });
     expect(unset_scope.getVariable("e"), "e non è più una variabile dopo unset").toBeUndefined();
     expect(unset_scope.getConstant("e"), "e resta una costante dopo unset").toBeTruthy();
     expect((unset_scope.evaluate("e") as TNum).value, "e torna al valore della costante").toBe(Math.E);
+    expect((unset_scope.evaluate("ln(e)=1") as TBool).value, "ln(e) = 1").toBe(true);
 
     const unset_fn = scope.unset({ functions: ["+"] });
     expect(unset_fn.getFunction("+").length, "+ non è più definita dopo unset").toBe(0);
