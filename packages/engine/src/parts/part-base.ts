@@ -24,7 +24,10 @@ import { Fraction, capitalise, letterOrdinal, niceNumber } from "../math";
 import { feedback, type FeedbackFormat, type FeedbackItem, type FeedbackReason } from "../marking/feedback";
 import type { FinalisedState } from "../marking/finalise-state";
 import { MarkingScript, type MarkingScriptResult } from "../marking/marking-script";
-import { remakeVariables } from "../variables/generate";
+// dall'indice, non da `variables/generate`: importare il modulo registra il
+// builtin `make_variables` su `builtinScope`, di cui lo script di correzione
+// `jme.jme` ha bisogno (nota `vset`).
+import { remakeVariables } from "../variables";
 import {
   addCredit,
   markingComment,

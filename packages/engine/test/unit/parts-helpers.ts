@@ -101,9 +101,23 @@ export function projectState(s: FeedbackItem): Record<string, unknown> {
   return out;
 }
 
-/** Confronta davvero due liste di stati, ignorando lo `scope`. */
-export function equalStates(a: FeedbackItem[], b: Array<Record<string, unknown>>): void {
-  expect(a.map(projectState)).toEqual(b);
+/** Confronta davvero due liste di stati, ignorando lo `scope`.
+ *
+ * `ignoreMessages` toglie anche `message` dal confronto: serve dove il testo
+ * dipende dal dizionario i18n (che è nostro, non quello upstream). */
+export function equalStates(
+  a: FeedbackItem[],
+  b: Array<Record<string, unknown>>,
+  options?: { ignoreMessages?: boolean },
+): void {
+  const project = (s: FeedbackItem): Record<string, unknown> => {
+    const o = projectState(s);
+    if (options?.ignoreMessages) {
+      delete o["message"];
+    }
+    return o;
+  };
+  expect(a.map(project)).toEqual(b);
 }
 
 /** Il formato dei test incorporati nel JSON di una parte
