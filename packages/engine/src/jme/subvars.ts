@@ -201,6 +201,9 @@ export function contentsubvars(str: string, scope: Scope, sub_tex?: boolean): st
           switch (cmd) {
             case "var": {
               const v = scope.evaluate(expr);
+              if (v === null) {
+                throw new JmeError("jme.subvars.null substitution", { str: expr });
+              }
               const tex = requireHook("texify")({ tok: v }, rules, scope);
               out += "{" + tex + "}";
               break;

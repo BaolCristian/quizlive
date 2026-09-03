@@ -474,7 +474,8 @@ export function makeFast(tree: Tree, scope: Scope, names?: string[]): FastFuncti
     return t;
   }
 
-  const typed_tree = inferTreeType(replace_integers(subbed_tree), scope);
+  // `tree` non è nullo, quindi nemmeno la sua sostituzione
+  const typed_tree = inferTreeType(replace_integers(subbed_tree as Tree), scope);
 
   const f = fast_eval(typed_tree);
 

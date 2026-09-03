@@ -59,7 +59,7 @@ import {
   type Tree,
 } from "../../src/jme/tokens";
 import { closeEqual } from "./math-helpers";
-import { makeToyScope, raisesJmeError, treesEqual } from "./jme-helpers";
+import { evaluated, makeToyScope, raisesJmeError, treesEqual } from "./jme-helpers";
 
 /** Un albero compilato, con la certezza che non sia `null`. */
 function c(expr: string): Tree {
@@ -112,10 +112,10 @@ describe("Evaluating (meccanismo)", () => {
 
   it("Number-like types", () => {
     const scope = makeToyScope();
-    expect(scope.evaluate("1").type, "1 è un intero").toBe("integer");
-    expect(scope.evaluate("1.0").type, "1.0 è un number").toBe("number");
-    expect(scope.evaluate("true").type, "true è un boolean").toBe("boolean");
-    expect(scope.evaluate('"a"').type, '"a" è una stringa').toBe("string");
+    expect(evaluated(scope, "1").type, "1 è un intero").toBe("integer");
+    expect(evaluated(scope, "1.0").type, "1.0 è un number").toBe("number");
+    expect(evaluated(scope, "true").type, "true è un boolean").toBe("boolean");
+    expect(evaluated(scope, '"a"').type, '"a" è una stringa').toBe("string");
 
     // jme.js:3694-3726: un `number` con precisione dichiarata si converte in
     // `decimal` arrotondato a quella precisione.
@@ -326,7 +326,7 @@ describe("Evaluating (meccanismo)", () => {
     // token `expression` invece di lasciarlo dentro l'albero.
     const holder = new Scope([scope, { variables: { f: new TExpression("2*t+5") } }]);
     treesEqual(
-      substituteTree(c("t*f"), holder, true, true),
+      substituteTree(c("t*f"), holder, true, true) as Tree,
       c("t*(2*t+5)"),
       "sostituire un'espressione dentro un albero",
     );
@@ -337,7 +337,7 @@ describe("Evaluating (meccanismo)", () => {
 
   it("Make fast", () => {
     const scope = makeToyScope();
-    scope.setVariable("a", scope.evaluate("5"));
+    scope.setVariable("a", evaluated(scope, "5"));
 
     const f1 = makeFast(c("x^2"), scope, ["x"]);
     closeEqual(f1(2 as never), 4, "x^2 con x=2");

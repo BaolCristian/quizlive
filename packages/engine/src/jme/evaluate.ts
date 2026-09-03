@@ -71,9 +71,9 @@ export function substituteTree(
   scope: Scope,
   allowUnbound?: boolean,
   unwrapExpressions?: boolean,
-): Tree {
+): Tree | null {
   if (!tree) {
-    return null as unknown as Tree;
+    return null;
   }
   if (tree.tok.bound) {
     return tree;
@@ -121,15 +121,18 @@ export function substituteTree(
     const out: Tree = { tok: tree.tok, args: tree.args.slice() };
     const args = out.args as Tree[];
     for (let i = 0; i < args.length; i++) {
-      args[i] = substituteTree(args[i], scope, allowUnbound, unwrapExpressions);
+      // gli argomenti di un nodo esistono sempre: `substituteTree` ritorna
+      // `null` solo se l'albero che riceve è nullo.
+      args[i] = substituteTree(args[i], scope, allowUnbound, unwrapExpressions) as Tree;
     }
     return out;
   }
 }
 
 // jme.js:269-274
-/** Valuta un albero (o un'espressione) nello scope dato. */
-export function evaluate(tree: Tree | string, scope: Scope): Token {
+/** Valuta un albero (o un'espressione) nello scope dato. Ritorna `null` se
+ * l'espressione è vuota, come `Scope.evaluate`. */
+export function evaluate(tree: Tree | string, scope: Scope): Token | null {
   if (!scope) {
     throw new JmeError("jme.evaluate.no scope given");
   }
@@ -300,18 +303,24 @@ export function castToType(tok: Token, type: string | TypeDescription): Token {
   }
   if (type === "dict") {
     const dict = ntok as TDict;
+    // upstream (jme.js:766-777): il nuovo `TDict` riceve LO STESSO oggetto
+    // `value` del token di partenza, e la conversione degli elementi lo muta.
+    // Chi aveva in mano il dizionario originale se lo ritrova con i valori
+    // convertiti — è il comportamento su cui contano i builtin che ricevono un
+    // dizionario tipizzato via `castArgumentsToSignature`. Il ramo `list` qui
+    // sotto invece costruisce un array nuovo, sempre come upstream.
     if (typeDescription.items) {
-      const nvalue: Record<string, Token> = { ...(dict.value ?? {}) };
+      ntok = new TDict(dict.value);
+      const nvalue = (ntok as TDict).value as Record<string, Token>;
       for (const [k, v] of Object.entries(typeDescription.items as Record<string, SignatureResultArgument>)) {
         nvalue[k] = castToType(nvalue[k] as Token, v as TypeDescription);
       }
-      ntok = new TDict(nvalue);
     } else if (typeDescription.all_items) {
-      const nvalue: Record<string, Token> = { ...(dict.value ?? {}) };
+      ntok = new TDict(dict.value);
+      const nvalue = (ntok as TDict).value as Record<string, Token>;
       for (const x of Object.keys(nvalue)) {
         nvalue[x] = castToType(nvalue[x] as Token, typeDescription.all_items as TypeDescription);
       }
-      ntok = new TDict(nvalue);
     }
   }
   if (type === "list") {

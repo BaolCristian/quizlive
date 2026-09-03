@@ -164,8 +164,11 @@ export class Scope {
   deleted: Record<string, Record<string, boolean>>;
   /** Lo scope distingue maiuscole e minuscole nei nomi? */
   declare caseSensitive?: boolean;
-  /** Il generatore casuale usato dalle funzioni casuali. */
-  rng: Rng;
+  /** Il generatore casuale usato dalle funzioni casuali. Valorizzato in ogni
+   * ramo del costruttore: ereditato dal genitore, preso da `extras`, oppure
+   * — solo per una radice che non ha né l'uno né l'altro — seminato con
+   * `makeRng(DEFAULT_RNG_SEED)`. */
+  rng!: Rng;
   /** La domanda a cui appartiene lo scope: riferimento opaco, riempito dal
    * Task 9. */
   declare question?: unknown;
@@ -180,8 +183,8 @@ export class Scope {
     this._resolved_functions = {};
     this.rulesets = {};
     this.deleted = {};
-    this.rng = makeRng(DEFAULT_RNG_SEED);
     if (scopes === undefined) {
+      this.rng = makeRng(DEFAULT_RNG_SEED);
       return;
     }
     const list: Array<Scope | ScopeExtras | undefined> = Array.isArray(scopes) ? scopes : [scopes, undefined];
@@ -192,6 +195,12 @@ export class Scope {
     let extras: ScopeExtras;
     if (!(first as Scope).evaluate) {
       extras = first as ScopeExtras;
+      // `makeRng` costruisce una key schedule di seedrandom (~2 µs, molto più
+      // del resto del costruttore): si semina solo qui, cioè per una radice
+      // che non eredita né riceve un generatore. `new Scope([parent])` è su
+      // tutti i percorsi caldi (applicazione di lambda, `evaluate` con
+      // variabili, campionamento di `compare`) e non deve pagarla.
+      this.rng = extras.rng ?? makeRng(DEFAULT_RNG_SEED);
     } else {
       this.parent = first as Scope;
       this.parser = this.parent.parser;
@@ -243,7 +252,10 @@ export class Scope {
   // jme.js:2648-2659
   /** Una copia di questo scope. */
   clone(): Scope {
-    const scope = new Scope(this.parent ? [this.parent] : undefined);
+    // upstream: `new Scope(this.parent ? [this.parent] : undefined)`. Qui la
+    // radice riceve subito il generatore, così il costruttore non ne semina
+    // uno che verrebbe comunque sovrascritto qualche riga più sotto.
+    const scope = new Scope(this.parent ? [this.parent] : { rng: this.rng });
     scope.parser = this.parser;
     scope.constants = Object.assign({}, this.constants);
     scope.variables = Object.assign({}, this.variables);
@@ -679,8 +691,11 @@ export class Scope {
   }
 
   // jme.js:3148-3283
-  /** Valuta un'espressione (o un albero già compilato) in questo scope. */
-  evaluate(expr: string | Tree, variables?: Record<string, unknown>, noSubstitution?: boolean): Token {
+  /** Valuta un'espressione (o un albero già compilato) in questo scope.
+   * Ritorna `null` se l'espressione è vuota (`compile` di una stringa vuota),
+   * come upstream: `subvars` lo riconosce per segnalare una sostituzione
+   * vuota. */
+  evaluate(expr: string | Tree, variables?: Record<string, unknown>, noSubstitution?: boolean): Token | null {
     // con `variables` si valuta in uno scope figlio, altrimenti in questo
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let scope: Scope = this;
@@ -697,12 +712,11 @@ export class Scope {
       tree = expr;
     }
     if (!tree) {
-      // upstream ritorna `null`: `subvars` lo riconosce per segnalare una
-      // sostituzione vuota.
-      return null as unknown as Token;
+      return null;
     }
     if (!noSubstitution) {
-      tree = substituteTree(tree, scope, true);
+      // `tree` non è nullo qui, quindi nemmeno il risultato
+      tree = substituteTree(tree, scope, true) as Tree;
     }
     let tok = tree.tok;
     const eargs: Token[] = [];
@@ -717,7 +731,8 @@ export class Scope {
         if (tok.value === undefined) {
           const value: Token[] = [];
           for (let i = 0; i < args.length; i++) {
-            value[i] = scope.evaluate(args[i] as Tree, undefined, noSubstitution);
+            // un argomento è sempre un albero, quindi il risultato non è nullo
+            value[i] = scope.evaluate(args[i] as Tree, undefined, noSubstitution) as Token;
           }
           tok = new TList(value);
         }
@@ -731,7 +746,7 @@ export class Scope {
               (kp.args as Tree[])[0] as Tree,
               undefined,
               noSubstitution,
-            );
+            ) as Token;
           }
           tok = new TDict(value);
         }
@@ -786,7 +801,7 @@ export class Scope {
           return fn.evaluate(args, scope);
         } else {
           for (let i = 0; i < args.length; i++) {
-            eargs.push(scope.evaluate(args[i] as Tree, undefined, noSubstitution));
+            eargs.push(scope.evaluate(args[i] as Tree, undefined, noSubstitution) as Token);
           }
 
           const op_variable = scope.getVariable(op);
@@ -812,7 +827,7 @@ export class Scope {
       case "lambda":
         if (tree.args) {
           for (let i = 0; i < args.length; i++) {
-            eargs.push(scope.evaluate(args[i] as Tree, undefined, noSubstitution));
+            eargs.push(scope.evaluate(args[i] as Tree, undefined, noSubstitution) as Token);
           }
           return tok.evaluate(eargs, scope);
         } else {
@@ -826,7 +841,8 @@ export class Scope {
           (nlambda.all_names ?? []).forEach((name: string) => {
             nscope.deleteVariable(name);
           });
-          nlambda.set_expr(substituteTree(tok.expr, nscope, true, false));
+          // il corpo di una lambda esiste sempre: la sostituzione non è nulla
+          nlambda.set_expr(substituteTree(tok.expr, nscope, true, false) as Tree);
           return nlambda;
         }
 

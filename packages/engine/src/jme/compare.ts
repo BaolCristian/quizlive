@@ -193,8 +193,10 @@ export function compare(tree1: Tree, tree2: Tree, settings: CompareSettings, sco
     const rs = randoms(vars1, s.vsetRangeStart, s.vsetRangeEnd, numRuns, scope.rng);
     for (let i = 0; i < rs.length; i++) {
       const nscope = new Scope([scope, { variables: rs[i] as Record<string, Token> }]);
-      const r1 = nscope.evaluate(tree1);
-      const r2 = nscope.evaluate(tree2);
+      // `tree1`/`tree2` sono stati controllati non nulli qui sopra, quindi
+      // nemmeno i risultati lo sono
+      const r1 = nscope.evaluate(tree1) as Token;
+      const r2 = nscope.evaluate(tree2) as Token;
       if (!resultsEqual(r1, r2, checkingFunction, s.checkingAccuracy, scope)) {
         errors++;
       }

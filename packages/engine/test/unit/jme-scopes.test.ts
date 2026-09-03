@@ -13,8 +13,9 @@ import { FuncObj } from "../../src/jme/funcobj";
 import { FunctionSet, makeRng, Scope } from "../../src/jme/scope";
 import { Parser } from "../../src/jme/parser";
 import { TBool, TNum, TString, type Token } from "../../src/jme/tokens";
+import { substituteTree } from "../../src/jme/evaluate";
 import { closeEqual } from "./math-helpers";
-import { makeToyScope, raisesJmeError } from "./jme-helpers";
+import { evaluated, makeToyScope, raisesJmeError } from "./jme-helpers";
 
 describe("Scopes", () => {
   it("Variables", () => {
@@ -80,7 +81,7 @@ describe("Scopes", () => {
     expect(Object.keys(blank.allVariables()).length, "uno scope vuoto non ha variabili").toBe(0);
 
     expect((blank.evaluate("1") as TNum).value, "un letterale si valuta anche in uno scope vuoto").toBe(1);
-    expect(blank.evaluate("x").type, "un nome in uno scope vuoto resta un nome").toBe("name");
+    expect(evaluated(blank, "x").type, "un nome in uno scope vuoto resta un nome").toBe("name");
 
     raisesJmeError(
       () => blank.evaluate("1+1"),
@@ -135,7 +136,7 @@ describe("Scopes", () => {
   it("unset", () => {
     const scope = new Scope([makeToyScope()]);
     scope.setConstant("e", { value: new TNum(Math.E) });
-    scope.setVariable("e", scope.evaluate("3"));
+    scope.setVariable("e", evaluated(scope, "3"));
     const unset_scope = scope.unset({ variables: ["e"] });
     expect(unset_scope.getVariable("e"), "e non è più una variabile dopo unset").toBeUndefined();
     expect(unset_scope.getConstant("e"), "e resta una costante dopo unset").toBeTruthy();
@@ -206,17 +207,44 @@ describe("Scopes", () => {
 
   it("il generatore casuale è deterministico e si eredita", () => {
     // decisione 12 del brief: la radice usa `makeRng("savint")`, i figli
-    // ereditano il riferimento del genitore.
+    // ereditano il riferimento del genitore. Il seme si costruisce SOLO per
+    // una radice che non eredita né riceve un generatore: `makeRng` è cara
+    // (key schedule di seedrandom) e `new Scope([parent])` è su tutti i
+    // percorsi caldi.
     const a = new Scope();
     const b = new Scope();
     expect(a.rng(), "due scope radice partono dallo stesso seme").toBe(b.rng());
+    expect(new Scope().rng(), "la radice senza genitore ha comunque un default deterministico").toBe(
+      makeRng("savint")(),
+    );
 
     const parent = new Scope();
     const child = new Scope([parent]);
-    expect(child.rng, "il figlio condivide il generatore del genitore").toBe(parent.rng);
+    expect(child.rng, "il figlio condivide LO STESSO oggetto funzione del genitore").toBe(parent.rng);
+    const grandchild = new Scope([child, { variables: {} }]);
+    expect(grandchild.rng, "e lo condivide lungo tutta la catena").toBe(parent.rng);
+    // le estrazioni continuano la stessa sequenza, non ripartono dal seme
+    const first = parent.rng();
+    expect(child.rng(), "il figlio continua la sequenza del genitore").not.toBe(first);
 
-    const seeded = new Scope({ rng: makeRng("altro seme") });
-    expect(seeded.rng()).not.toBe(new Scope().rng());
+    const explicit = makeRng("altro seme");
+    const seeded = new Scope({ rng: explicit });
+    expect(seeded.rng, "`extras.rng` ha la precedenza sul default").toBe(explicit);
+    const seededChild = new Scope([new Scope(), { rng: explicit }]);
+    expect(seededChild.rng, "`extras.rng` ha la precedenza anche sul genitore").toBe(explicit);
+
+    expect(new Scope().clone().rng, "clone conserva il generatore di una radice").toBeTypeOf("function");
+    const cloned = child.clone();
+    expect(cloned.rng, "clone conserva l'oggetto funzione").toBe(parent.rng);
+  });
+
+  it("evaluate di un'espressione vuota ritorna null", () => {
+    // `Scope.evaluate` dichiara `Token | null`: `null` solo qui.
+    const scope = makeToyScope();
+    expect(scope.evaluate(""), "stringa vuota").toBeNull();
+    expect(scope.evaluate("   "), "solo spazi").toBeNull();
+    expect(substituteTree(null, scope, true), "substituteTree su un albero nullo").toBeNull();
+    expect(evaluated(scope, "1+1"), "un'espressione vera non è nulla").toBeTruthy();
   });
 
   it("le variabili passate a evaluate non toccano lo scope", () => {

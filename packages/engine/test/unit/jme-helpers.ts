@@ -123,12 +123,22 @@ export function makeToyScope(): Scope {
       evaluate(args, s) {
         const trees = args as Tree[];
         const test = s.evaluate(trees[0] as Tree) as TBool;
-        return s.evaluate((test.value ? trees[1] : trees[2]) as Tree);
+        // i rami di un `if` sono alberi, quindi la valutazione non è nulla
+        return s.evaluate((test.value ? trees[1] : trees[2]) as Tree) as Token;
       },
     }),
   );
 
   return scope;
+}
+
+/** Valuta l'espressione e verifica che il risultato non sia nullo: dalla
+ * revisione del Task 2 `Scope.evaluate` dichiara `Token | null`, e ritorna
+ * `null` solo per un'espressione vuota. */
+export function evaluated(scope: Scope, expr: string | Tree): Token {
+  const v = scope.evaluate(expr);
+  expect(v, `${typeof expr === "string" ? expr : "l'albero"} non deve valutare a null`).not.toBeNull();
+  return v as Token;
 }
 
 /** Il valore numerico del token, castato a `number`. */

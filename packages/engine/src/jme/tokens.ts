@@ -806,7 +806,8 @@ export class TLambda extends TokenBase {
         }
         (lambda.names as Tree[]).forEach((name, i) => assign_names(name, castargs[i] as Token));
 
-        return nscope.evaluate(copy_tree(lambda.expr as Tree));
+        // il corpo della lambda è un albero, quindi la valutazione non è nulla
+        return nscope.evaluate(copy_tree(lambda.expr as Tree)) as Token;
       },
     });
   }

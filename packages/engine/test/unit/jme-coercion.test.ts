@@ -31,7 +31,7 @@ import {
   type Token,
 } from "../../src/jme/tokens";
 import { castArgumentsToSignature, castToType, findCompatibleType, isType, isTypeCompatible, wrapValue } from "../../src/jme/evaluate";
-import { raisesJmeError } from "./jme-helpers";
+import { evaluated, raisesJmeError } from "./jme-helpers";
 
 // --- due tipi di prova che si convertono negli stessi tipi, ma con le chiavi
 // di `casts` in ordine opposto -------------------------------------------
@@ -128,9 +128,31 @@ describe("Coercizione dei tipi", () => {
     const dict = new TDict({ a: new TInt(1), b: new TInt(2) });
     const castDict = castToType(dict, { type: "dict", all_items: "number" }) as TDict;
     expect((castDict.value?.["a"] as Token).type).toBe("number");
-    const someDict = castToType(dict, { type: "dict", items: { a: { type: "decimal" } } }) as TDict;
+
+    const dict2 = new TDict({ a: new TInt(1), b: new TInt(2) });
+    const someDict = castToType(dict2, { type: "dict", items: { a: { type: "decimal" } } }) as TDict;
     expect((someDict.value?.["a"] as Token).type).toBe("decimal");
     expect((someDict.value?.["b"] as Token).type, "le chiavi non nominate restano com'erano").toBe("integer");
+  });
+
+  it("il ramo dict di castToType condivide l'oggetto value, quello list no", () => {
+    // jme.js:766-777: `ntok = new TDict(ntok.value)` riusa lo STESSO oggetto
+    // `value` e la conversione degli elementi lo muta, quindi chi aveva in
+    // mano il dizionario di partenza se lo ritrova convertito. Il ramo `list`
+    // (jme.js:779-800) costruisce invece un array nuovo. Comportamento
+    // asimmetrico ma upstream, fissato qui perché non si perda in un
+    // refactoring.
+    const dict = new TDict({ a: new TInt(1) });
+    const source = dict.value as Record<string, Token>;
+    const cast = castToType(dict, { type: "dict", all_items: "number" }) as TDict;
+    expect(cast.value, "il TDict risultante condivide l'oggetto value").toBe(source);
+    expect((dict.value?.["a"] as Token).type, "e l'originale risulta convertito").toBe("number");
+
+    const list = new TList([new TInt(1)]);
+    const listSource = list.value as Token[];
+    const castList = castToType(list, { type: "list", all_items: "number" }) as TList;
+    expect(castList.value, "la lista risultante ha un array nuovo").not.toBe(listSource);
+    expect((list.value?.[0] as Token).type, "e l'originale resta com'era").toBe("integer");
   });
 
   it("findCompatibleType cerca un solo salto", () => {
@@ -233,7 +255,7 @@ describe("Coercizione dei tipi", () => {
     );
     // l'argomento è un intero: viene convertito a number prima della chiamata
     expect((scope.evaluate("double(3)") as TNum).value).toBe(6);
-    expect(scope.evaluate("double(3)").type, "il risultato ha il tipo di outcons").toBe("number");
+    expect(evaluated(scope, "double(3)").type, "il risultato ha il tipo di outcons").toBe("number");
     // un booleano non è convertibile: nessuna definizione adatta
     raisesJmeError(() => scope.evaluate("double(true)"), "jme.typecheck.no right type definition");
     expect(new TBool(true).casts, "boolean non ha cast registrati").toBeUndefined();
