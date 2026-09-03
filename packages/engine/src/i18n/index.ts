@@ -39,7 +39,23 @@ const re_placeholder = /\{(\w+)\}/g;
  * deve mai far fallire una valutazione. */
 export function t(key: string, params?: Params, locale?: Locale): string {
   const dict = dictionaries[locale ?? currentLocale];
-  const template = dict[key];
+  let template = dict[key];
+  // upstream: i cataloghi usano l'annidamento di i18next (`$t(mark)`) e la
+  // regola di plurale della lingua per scegliere fra la chiave `mark` e
+  // `mark_plural` (localisation.js). Qui i messaggi sono già scritti per
+  // esteso, e la forma plurale sta in `<chiave>_plural`: la sceglie la stessa
+  // regola che i18next applica a inglese e italiano, cioè "singolare solo per
+  // esattamente uno". Il valore di `count` arriva già formattato da
+  // `niceNumber`, in notazione `plain`: `parseFloat` lo rilegge.
+  if (params !== undefined && params.count !== undefined) {
+    const count = typeof params.count === "number" ? params.count : parseFloat(params.count);
+    if (count !== 1) {
+      const plural = dict[`${key}_plural`];
+      if (plural !== undefined) {
+        template = plural;
+      }
+    }
+  }
   if (template === undefined) {
     return key;
   }

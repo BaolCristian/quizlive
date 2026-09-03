@@ -13,6 +13,7 @@
     "lint": "eslint",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:engine:diff": "vitest run --config vitest.diff.config.ts",
     "dev:custom": "tsx watch src/server.ts",
     "start:custom": "NODE_ENV=production tsx src/server.ts",
     "test:e2e": "playwright test"

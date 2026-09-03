@@ -1,0 +1,23 @@
+{
+  "name": "Terminologia della geometria",
+  "statement": "<p>In un triangolo rettangolo il lato opposto all'angolo retto ha un nome preciso.</p>",
+  "variables": {},
+  "parts": [
+    {
+      "type": "patternmatch",
+      "marks": 1,
+      "prompt": "<p>Come si chiama? (una sola parola)</p>",
+      "answer": "ipotenusa",
+      "displayAnswer": "ipotenusa",
+      "matchMode": "exact"
+    },
+    {
+      "type": "patternmatch",
+      "marks": 1,
+      "prompt": "<p>Come si chiamano gli altri due lati?</p>",
+      "answer": "cateti|cateto",
+      "displayAnswer": "cateti",
+      "matchMode": "regex"
+    }
+  ]
+}

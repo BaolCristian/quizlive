@@ -1,0 +1,5115 @@
+[
+  {
+    "name": "JME > Variables defined by the question aren't used in evaluating student's expression",
+    "data": {
+      "name": "scope used when evaluating JME",
+      "variables": {
+        "a": {
+          "name": "a",
+          "group": "Ungrouped variables",
+          "definition": "[1,2,3]",
+          "description": "",
+          "templateType": "anything"
+        }
+      },
+      "parts": [
+        {
+          "type": "jme",
+          "marks": 1,
+          "prompt": "<p>Write $2a$</p>",
+          "answer": "2a"
+        }
+      ]
+    }
+  },
+  {
+    "name": "JME > Expression is case-sensitive",
+    "data": {
+      "name": "case sensitivity",
+      "parts": [
+        {
+          "type": "jme",
+          "marks": 1,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "t/t is incorrect",
+              "answer": {
+                "valid": true,
+                "value": "t/t"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "t/T is correct",
+              "answer": {
+                "valid": true,
+                "value": "t/T"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "t/T",
+          "caseSensitive": true,
+          "valuegenerators": [
+            {
+              "name": "T",
+              "value": ""
+            },
+            {
+              "name": "t",
+              "value": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Matrix entry > Note name used both for question variable and marking note",
+    "data": {
+      "name": "wrong size matrix",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "Creative Commons Attribution 4.0 International"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {
+        "rows": {
+          "name": "rows",
+          "group": "Ungrouped variables",
+          "definition": "4",
+          "description": "",
+          "templateType": "anything"
+        }
+      },
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [
+        "rows"
+      ],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "gapfill",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "\n<p>[[0]]</p>",
+          "gaps": [
+            {
+              "type": "matrix",
+              "marks": "4",
+              "showCorrectAnswer": true,
+              "showFeedbackIcon": true,
+              "scripts": {},
+              "variableReplacements": [],
+              "variableReplacementStrategy": "originalfirst",
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "correctAnswer": "matrix([1,0,3,3,1],[0,1,4,4,2],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0])",
+              "correctAnswerFractions": true,
+              "numRows": "6",
+              "numColumns": "5",
+              "allowResize": true,
+              "tolerance": 0,
+              "markPerCell": false,
+              "allowFractions": true
+            }
+          ],
+          "sortAnswers": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > One JME gap with string restrictions",
+    "data": {
+      "name": "string restriction in gapfill JME part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "Creative Commons Attribution 4.0 International"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "gapfill",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>x^2+x</p>\n<p>[[0]]</p>",
+          "gaps": [
+            {
+              "type": "jme",
+              "marks": 1,
+              "showCorrectAnswer": true,
+              "showFeedbackIcon": true,
+              "scripts": {},
+              "variableReplacements": [],
+              "variableReplacementStrategy": "originalfirst",
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "answer": "x^2+x",
+              "showPreview": true,
+              "checkingType": "absdiff",
+              "checkingAccuracy": 0.001,
+              "failureRate": 1,
+              "vsetRangePoints": 5,
+              "vsetRange": [
+                0,
+                1
+              ],
+              "checkVariableNames": false,
+              "expectedVariableNames": [],
+              "musthave": {
+                "strings": [
+                  "("
+                ],
+                "showStrings": false,
+                "partialCredit": 0,
+                "message": "didn't use ("
+              },
+              "notallowed": {
+                "strings": [
+                  "^"
+                ],
+                "showStrings": false,
+                "partialCredit": 0,
+                "message": "did use ^"
+              }
+            }
+          ]
+        },
+        {
+          "type": "jme",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "answer": "x",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [
+            0,
+            1
+          ],
+          "checkVariableNames": false,
+          "expectedVariableNames": []
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > A gap-fill is invalid if any of the gaps are invalid",
+    "data": {
+      "parts": [
+        {
+          "type": "gapfill",
+          "gaps": [
+            {
+              "type": "numberentry",
+              "marks": 1,
+              "minValue": "1",
+              "maxValue": "1"
+            },
+            {
+              "type": "numberentry",
+              "marks": 1,
+              "minValue": "1",
+              "maxValue": "1"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > Show an error message when a gap relies on an unanswered part",
+    "data": {
+      "name": "In a gap, when adaptive marking is set to \"always replace variables\" and a \"must be answered\" part is not answered, no error message is shown. #969",
+      "variables": {
+        "n": {
+          "name": "n",
+          "group": "Ungrouped variables",
+          "definition": "1",
+          "description": "",
+          "templateType": "anything",
+          "can_override": false
+        }
+      },
+      "ungrouped_variables": [
+        "n"
+      ],
+      "parts": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "minValue": "n",
+          "maxValue": "n"
+        },
+        {
+          "type": "gapfill",
+          "marks": 0,
+          "prompt": "<p>[[0]]</p>",
+          "gaps": [
+            {
+              "type": "numberentry",
+              "marks": 1,
+              "variableReplacements": [
+                {
+                  "variable": "n",
+                  "part": "p0",
+                  "must_go_first": true
+                }
+              ],
+              "variableReplacementStrategy": "alwaysreplace",
+              "minValue": "n",
+              "maxValue": "n"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > Sort answers",
+    "data": {
+      "name": "q",
+      "parts": [
+        {
+          "type": "gapfill",
+          "gaps": [
+            {
+              "type": "numberentry",
+              "minValue": "1",
+              "maxValue": "1",
+              "marks": 1
+            },
+            {
+              "type": "numberentry",
+              "minValue": "2",
+              "maxValue": "2",
+              "marks": 1
+            }
+          ]
+        },
+        {
+          "type": "gapfill",
+          "sortAnswers": true,
+          "gaps": [
+            {
+              "type": "numberentry",
+              "minValue": "1",
+              "maxValue": "1",
+              "marks": 1
+            },
+            {
+              "type": "numberentry",
+              "minValue": "2",
+              "maxValue": "2",
+              "marks": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > Adaptive marking order",
+    "data": {
+      "name": "adaptive gap order",
+      "variables": {
+        "a": {
+          "name": "a",
+          "group": "Ungrouped variables",
+          "definition": "1",
+          "description": "",
+          "templateType": "anything"
+        },
+        "b": {
+          "name": "b",
+          "group": "Ungrouped variables",
+          "definition": "a",
+          "description": "",
+          "templateType": "anything"
+        }
+      },
+      "parts": [
+        {
+          "type": "gapfill",
+          "useCustomName": true,
+          "customName": "cycle",
+          "gaps": [
+            {
+              "type": "numberentry",
+              "marks": 1,
+              "variableReplacements": [
+                {
+                  "variable": "a",
+                  "part": "p0g1",
+                  "must_go_first": false
+                }
+              ],
+              "minValue": "b",
+              "maxValue": "b"
+            },
+            {
+              "type": "numberentry",
+              "marks": 1,
+              "variableReplacements": [
+                {
+                  "variable": "b",
+                  "part": "p0g0",
+                  "must_go_first": false
+                }
+              ],
+              "minValue": "a",
+              "maxValue": "a"
+            }
+          ]
+        },
+        {
+          "type": "gapfill",
+          "useCustomName": true,
+          "customName": "unusual order",
+          "gaps": [
+            {
+              "type": "numberentry",
+              "marks": 1,
+              "variableReplacements": [
+                {
+                  "variable": "a",
+                  "part": "p1g1",
+                  "must_go_first": false
+                }
+              ],
+              "minValue": "b",
+              "maxValue": "b"
+            },
+            {
+              "type": "numberentry",
+              "marks": 1,
+              "minValue": "a",
+              "maxValue": "a"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > Re-evaluate destructured variables after variable replacement",
+    "data": {
+      "name": "Destructured aren't re-evaluated!",
+      "variables": {
+        "n": {
+          "name": "n",
+          "group": "Ungrouped variables",
+          "definition": "1",
+          "description": "",
+          "templateType": "anything",
+          "can_override": false
+        },
+        "x,y": {
+          "name": "x,y",
+          "group": "Ungrouped variables",
+          "definition": "[2n,3n]",
+          "description": "",
+          "templateType": "anything",
+          "can_override": false
+        }
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "minValue": "n",
+          "maxValue": "n"
+        },
+        {
+          "type": "numberentry",
+          "variableReplacements": [
+            {
+              "variable": "n",
+              "part": "p0",
+              "must_go_first": true
+            }
+          ],
+          "variableReplacementStrategy": "alwaysreplace",
+          "minValue": "x",
+          "maxValue": "x"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > Adaptive marking error when referenced part doesn't exist",
+    "data": {
+      "name": "Adaptive marking error when referenced part doesn't exist",
+      "variables": {
+        "n": {
+          "name": "n",
+          "definition": "1"
+        }
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "minvalue": "1",
+          "maxvalue": "1",
+          "variableReplacements": [
+            {
+              "variable": "n",
+              "part": "p1"
+            }
+          ],
+          "variableReplacementStrategy": "alwaysreplace"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > Adaptive marking carries through to gaps",
+    "data": {
+      "name": "Adaptive marking carries through to gaps",
+      "variables": {
+        "n": {
+          "name": "n",
+          "definition": "1"
+        }
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "minvalue": "1",
+          "maxvalue": "1"
+        },
+        {
+          "type": "gapfill",
+          "variableReplacements": [
+            {
+              "variable": "n",
+              "part": "p0"
+            }
+          ],
+          "gaps": [
+            {
+              "type": "numberentry",
+              "minvalue": "n",
+              "maxvalue": "n"
+            },
+            {
+              "type": "numberentry",
+              "minvalue": "2n",
+              "maxvalue": "2n"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Gapfill > Adaptive marking carries through to gaps",
+    "data": {
+      "variables": {
+        "l": {
+          "name": "l",
+          "definition": "[1,2]"
+        },
+        "a,b": {
+          "name": "a,b",
+          "definition": "l"
+        },
+        "c": {
+          "name": "c",
+          "definition": "a+b"
+        }
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "minvalue": "1",
+          "maxvalue": "1",
+          "extendBaseMarkingAlgorithm": true,
+          "customMarkingAlgorithm": "\ninterpreted_answer: [studentNumber, 2*studentNumber]"
+        },
+        {
+          "type": "numberentry",
+          "minvalue": "c",
+          "maxvalue": "c",
+          "variableReplacements": [
+            {
+              "variable": "l",
+              "part": "p0"
+            }
+          ]
+        },
+        {
+          "type": "numberentry",
+          "minvalue": "c",
+          "maxvalue": "c",
+          "variableReplacements": [
+            {
+              "variable": "a,b",
+              "part": "p0"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Custom marking algorithms > Error in mark note",
+    "data": {
+      "name": "marking algorithm error display",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "jme",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "scripts": {},
+          "customMarkingAlgorithm": "q:\n  a\n\nmark:\n  apply(z)",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "answer": "x",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [
+            0,
+            1
+          ],
+          "checkVariableNames": false,
+          "singleLetterVariables": false,
+          "allowUnknownFunctions": true,
+          "implicitFunctionComposition": false,
+          "valuegenerators": [
+            {
+              "name": "x",
+              "value": ""
+            }
+          ]
+        }
+      ],
+      "partsMode": "all",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Pre-submit tasks > Pre-submit tasks are different for different adaptive marking values",
+    "data": {
+      "name": "Q",
+      "variables": {
+        "a": {
+          "name": "a",
+          "definition": "1"
+        }
+      },
+      "functions": {
+        "wait": {
+          "parameters": [
+            [
+              "time",
+              "number"
+            ]
+          ],
+          "type": "promise",
+          "language": "javascript",
+          "definition": "\nvar promise = new Promise(function(resolve, reject) {\n  setTimeout(function() {\n    resolve({\n      seconds_waited: new Numbas.jme.types.TNum(time)\n    })\n  }, time*50);\n});\nreturn new Numbas.jme.types.TPromise(promise);\n                                    "
+        }
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "minvalue": "1",
+          "maxvalue": "1",
+          "marks": 1
+        },
+        {
+          "type": "numberentry",
+          "minvalue": "a",
+          "maxvalue": "a",
+          "marks": 1,
+          "extendBaseMarkingAlgorithm": true,
+          "customMarkingAlgorithm": "\npre_submit: \n  [ wait(studentNumber + a) ]\n\nmark:\n  feedback(\"a is {a}\");\n  feedback(\"studentnumber is {studentnumber}\");\n  feedback(\"waited {pre_submit['seconds_waited']}\");\n  apply(base_mark)\n",
+          "variableReplacements": [
+            {
+              "part": "p0",
+              "variable": "a",
+              "must_go_first": true
+            }
+          ],
+          "variableReplacementStrategy": "alwaysreplace"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Question > Question",
+    "data": {
+      "name": "Barg",
+      "parts": [
+        {
+          "type": "jme",
+          "answer": "x+2",
+          "marks": 1
+        }
+      ]
+    }
+  },
+  {
+    "name": "Question > Built-in constants: with j",
+    "data": {
+      "builtin_constants": {
+        "j": true,
+        "e": false
+      }
+    }
+  },
+  {
+    "name": "Question > Built-in constants: no j",
+    "data": {
+      "builtin_constants": {
+        "e": false
+      }
+    }
+  },
+  {
+    "name": "Question > e defined as a variable is not used in mathematical expression part answers",
+    "data": {
+      "variables": {
+        "e": {
+          "name": "e",
+          "definition": "3"
+        }
+      },
+      "parts": [
+        {
+          "type": "jme",
+          "answer": "e^2+a",
+          "answerSimplification": "basic"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Question > A big question",
+    "data": {
+      "name": "Working on standalone part instances",
+      "tags": [],
+      "metadata": {
+        "description": "<p>Check that the&nbsp;MarkingScript reimplementations of the marking algorithms work properly.</p>",
+        "licence": "None specified"
+      },
+      "statement": "<p>Parts&nbsp;<strong>a</strong> to&nbsp;<strong>f</strong> use the standard marking algorithms.</p>",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {
+        "m": {
+          "name": "m",
+          "group": "Ungrouped variables",
+          "definition": "id(2)",
+          "description": "",
+          "templateType": "anything"
+        }
+      },
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [
+        "m"
+      ],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>Write a number between 1 and 2</p>",
+          "minValue": "1",
+          "maxValue": "2",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "precisionType": "dp",
+          "precision": "2",
+          "precisionPartialCredit": 0,
+          "precisionMessage": "You have not given your answer to the correct precision.",
+          "strictPrecision": false,
+          "showPrecisionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "matrix",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>Write a $2 \\times 2$ identity matrix.</p>",
+          "correctAnswer": "id(2)",
+          "correctAnswerFractions": false,
+          "numRows": "2",
+          "numColumns": "2",
+          "allowResize": true,
+          "tolerance": 0,
+          "markPerCell": true,
+          "allowFractions": false,
+          "precisionType": "dp",
+          "precision": 0,
+          "precisionPartialCredit": "40",
+          "precisionMessage": "You have not given your answer to the correct precision.",
+          "strictPrecision": true
+        },
+        {
+          "type": "jme",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>Write $x$</p>",
+          "answer": "x",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [
+            0,
+            1
+          ],
+          "checkVariableNames": true,
+          "expectedVariableNames": [
+            "x"
+          ],
+          "notallowed": {
+            "strings": [
+              "("
+            ],
+            "showStrings": false,
+            "partialCredit": 0,
+            "message": "<p>No brackets!</p>"
+          }
+        },
+        {
+          "type": "patternmatch",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>Write \"a+\"</p>",
+          "answer": "a+",
+          "displayAnswer": "",
+          "caseSensitive": true,
+          "partialCredit": "30",
+          "matchMode": "exact"
+        },
+        {
+          "type": "1_n_2",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>Choose choice 1</p>",
+          "minMarks": 0,
+          "maxMarks": 0,
+          "shuffleChoices": false,
+          "displayType": "radiogroup",
+          "displayColumns": 0,
+          "choices": [
+            "Choice 1",
+            "Choice 2",
+            "Choice 3"
+          ],
+          "matrix": [
+            "1",
+            0,
+            "-1"
+          ],
+          "distractors": [
+            "Choice 1 is good",
+            "Choice 2 is not great",
+            "Choice 3 is bad"
+          ]
+        },
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [
+            {
+              "variable": "m",
+              "part": "p1",
+              "must_go_first": false
+            }
+          ],
+          "variableReplacementStrategy": "alwaysreplace",
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>What's&nbsp;the determinant of the matrix in part b?</p>",
+          "minValue": "det(m)",
+          "maxValue": "det(m)",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "q:\n  apply_marking_script(\"numberentry\",studentAnswer,settings+[\"minvalue\":4,\"maxvalue\":5],1)\n\nr:\n  apply_marking_script(\"numberentry\",studentAnswer,settings+[\"minvalue\":3,\"maxvalue\":4],1)\n\nmark:\n  feedback(\"number between 4 and 5\");\n  concat_feedback(q[\"mark\"][\"feedback\"],marks/2);\n  feedback(\"number between 3 and 4\");\n  concat_feedback(r[\"mark\"][\"feedback\"],marks/2)",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "prompt": "<p>Write a number between 4 and 5, and between 3 and 4.</p>",
+          "minValue": "1",
+          "maxValue": "2",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Question > Steps penalty",
+    "data": {
+      "name": "steps penalty",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "gapfill",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "prompt": "<p>[[0]]</p>\n<p>[[1]]</p>",
+          "stepsPenalty": "1",
+          "steps": [
+            {
+              "type": "information",
+              "useCustomName": false,
+              "customName": "",
+              "marks": 0,
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "showCorrectAnswer": true,
+              "showFeedbackIcon": true,
+              "variableReplacements": [],
+              "variableReplacementStrategy": "originalfirst",
+              "nextParts": [],
+              "suggestGoingBack": false,
+              "adaptiveMarkingPenalty": 0,
+              "exploreObjective": null,
+              "prompt": "<p>das</p>"
+            }
+          ],
+          "gaps": [
+            {
+              "type": "numberentry",
+              "useCustomName": false,
+              "customName": "",
+              "marks": 1,
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "showCorrectAnswer": true,
+              "showFeedbackIcon": true,
+              "variableReplacements": [],
+              "variableReplacementStrategy": "originalfirst",
+              "nextParts": [],
+              "suggestGoingBack": false,
+              "adaptiveMarkingPenalty": 0,
+              "exploreObjective": null,
+              "minValue": "1",
+              "maxValue": "1",
+              "correctAnswerFraction": false,
+              "allowFractions": false,
+              "mustBeReduced": false,
+              "mustBeReducedPC": 0,
+              "showFractionHint": true,
+              "notationStyles": [
+                "plain",
+                "en",
+                "si-en"
+              ],
+              "correctAnswerStyle": "plain"
+            },
+            {
+              "type": "numberentry",
+              "useCustomName": false,
+              "customName": "",
+              "marks": 1,
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "showCorrectAnswer": true,
+              "showFeedbackIcon": true,
+              "variableReplacements": [],
+              "variableReplacementStrategy": "originalfirst",
+              "nextParts": [],
+              "suggestGoingBack": false,
+              "adaptiveMarkingPenalty": 0,
+              "exploreObjective": null,
+              "minValue": "1",
+              "maxValue": "1",
+              "correctAnswerFraction": false,
+              "allowFractions": false,
+              "mustBeReduced": false,
+              "mustBeReducedPC": 0,
+              "showFractionHint": true,
+              "notationStyles": [
+                "plain",
+                "en",
+                "si-en"
+              ],
+              "correctAnswerStyle": "plain"
+            }
+          ],
+          "sortAnswers": false
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": "2",
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "stepsPenalty": "1",
+          "steps": [
+            {
+              "type": "information",
+              "useCustomName": false,
+              "customName": "",
+              "marks": 0,
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "showCorrectAnswer": true,
+              "showFeedbackIcon": true,
+              "variableReplacements": [],
+              "variableReplacementStrategy": "originalfirst",
+              "nextParts": [],
+              "suggestGoingBack": false,
+              "adaptiveMarkingPenalty": 0,
+              "exploreObjective": null,
+              "prompt": "<p>das</p>"
+            }
+          ],
+          "minValue": "1",
+          "maxValue": "1",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ],
+      "partsMode": "all",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Question > Adaptive marking penalty",
+    "data": {
+      "name": "adaptive marking penalty",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {
+        "a": {
+          "name": "a",
+          "group": "Ungrouped variables",
+          "definition": "1",
+          "description": "",
+          "templateType": "anything"
+        }
+      },
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [
+        "a"
+      ],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "minValue": "a",
+          "maxValue": "a",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": "2",
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [
+            {
+              "variable": "a",
+              "part": "p0",
+              "must_go_first": false
+            }
+          ],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": "1",
+          "exploreObjective": null,
+          "minValue": "a",
+          "maxValue": "a",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ],
+      "partsMode": "all",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Question > Catch error in a marking script",
+    "data": {
+      "name": "Error in marking algorithm",
+      "tags": [],
+      "metadata": {
+        "description": "<p>Show a message when there's an error in the marking algorithm</p>",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "customMarkingAlgorithm": "mark: set_credit(1",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "minValue": "1",
+          "maxValue": "1",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Question > Promise in question preamble",
+    "data": {
+      "name": "question",
+      "parts": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "minvalue": "1",
+          "maxvalue": "1"
+        }
+      ],
+      "preamble": {
+        "js": "\nreturn new Promise(resolve => {\n    setTimeout(() => {\n        question.scope.setVariable('a', Numbas.jme.wrapValue(1)); \n        resolve()\n    }, 1);\n});"
+      },
+      "variables": {
+        "b": {
+          "name": "b",
+          "definition": "a+2",
+          "description": "2 more than a",
+          "templateType": "anything"
+        }
+      }
+    }
+  },
+  {
+    "name": "Explore mode > One next part",
+    "data": {
+      "name": "Explore mode: one link",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "information",
+          "useCustomName": true,
+          "customName": "Beginning",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [
+            {
+              "label": "Step 2",
+              "rawLabel": "",
+              "otherPart": 1,
+              "variableReplacements": [],
+              "availabilityCondition": "",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            }
+          ],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null
+        },
+        {
+          "type": "information",
+          "useCustomName": true,
+          "customName": "Step 2",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null
+        }
+      ],
+      "partsMode": "explore",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Explore mode > Replace a variable",
+    "data": {
+      "name": "Explore mode: replace variables",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {
+        "a": {
+          "name": "a",
+          "group": "Ungrouped variables",
+          "definition": "1",
+          "description": "",
+          "templateType": "anything"
+        }
+      },
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [
+        "a"
+      ],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "useCustomName": true,
+          "customName": "Enter number",
+          "marks": 1,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [
+            {
+              "label": "Show a",
+              "rawLabel": "",
+              "otherPart": 1,
+              "variableReplacements": [
+                {
+                  "variable": "a",
+                  "definition": "interpreted_answer"
+                }
+              ],
+              "availabilityCondition": "",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            }
+          ],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "minValue": "a",
+          "maxValue": "a",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "information",
+          "useCustomName": true,
+          "customName": "Show a",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "prompt": "<p>$a = \\var{a}$</p>"
+        }
+      ],
+      "partsMode": "explore",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Explore mode > Next part labels match part names",
+    "data": {
+      "name": "Explore mode: replace variables",
+      "variables": {
+        "a": {
+          "name": "a",
+          "definition": "1"
+        }
+      },
+      "parts": [
+        {
+          "type": "information",
+          "customName": "Beginning",
+          "nextParts": [
+            {
+              "label": "Step {a+1}",
+              "otherPart": 0,
+              "variableReplacements": [
+                {
+                  "variable": "a",
+                  "definition": "a+1"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "partsMode": "explore"
+    }
+  },
+  {
+    "name": "Explore mode > Conditional availability of next parts",
+    "data": {
+      "name": "Explore mode: conditional availability",
+      "tags": [],
+      "metadata": {
+        "descripton": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "useCustomName": true,
+          "customName": "Enter a number",
+          "marks": 1,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [
+            {
+              "label": "Always available",
+              "rawLabel": "",
+              "otherPart": 1,
+              "variableReplacements": [],
+              "availabilityCondition": "",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            },
+            {
+              "label": "Available when wrong",
+              "rawLabel": "",
+              "otherPart": 2,
+              "variableReplacements": [],
+              "availabilityCondition": "answered and credit<1",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            },
+            {
+              "label": "Available when correct",
+              "rawLabel": "",
+              "otherPart": 3,
+              "variableReplacements": [],
+              "availabilityCondition": "answered and credit=1",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            },
+            {
+              "label": "Available when answered",
+              "rawLabel": "",
+              "otherPart": 4,
+              "variableReplacements": [],
+              "availabilityCondition": "answered",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            }
+          ],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "minValue": "1",
+          "maxValue": "1",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "information",
+          "useCustomName": true,
+          "customName": "Always available",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null
+        },
+        {
+          "type": "information",
+          "useCustomName": true,
+          "customName": "Available when wrong",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null
+        },
+        {
+          "type": "information",
+          "useCustomName": true,
+          "customName": "Available when correct",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null
+        },
+        {
+          "type": "information",
+          "useCustomName": true,
+          "customName": "Available when answered",
+          "marks": 0,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null
+        }
+      ],
+      "partsMode": "explore",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Explore mode > Objectives and penalties",
+    "data": {
+      "name": "Explore mode: objectives and penalties",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "useCustomName": true,
+          "customName": "Write 1",
+          "marks": "1",
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [
+            {
+              "label": "Write 1",
+              "rawLabel": "",
+              "otherPart": 0,
+              "variableReplacements": [],
+              "availabilityCondition": "",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            },
+            {
+              "label": "Get penalty",
+              "rawLabel": "Get penalty",
+              "otherPart": 0,
+              "variableReplacements": [],
+              "availabilityCondition": "",
+              "penalty": "Penalty",
+              "penaltyAmount": "0.5",
+              "lockAfterLeaving": false
+            },
+            {
+              "label": "Write 2",
+              "rawLabel": "",
+              "otherPart": 1,
+              "variableReplacements": [],
+              "availabilityCondition": "",
+              "penalty": "",
+              "penaltyAmount": 0,
+              "lockAfterLeaving": false
+            }
+          ],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": "Main objective",
+          "minValue": "1",
+          "maxValue": "1",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": true,
+          "customName": "Write 2",
+          "marks": "2",
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": "Second objective",
+          "minValue": "2",
+          "maxValue": "2",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ],
+      "partsMode": "explore",
+      "maxMarks": "0",
+      "objectives": [
+        {
+          "name": "Main objective",
+          "limit": 1,
+          "mode": "sum"
+        },
+        {
+          "name": "Second objective",
+          "limit": "2",
+          "mode": "sum"
+        }
+      ],
+      "penalties": [
+        {
+          "name": "Penalty",
+          "limit": "1",
+          "mode": "sum"
+        }
+      ],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Alternative answers > Separate number answer",
+    "data": {
+      "name": "Alternative answer: 2 instead of 1",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "alternatives": [
+            {
+              "type": "numberentry",
+              "useCustomName": true,
+              "customName": "2",
+              "marks": 0.5,
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "alternativeFeedbackMessage": "<p>You wrote 2.</p>",
+              "useAlternativeFeedback": false,
+              "minValue": "2",
+              "maxValue": "2",
+              "correctAnswerFraction": false,
+              "allowFractions": false,
+              "mustBeReduced": false,
+              "mustBeReducedPC": 0,
+              "showFractionHint": true,
+              "notationStyles": [
+                "plain",
+                "en",
+                "si-en"
+              ],
+              "correctAnswerStyle": "plain"
+            }
+          ],
+          "minValue": "1",
+          "maxValue": "1",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ],
+      "partsMode": "all",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Alternative answers > Main part gives partial credit",
+    "data": {
+      "name": "Alternative answer: 2 instead of 1",
+      "parts": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "customMarkingAlgorithm": "mark: set_credit(0.25,'partial')",
+          "extendBaseMarkingAlgorithm": true,
+          "alternatives": [
+            {
+              "type": "numberentry",
+              "useCustomName": true,
+              "customName": "alternative",
+              "marks": 1,
+              "minValue": "1",
+              "maxValue": "1"
+            }
+          ],
+          "minValue": "1",
+          "maxValue": "1"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Alternative answers > Expanding range of accepted answers",
+    "data": {
+      "name": "Alternative answers: expanding range of accepted answers",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "useCustomName": true,
+          "customName": "1",
+          "marks": "5",
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "alternatives": [
+            {
+              "type": "numberentry",
+              "useCustomName": true,
+              "customName": "0-2",
+              "marks": "4",
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "alternativeFeedbackMessage": "",
+              "useAlternativeFeedback": false,
+              "minValue": "0",
+              "maxValue": "2",
+              "correctAnswerFraction": false,
+              "allowFractions": false,
+              "mustBeReduced": false,
+              "mustBeReducedPC": 0,
+              "showFractionHint": true,
+              "notationStyles": [
+                "plain",
+                "en",
+                "si-en"
+              ],
+              "correctAnswerStyle": "plain"
+            },
+            {
+              "type": "numberentry",
+              "useCustomName": true,
+              "customName": "0-3",
+              "marks": "3",
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "alternativeFeedbackMessage": "",
+              "useAlternativeFeedback": false,
+              "minValue": "0",
+              "maxValue": "3",
+              "correctAnswerFraction": false,
+              "allowFractions": false,
+              "mustBeReduced": false,
+              "mustBeReducedPC": 0,
+              "showFractionHint": true,
+              "notationStyles": [
+                "plain",
+                "en",
+                "si-en"
+              ],
+              "correctAnswerStyle": "plain"
+            }
+          ],
+          "minValue": "1",
+          "maxValue": "1",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ],
+      "partsMode": "all",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Alternative answers > Show all feedback",
+    "data": {
+      "name": "Alternative answers: show all feedback",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "jme",
+          "useCustomName": true,
+          "customName": "x",
+          "marks": 1,
+          "scripts": {},
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [],
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "nextParts": [],
+          "suggestGoingBack": false,
+          "adaptiveMarkingPenalty": 0,
+          "exploreObjective": null,
+          "alternatives": [
+            {
+              "type": "jme",
+              "useCustomName": true,
+              "customName": "y - not all feedback",
+              "marks": "0.5",
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "alternativeFeedbackMessage": "<p>You wrote y</p>",
+              "useAlternativeFeedback": false,
+              "answer": "y",
+              "showPreview": true,
+              "checkingType": "absdiff",
+              "checkingAccuracy": 0.001,
+              "failureRate": 1,
+              "vsetRangePoints": 5,
+              "vsetRange": [
+                0,
+                1
+              ],
+              "checkVariableNames": false,
+              "singleLetterVariables": false,
+              "allowUnknownFunctions": true,
+              "implicitFunctionComposition": false,
+              "valuegenerators": [
+                {
+                  "name": "y",
+                  "value": ""
+                }
+              ]
+            },
+            {
+              "type": "jme",
+              "useCustomName": true,
+              "customName": "z - all feedback",
+              "marks": 0.5,
+              "scripts": {},
+              "customMarkingAlgorithm": "",
+              "extendBaseMarkingAlgorithm": true,
+              "unitTests": [],
+              "alternativeFeedbackMessage": "<p>You wrote z</p>",
+              "useAlternativeFeedback": true,
+              "answer": "z",
+              "showPreview": true,
+              "checkingType": "absdiff",
+              "checkingAccuracy": 0.001,
+              "failureRate": 1,
+              "vsetRangePoints": 5,
+              "vsetRange": [
+                0,
+                1
+              ],
+              "checkVariableNames": false,
+              "singleLetterVariables": false,
+              "allowUnknownFunctions": true,
+              "implicitFunctionComposition": false,
+              "valuegenerators": [
+                {
+                  "name": "x",
+                  "value": ""
+                }
+              ]
+            }
+          ],
+          "answer": "x",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [
+            0,
+            1
+          ],
+          "checkVariableNames": false,
+          "singleLetterVariables": false,
+          "allowUnknownFunctions": true,
+          "implicitFunctionComposition": false,
+          "valuegenerators": [
+            {
+              "name": "x",
+              "value": ""
+            }
+          ]
+        }
+      ],
+      "partsMode": "all",
+      "maxMarks": 0,
+      "objectives": [],
+      "penalties": [],
+      "objectiveVisibility": "always",
+      "penaltyVisibility": "always"
+    }
+  },
+  {
+    "name": "Variables > Custom functions know about other custom functions when finding free variables",
+    "data": {
+      "functions": {
+        "f3": {
+          "parameters": [],
+          "type": "number",
+          "language": "jme",
+          "definition": "f1(f2(1))"
+        },
+        "f1": {
+          "parameters": [],
+          "type": "number",
+          "language": "jme",
+          "definition": "f2(3)+y"
+        },
+        "f2": {
+          "parameters": [
+            [
+              "x",
+              "number"
+            ]
+          ],
+          "type": "number",
+          "language": "jme",
+          "definition": "1+x+sin(z)"
+        }
+      }
+    }
+  },
+  {
+    "name": "Signals > Question signals",
+    "data": {
+      "name": "question",
+      "parts": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "minvalue": "1",
+          "maxvalue": "1"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Signals > Question signals - explore mode",
+    "data": {
+      "name": "question",
+      "partsMode": "explore",
+      "parts": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "minvalue": "1",
+          "maxvalue": "1",
+          "nextParts": [
+            {
+              "otherPart": 0
+            },
+            {
+              "otherPart": 0,
+              "lockAfterLeaving": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Part unit tests > Choose one from a list part",
+    "data": {
+      "name": "Choose one from a list part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "1_n_2",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "Correct",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ]
+                ],
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "Incorrect",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    false
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ]
+                ],
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose an incorrect answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": 0,
+          "shuffleChoices": false,
+          "displayType": "radiogroup",
+          "displayColumns": 0,
+          "showCellAnswerState": true,
+          "choices": [
+            "Choice 1",
+            "Choice 2",
+            "Choice 3"
+          ],
+          "matrix": [
+            "1",
+            0,
+            0
+          ],
+          "distractors": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "type": "1_n_2",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "Minimum score zero",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    false
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ]
+                ],
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose an incorrect answer.",
+                      "The minimum score for this part is <strong>0</strong>."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": 0,
+          "shuffleChoices": false,
+          "displayType": "radiogroup",
+          "displayColumns": 0,
+          "showCellAnswerState": true,
+          "choices": [
+            "Choice 1",
+            "Choice 2",
+            "Choice 3"
+          ],
+          "matrix": [
+            "1",
+            "-1",
+            0
+          ],
+          "distractors": [
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "type": "1_n_2",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "Correct",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ]
+                ],
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": 0,
+          "shuffleChoices": false,
+          "displayType": "radiogroup",
+          "displayColumns": 0,
+          "showCellAnswerState": true,
+          "choices": "map(\"Choice \"+n,n,1..3)",
+          "matrix": "[1,0,0]"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Part unit tests > Choose several from a list part",
+    "data": {
+      "name": "Choose several from a list part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "m_n_2",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "One correct choice",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "Both correct choices",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "One correct, one incorrect",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose an incorrect answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "All but choice 2",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    true
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.\nYou chose an incorrect answer.\nYou chose an incorrect answer.\nYou chose an incorrect answer.\nThe minimum score for this part is <strong>0</strong>."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": 0,
+          "shuffleChoices": false,
+          "displayType": "checkbox",
+          "displayColumns": 0,
+          "minAnswers": 0,
+          "maxAnswers": 0,
+          "warningType": "none",
+          "showCellAnswerState": true,
+          "choices": [
+            "Choice 1",
+            "Choice 2",
+            "Choice 3",
+            "Choice 4",
+            "Choice 5"
+          ],
+          "matrix": [
+            "1",
+            "1",
+            "-1",
+            "-1",
+            "-1"
+          ],
+          "distractors": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        {
+          "type": "m_n_2",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "First two choices",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0.6
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "Choices 2 and 3",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    false
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    true
+                  ],
+                  [
+                    false
+                  ],
+                  [
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": 0,
+          "shuffleChoices": false,
+          "displayType": "checkbox",
+          "displayColumns": 0,
+          "minAnswers": 0,
+          "maxAnswers": "2",
+          "warningType": "prevent",
+          "showCellAnswerState": true,
+          "choices": [
+            "Choice 1",
+            "Choice 2",
+            "Choice 3",
+            "Choice 4",
+            "Choice 5"
+          ],
+          "matrix": [
+            "1",
+            "2",
+            "3",
+            "-1",
+            "-1"
+          ],
+          "distractors": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Part unit tests > Match choices with answers part",
+    "data": {
+      "name": "Match choices with answers part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "m_n_x",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "Both correct choices",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true,
+                    false
+                  ],
+                  [
+                    false,
+                    true
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "One right, one wrong",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true,
+                    true
+                  ],
+                  [
+                    false,
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose an incorrect answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "Both wrong",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    false,
+                    true
+                  ],
+                  [
+                    true,
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose an incorrect answer.\nYou chose an incorrect answer.\nThe minimum score for this part is <strong>0</strong>."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": 0,
+          "minAnswers": 0,
+          "maxAnswers": 0,
+          "shuffleChoices": false,
+          "shuffleAnswers": false,
+          "displayType": "radiogroup",
+          "warningType": "none",
+          "showCellAnswerState": true,
+          "choices": [
+            "Choice 1",
+            "Choice 2"
+          ],
+          "matrix": [
+            [
+              "1 ",
+              "-1"
+            ],
+            [
+              "-1",
+              "1"
+            ]
+          ],
+          "layout": {
+            "type": "all",
+            "expression": ""
+          },
+          "answers": [
+            "Answer 1",
+            "Answer 2"
+          ]
+        },
+        {
+          "type": "m_n_x",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "All correct answers",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true,
+                    true
+                  ],
+                  [
+                    true,
+                    false
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose a correct answer.",
+                      "You chose a correct answer."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "Incorrect answer",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    false,
+                    true
+                  ],
+                  [
+                    true,
+                    true
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.\nYou chose a correct answer.\nYou chose an incorrect answer.\nThe minimum score for this part is <strong>0</strong>."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": 0,
+          "minAnswers": 0,
+          "maxAnswers": 0,
+          "shuffleChoices": false,
+          "shuffleAnswers": false,
+          "displayType": "checkbox",
+          "warningType": "none",
+          "showCellAnswerState": true,
+          "choices": [
+            "Choice 1",
+            "Choice 2"
+          ],
+          "matrix": [
+            [
+              "1",
+              "1"
+            ],
+            [
+              "1",
+              "-3"
+            ]
+          ],
+          "layout": {
+            "type": "all",
+            "expression": ""
+          },
+          "answers": [
+            "Answer 1",
+            "Answer 2"
+          ]
+        },
+        {
+          "type": "m_n_x",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 0,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "All correct answers",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    true,
+                    false,
+                    false
+                  ],
+                  [
+                    true,
+                    true,
+                    false
+                  ],
+                  [
+                    true,
+                    true,
+                    true
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "You chose a correct answer.",
+                      "You chose a correct answer.",
+                      "You chose a correct answer.",
+                      "You chose a correct answer.",
+                      "You chose a correct answer.",
+                      "You chose a correct answer.",
+                      "The maximum score for this part is <strong>3</strong>."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "minMarks": 0,
+          "maxMarks": "3",
+          "minAnswers": 0,
+          "maxAnswers": 0,
+          "shuffleChoices": false,
+          "shuffleAnswers": false,
+          "displayType": "checkbox",
+          "warningType": "none",
+          "showCellAnswerState": true,
+          "choices": [
+            "Choice 1",
+            "Choice 2",
+            "Choice 3"
+          ],
+          "matrix": [
+            [
+              "1",
+              "1",
+              "1"
+            ],
+            [
+              "1",
+              "1",
+              "1"
+            ],
+            [
+              "1",
+              "1",
+              "1"
+            ]
+          ],
+          "layout": {
+            "type": "uppertriangle",
+            "expression": ""
+          },
+          "answers": [
+            "Answer 1",
+            "Answer 2",
+            "Answer 3"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Part unit tests > Match text pattern part",
+    "data": {
+      "name": "Match text pattern part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "patternmatch",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "\"thing!\" is correct",
+              "answer": {
+                "valid": true,
+                "value": "thing!",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "true",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "\"THING!\" is correct",
+              "answer": {
+                "valid": true,
+                "value": "THING!",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "true",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "thing!",
+          "displayAnswer": "thing!",
+          "matchMode": "exact"
+        },
+        {
+          "type": "patternmatch",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "\"thing!\" is correct",
+              "answer": {
+                "valid": true,
+                "value": "thing!",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "true",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "\"THING!\" is correct except for case",
+              "answer": {
+                "valid": true,
+                "value": "THING!",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "0.5",
+                    "messages": [
+                      "Your answer is correct, except for the case."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0.5
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "thing!",
+          "displayAnswer": "thing!",
+          "caseSensitive": true,
+          "partialCredit": "50",
+          "matchMode": "exact"
+        },
+        {
+          "type": "patternmatch",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "\"two words\" is correct",
+              "answer": {
+                "valid": true,
+                "value": "two words",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "true",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "\"this thing!\" is incorrect",
+              "answer": {
+                "valid": true,
+                "value": "this thing!",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "false",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "\\w+ \\w+",
+          "displayAnswer": "hello there",
+          "matchMode": "regex"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Part unit tests > Mathematical expression part",
+    "data": {
+      "name": "Mathematical expression part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "jme",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "x is correct",
+              "answer": {
+                "valid": true,
+                "value": "x"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "y is incorrect",
+              "answer": {
+                "valid": true,
+                "value": "y"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "x+0 is correct",
+              "answer": {
+                "valid": true,
+                "value": "x+0"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "x+0*y is correct",
+              "answer": {
+                "valid": true,
+                "value": "x+0y"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "x",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 10,
+          "vsetRange": [
+            0,
+            1
+          ],
+          "checkVariableNames": false,
+          "valuegenerators": [
+            {
+              "name": "x",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "type": "jme",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "2x is correct",
+              "answer": {
+                "valid": true,
+                "value": "2x"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "x+x gets a penalty",
+              "answer": {
+                "valid": true,
+                "value": "x+x"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct.",
+                      "Your answer is not in the expected form: Should be number times x"
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0.5
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "3x is wrong",
+              "answer": {
+                "valid": true,
+                "value": "3x"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "x+x+x is wrong and gets warning",
+              "answer": {
+                "valid": true,
+                "value": "x+x+x"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect.",
+                      "Your answer is not in the expected form: Should be number times x"
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "2x",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [
+            0,
+            1
+          ],
+          "checkVariableNames": false,
+          "mustmatchpattern": {
+            "pattern": "$n*x",
+            "partialCredit": "50",
+            "message": "Should be number times x",
+            "nameToCompare": ""
+          },
+          "valuegenerators": [
+            {
+              "name": "x",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "type": "jme",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "x<y is correct",
+              "answer": {
+                "valid": true,
+                "value": "x<y"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "x-y<0 is correct",
+              "answer": {
+                "valid": true,
+                "value": "x-y<0"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "x=y is incorrect",
+              "answer": {
+                "valid": true,
+                "value": "x=y"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "y>x is correct",
+              "answer": {
+                "valid": true,
+                "value": "y>x"
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "x<y",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [
+            "0",
+            1
+          ],
+          "checkVariableNames": false,
+          "valuegenerators": [
+            {
+              "name": "x",
+              "value": ""
+            },
+            {
+              "name": "y",
+              "value": "x+random(-0.001..0.001#0)"
+            }
+          ]
+        },
+        {
+          "type": "jme",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "y=x^2+2 is correct, is formula",
+              "answer": {
+                "valid": true,
+                "value": "y=x^2+2"
+              },
+              "notes": [
+                {
+                  "name": "is_formula",
+                  "expected": {
+                    "value": "true",
+                    "messages": [],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                },
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is numerically correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "answer": "y=x^2+2",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [
+            0,
+            1
+          ],
+          "checkVariableNames": false,
+          "valuegenerators": [
+            {
+              "name": "x",
+              "value": ""
+            },
+            {
+              "name": "y",
+              "value": ""
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "Part unit tests > Matrix entry part",
+    "data": {
+      "name": "Matrix entry part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {},
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "matrix",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "Correct",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "1",
+                    "2",
+                    "3"
+                  ],
+                  [
+                    "4",
+                    "5",
+                    "6"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "Wrong size",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "1",
+                    "2"
+                  ],
+                  [
+                    "3",
+                    "4"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "wrong_size",
+                  "expected": {
+                    "value": "true",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                },
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "correctAnswer": "matrix([1,2,3],[4,5,6])",
+          "correctAnswerFractions": false,
+          "numRows": "2",
+          "numColumns": "3",
+          "allowResize": true,
+          "tolerance": 0,
+          "markPerCell": false,
+          "allowFractions": false
+        },
+        {
+          "type": "matrix",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "correct",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "1/3",
+                    "0"
+                  ],
+                  [
+                    "0",
+                    "1/3"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "2/6",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "2/6",
+                    "0"
+                  ],
+                  [
+                    "0",
+                    "2/6"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "correctAnswer": "id(2)/3",
+          "correctAnswerFractions": false,
+          "numRows": "2",
+          "numColumns": "2",
+          "allowResize": true,
+          "tolerance": 0,
+          "markPerCell": false,
+          "allowFractions": true
+        },
+        {
+          "type": "matrix",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "Correct",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "0.71",
+                    "0.29"
+                  ],
+                  [
+                    "0.57",
+                    "0.14"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "correctAnswer": "matrix([5,2],[4,1])/7",
+          "correctAnswerFractions": false,
+          "numRows": "2",
+          "numColumns": "2",
+          "allowResize": false,
+          "tolerance": 0,
+          "markPerCell": false,
+          "allowFractions": false,
+          "precisionType": "dp",
+          "precision": "2",
+          "precisionPartialCredit": "50",
+          "precisionMessage": "You have not given your answer to the correct precision.",
+          "strictPrecision": true
+        },
+        {
+          "type": "matrix",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "0.5 off still correct",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "0.5",
+                    "0.5"
+                  ],
+                  [
+                    "1.5",
+                    "1.5"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "0 incorrect",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "1",
+                    "1"
+                  ],
+                  [
+                    "1",
+                    "0"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "A variety of errors within tolerance",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "1.1",
+                    "1.2"
+                  ],
+                  [
+                    "0.7",
+                    "0.9"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "correctAnswer": "matrix([1,1],[1,1])",
+          "correctAnswerFractions": false,
+          "numRows": "2",
+          "numColumns": "2",
+          "allowResize": true,
+          "tolerance": "0.5",
+          "markPerCell": false,
+          "allowFractions": false
+        },
+        {
+          "type": "matrix",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "Correct",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "1",
+                    "2"
+                  ],
+                  [
+                    "3",
+                    "4"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "One incorrect cell",
+              "answer": {
+                "valid": true,
+                "value": [
+                  [
+                    "1",
+                    "2"
+                  ],
+                  [
+                    "3",
+                    "3"
+                  ]
+                ]
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "One or more of the cells in your answer is incorrect, but you have been awarded marks for the rest."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0.75
+                  }
+                }
+              ]
+            }
+          ],
+          "correctAnswer": "matrix([1,2],[3,4])",
+          "correctAnswerFractions": false,
+          "numRows": "2",
+          "numColumns": "2",
+          "allowResize": true,
+          "tolerance": 0,
+          "markPerCell": true,
+          "allowFractions": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "Part unit tests > Number entry part",
+    "data": {
+      "name": "Number entry part",
+      "tags": [],
+      "metadata": {
+        "description": "",
+        "licence": "None specified"
+      },
+      "statement": "",
+      "advice": "",
+      "rulesets": {},
+      "extensions": [],
+      "variables": {
+        "sqrt2": {
+          "name": "sqrt2",
+          "group": "Ungrouped variables",
+          "definition": "sqrt(dec(2))",
+          "description": "",
+          "templateType": "anything"
+        }
+      },
+      "variablesTest": {
+        "condition": "",
+        "maxRuns": 100
+      },
+      "ungrouped_variables": [
+        "sqrt2"
+      ],
+      "variable_groups": [],
+      "functions": {},
+      "preamble": {
+        "js": "",
+        "css": ""
+      },
+      "parts": [
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "1 is correct",
+              "answer": {
+                "valid": true,
+                "value": "1",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "0 is incorrect",
+              "answer": {
+                "valid": true,
+                "value": "0",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "minValue": "1",
+          "maxValue": "1",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "3.14 is correct",
+              "answer": {
+                "valid": true,
+                "value": "3.14",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "3.140 is incorrect",
+              "answer": {
+                "valid": true,
+                "value": "3.140",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is incorrect."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "minValue": "pi",
+          "maxValue": "pi",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "precisionType": "dp",
+          "precision": "2",
+          "precisionPartialCredit": 0,
+          "precisionMessage": "You have not given your answer to the correct precision.",
+          "strictPrecision": true,
+          "showPrecisionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "1.2 is incorrect",
+              "answer": {
+                "valid": true,
+                "value": "1.2",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct.",
+                      "You have not given your answer to the correct precision."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "1.20 is correct",
+              "answer": {
+                "valid": true,
+                "value": "1.20",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "minValue": "1.2",
+          "maxValue": "1.2",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "precisionType": "dp",
+          "precision": "2",
+          "precisionPartialCredit": 0,
+          "precisionMessage": "You have not given your answer to the correct precision.",
+          "strictPrecision": true,
+          "showPrecisionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "1 234,5 is correct",
+              "answer": {
+                "valid": true,
+                "value": "1 234,5",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "minValue": "1234.5",
+          "maxValue": "1234.5",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "showFractionHint": true,
+          "notationStyles": [
+            "si-fr"
+          ],
+          "correctAnswerStyle": "si-fr"
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [],
+              "name": "6/7 is correct",
+              "answer": {
+                "valid": true,
+                "value": "6/7",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            },
+            {
+              "variables": [],
+              "name": "12/14 gets partial credit",
+              "answer": {
+                "valid": true,
+                "value": "12/14",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct.",
+                      "Your answer is not reduced to lowest terms."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 0.5
+                  }
+                }
+              ]
+            }
+          ],
+          "minValue": "6/7",
+          "maxValue": "6/7",
+          "correctAnswerFraction": false,
+          "allowFractions": true,
+          "mustBeReduced": true,
+          "mustBeReducedPC": "50",
+          "showFractionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "useCustomName": false,
+          "customName": "",
+          "marks": 1,
+          "showCorrectAnswer": true,
+          "showFeedbackIcon": true,
+          "scripts": {},
+          "variableReplacements": [],
+          "variableReplacementStrategy": "originalfirst",
+          "adaptiveMarkingPenalty": 0,
+          "customMarkingAlgorithm": "",
+          "extendBaseMarkingAlgorithm": true,
+          "unitTests": [
+            {
+              "variables": [
+                {
+                  "name": "sqrt2",
+                  "value": "dec(\"1.41421356237309504880168872420969807857e+0\")"
+                }
+              ],
+              "name": "1.414213562373095",
+              "answer": {
+                "valid": true,
+                "value": "1.414213562373095",
+                "empty": false
+              },
+              "notes": [
+                {
+                  "name": "mark",
+                  "expected": {
+                    "value": "nothing",
+                    "messages": [
+                      "Your answer is correct."
+                    ],
+                    "warnings": [],
+                    "error": "",
+                    "valid": true,
+                    "credit": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "minValue": "sqrt2",
+          "maxValue": "sqrt2",
+          "correctAnswerFraction": false,
+          "allowFractions": false,
+          "mustBeReduced": false,
+          "mustBeReducedPC": 0,
+          "precisionType": "dp",
+          "precision": "15",
+          "precisionPartialCredit": 0,
+          "precisionMessage": "You have not given your answer to the correct precision.",
+          "strictPrecision": true,
+          "showPrecisionHint": true,
+          "notationStyles": [
+            "plain",
+            "en",
+            "si-en"
+          ],
+          "correctAnswerStyle": "plain"
+        }
+      ]
+    }
+  }
+]

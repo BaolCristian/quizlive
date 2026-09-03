@@ -189,7 +189,8 @@ interna.
 ### Test
 
 ```
-npx vitest run packages/engine
+npx vitest run packages/engine        # unitari
+npm run test:engine:diff              # differenziali contro l'oracolo
 npx tsc -p packages/engine/tsconfig.json --noEmit
 npx eslint --quiet packages/engine
 ```
@@ -197,6 +198,32 @@ npx eslint --quiet packages/engine
 I test unitari sono la traduzione di quelli upstream
 (`.numbas-upstream/tests/`): ogni file dice in testa da quale modulo QUnit
 viene e quali casi non sono stati tradotti, con il perché.
+
+### Test differenziali
+
+`test/differential/` fa girare il runtime Numbas originale nello stesso
+processo e confronta il port con lui. Sono lenti (il bundle è 1,6 MB e va
+caricato in jsdom), quindi stanno fuori da `npm run test:run` — li esclude
+`vitest.config.ts` — e hanno una configurazione propria,
+`vitest.diff.config.ts`, lanciata da `npm run test:engine:diff`.
+
+Tre file, un aspetto per file:
+
+| file | confronta |
+|---|---|
+| `variables.diff.test.ts` | la parità del seme (le prime estrazioni di `makeRng` contro `Math.seedrandom`), i valori delle variabili generate, l'enunciato e il nome con le variabili sostituite, e **la posizione del generatore casuale dopo il caricamento** — cioè che il port abbia consumato esattamente gli stessi sorteggi |
+| `display.diff.test.ts` | `renderLatex` contro `jme.display.exprToLaTeX` su 83 espressioni (59 dal test "expression to LaTeX" upstream, il resto dalle fixture `savint`) |
+| `marking.diff.test.ts` | per ogni parte e quattro risposte campione (corretta, sbagliata, non valida, quella dell'alternativa): `credit`, `valid` e i messaggi di feedback; la risposta corretta, il punteggio e le permutazioni di mescolamento; e un invio dell'intera domanda (`Question#submit`), che copre correzione adattiva, penalità e punteggio |
+
+Il corpus è in `test/differential/corpus.ts`. Le domande fuori dall'ambito del
+port (modalità explore, `matrixentry`, step, preambolo JS, funzioni asincrone)
+restano nel corpus con il motivo dell'esclusione, calcolato dal JSON.
+
+Una differenza fa fallire il test. È accettata solo se elencata in
+`test/differential/known-divergences.json` con il motivo e il riferimento alla
+riga di [`DIVERGENCES.md`](./DIVERGENCES.md) che la documenta; e una voce
+elencata che non diverge più fa fallire il test a sua volta, così il registro
+non invecchia.
 
 ### L'oracolo
 
@@ -216,6 +243,11 @@ Non è codice di produzione: non finisce nel bundle dell'applicazione.
 `test/fixtures/upstream/` contiene i dati estratti dal repository upstream:
 
 - `doc-tests.json`, dagli esempi della documentazione JME;
+- `part-tests-questions.json`, le 42 domande JSON inline passate a
+  `question_test` in `tests/parts/part-tests.mjs`, rigenerabile con
+  `node scripts/engine/extract-part-tests-questions.mjs` (non le legge
+  staticamente: carica il bundle dell'oracolo, stubba QUnit e intercetta
+  `Numbas.createQuestionFromJSON`);
 - `part-unit-tests.json`, dalle domande di `tests/parts/part_unit_tests.mjs`
   (le sei in ambito, senza `matrixentry`), rigenerabile con:
 
@@ -226,6 +258,17 @@ node -e "import('./.numbas-upstream/tests/parts/part_unit_tests.mjs').then(async
   fs.writeFileSync('packages/engine/test/fixtures/upstream/part-unit-tests.json', JSON.stringify(qs, null, 2) + '\n');
 })"
 ```
+
+`test/fixtures/savint/` contiene 12 domande scritte a mano in italiano per le
+superiori — una per tipo di parte in ambito, più un `gapfill` misto, una con
+`variablesTest`, una con `alternatives` e una con funzioni JME e ruleset
+personalizzati. Sono valide sia per `loadQuestion` sia per l'oracolo: il
+differenziale fallisce se l'oracolo ne rifiuta una.
+
+`test/fixtures/public/` è il corpus pubblico, **facoltativo e non
+committato**: v. il [README](./test/fixtures/public/README.md) di quella
+cartella, che documenta anche come l'editor pubblico espone l'esportazione
+senza autenticazione.
 
 ### Divergenze
 

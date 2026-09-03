@@ -1,0 +1,66 @@
+{
+  "name": "Verifica su proporzionalità e percentuali",
+  "statement": "<p>In una classe di \\(\\var{tot}\\) studenti, \\(\\var{promossi}\\) hanno superato la verifica. L'elenco dei voti è \\(\\var{voti}\\).</p><p>La media dei voti è \\(\\simplify{{media}}\\).</p>",
+  "advice": "<p>La percentuale si ottiene da \\(\\frac{\\var{promossi}}{\\var{tot}} \\cdot 100\\).</p>",
+  "variables": {
+    "tot": { "name": "tot", "definition": "random(20,25,40,50)" },
+    "promossi": { "name": "promossi", "definition": "random(1..tot-1)" },
+    "voti": { "name": "voti", "definition": "shuffle(4..10)" },
+    "media": { "name": "media", "definition": "sum(voti)/len(voti)" },
+    "perc": { "name": "perc", "definition": "100*promossi/tot" }
+  },
+  "parts": [
+    {
+      "type": "information",
+      "prompt": "<p>Leggi con attenzione i dati prima di rispondere.</p>"
+    },
+    {
+      "type": "numberentry",
+      "marks": 2,
+      "prompt": "<p>Che percentuale di studenti ha superato la verifica?</p>",
+      "minValue": "perc",
+      "maxValue": "perc",
+      "allowFractions": true,
+      "notationStyles": ["plain", "en", "si-en"],
+      "correctAnswerStyle": "plain"
+    },
+    {
+      "type": "gapfill",
+      "prompt": "<p>Il voto più alto dell'elenco è [[0]] e il numero di voti è [[1]].</p>",
+      "gaps": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "minValue": "max(voti)",
+          "maxValue": "max(voti)",
+          "allowFractions": false,
+          "notationStyles": ["plain", "en", "si-en"],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "minValue": "len(voti)",
+          "maxValue": "len(voti)",
+          "allowFractions": false,
+          "notationStyles": ["plain", "en", "si-en"],
+          "correctAnswerStyle": "plain"
+        }
+      ]
+    },
+    {
+      "type": "1_n_2",
+      "marks": 0,
+      "prompt": "<p>La percentuale calcolata è maggiore del 50%?</p>",
+      "shuffleChoices": false,
+      "displayType": "radiogroup",
+      "displayColumns": 0,
+      "minMarks": 0,
+      "maxMarks": 0,
+      "showCellAnswerState": true,
+      "choices": ["Sì", "No"],
+      "matrix": "if(perc>50, [1,0], [0,1])",
+      "distractors": ["", ""]
+    }
+  ]
+}

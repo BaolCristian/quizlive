@@ -1,0 +1,26 @@
+{
+  "name": "Triangolo con lati interi",
+  "statement": "<p>Un triangolo ha i lati lunghi \\(\\var{l1}\\), \\(\\var{l2}\\) e \\(\\var{l3}\\) centimetri.</p>",
+  "variables": {
+    "l1": { "name": "l1", "definition": "random(3..15)" },
+    "l2": { "name": "l2", "definition": "random(3..15)" },
+    "l3": { "name": "l3", "definition": "random(3..15)" },
+    "perimetro": { "name": "perimetro", "definition": "l1+l2+l3" }
+  },
+  "variablesTest": {
+    "condition": "l1 < l2 and l2 < l3 and l1 + l2 > l3",
+    "maxRuns": 200
+  },
+  "parts": [
+    {
+      "type": "numberentry",
+      "marks": 1,
+      "prompt": "<p>Calcola il perimetro in centimetri.</p>",
+      "minValue": "perimetro",
+      "maxValue": "perimetro",
+      "allowFractions": false,
+      "notationStyles": ["plain", "en", "si-en"],
+      "correctAnswerStyle": "plain"
+    }
+  ]
+}

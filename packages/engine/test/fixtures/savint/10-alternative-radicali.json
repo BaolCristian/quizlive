@@ -1,0 +1,32 @@
+{
+  "name": "Semplificazione di un radicale",
+  "statement": "<p>Semplifica il radicale \\(\\sqrt{\\var{n^2*k}}\\), con \\(n = \\var{n}\\) e \\(k = \\var{k}\\).</p>",
+  "variables": {
+    "n": { "name": "n", "definition": "random(2..6)" },
+    "k": { "name": "k", "definition": "random(2,3,5,6,7)" }
+  },
+  "parts": [
+    {
+      "type": "numberentry",
+      "marks": 2,
+      "prompt": "<p>Qual è il coefficiente che esce dalla radice?</p>",
+      "minValue": "n",
+      "maxValue": "n",
+      "allowFractions": false,
+      "notationStyles": ["plain", "en", "si-en"],
+      "correctAnswerStyle": "plain",
+      "alternatives": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "alternativeFeedbackMessage": "<p>Hai dato il quadrato del coefficiente: vale metà punteggio.</p>",
+          "minValue": "n^2",
+          "maxValue": "n^2",
+          "allowFractions": false,
+          "notationStyles": ["plain", "en", "si-en"],
+          "correctAnswerStyle": "plain"
+        }
+      ]
+    }
+  ]
+}

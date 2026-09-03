@@ -10,6 +10,11 @@ Unless required by applicable law or agreed to in writing, software distributed
 under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied.
 
+The JSON fixtures under test/fixtures/upstream/ (doc-tests.json,
+part-unit-tests.json, part-tests-questions.json) are data extracted verbatim
+from the Numbas test suite and are covered by the same Apache 2.0 license; the
+JSON format cannot carry a per-file header, so the attribution is recorded here.
+
 The port and the surrounding SAVINT code are distributed under the AGPL-3.0-only
 license of the SAVINT project (see LICENSE at the repository root). Numbas is a
 trademark of Newcastle University; SAVINT is not affiliated with or endorsed by

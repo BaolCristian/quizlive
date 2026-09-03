@@ -8,7 +8,16 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
-    exclude: ["tests/e2e/**", "**/node_modules/**", ".worktrees/**", ".claire/**", ".numbas-upstream/**"],
+    // I test differenziali contro il runtime Numbas sono lenti (bundle da
+    // 1,6 MB in jsdom): girano a parte, con `npm run test:engine:diff`.
+    exclude: [
+      "tests/e2e/**",
+      "**/node_modules/**",
+      ".worktrees/**",
+      ".claire/**",
+      ".numbas-upstream/**",
+      "packages/engine/test/differential/**",
+    ],
   },
   resolve: {
     alias: {

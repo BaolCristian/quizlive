@@ -156,8 +156,10 @@ export const it: Record<string, string> = {
   "maximum value": "valore massimo",
   "You have not given your answer to the correct precision.":
     "Non hai dato la risposta con la precisione richiesta.",
-  "feedback.you were awarded": "Hai ottenuto <strong>{count}</strong> punti.",
-  "feedback.taken away": "Ti sono stati tolti <strong>{count}</strong> punti.",
+  "feedback.you were awarded": "Hai ottenuto <strong>{count}</strong> punto.",
+  "feedback.you were awarded_plural": "Hai ottenuto <strong>{count}</strong> punti.",
+  "feedback.taken away": "Ti è stato tolto <strong>{count}</strong> punto.",
+  "feedback.taken away_plural": "Ti sono stati tolti <strong>{count}</strong> punti.",
   "part.error": "{path}: {message}",
   "part.missing type attribute": "{part}: manca il tipo della parte",
   "part.unknown type": "{part}: tipo di parte sconosciuto {type}",
@@ -168,6 +170,8 @@ export const it: Record<string, string> = {
   "part.marking.error in marking script":
     "C'è stato un errore nell'algoritmo di correzione di questa parte. Segnalalo. {message}",
   "part.marking.maximum scaled down":
+    "Il massimo che puoi ottenere per questa parte è <strong>{count}</strong> punto. I punteggi saranno riscalati.",
+  "part.marking.maximum scaled down_plural":
     "Il massimo che puoi ottenere per questa parte è <strong>{count}</strong> punti. I punteggi saranno riscalati.",
   "part.marking.maximum score applied": "Il punteggio massimo per questa parte è <strong>{score}</strong>.",
   "part.marking.minimum score applied": "Il punteggio minimo per questa parte è <strong>{score}</strong>.",

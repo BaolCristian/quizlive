@@ -143,8 +143,10 @@ export const en: Record<string, string> = {
   "maximum value": "maximum value",
   "You have not given your answer to the correct precision.":
     "You have not given your answer to the correct precision.",
-  "feedback.you were awarded": "You were awarded <strong>{count}</strong> marks.",
-  "feedback.taken away": "<strong>{count}</strong> marks were taken away.",
+  "feedback.you were awarded": "You were awarded <strong>{count}</strong> mark.",
+  "feedback.you were awarded_plural": "You were awarded <strong>{count}</strong> marks.",
+  "feedback.taken away": "<strong>{count}</strong> mark was taken away.",
+  "feedback.taken away_plural": "<strong>{count}</strong> marks were taken away.",
   "part.error": "{path}: {message}",
   "part.missing type attribute": "{part}: Missing part type attribute",
   "part.unknown type": "{part}: Unrecognised part type {type}",
@@ -155,6 +157,8 @@ export const en: Record<string, string> = {
   "part.marking.error in marking script":
     "There was an error in this part's marking algorithm. Please report this. {message}",
   "part.marking.maximum scaled down":
+    "The maximum you can score for this part is <strong>{count}</strong> mark. Your scores will be scaled down accordingly.",
+  "part.marking.maximum scaled down_plural":
     "The maximum you can score for this part is <strong>{count}</strong> marks. Your scores will be scaled down accordingly.",
   "part.marking.maximum score applied": "The maximum score for this part is <strong>{score}</strong>.",
   "part.marking.minimum score applied": "The minimum score for this part is <strong>{score}</strong>.",

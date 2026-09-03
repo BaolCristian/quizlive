@@ -329,6 +329,10 @@ function emptyErrorResult(errorFeedback: FeedbackItem[], error: Error): MarkingR
     finalised_result: { valid: false, credit: 0, states: errorFeedback },
     values: {},
     credit: 0,
+    // upstream: il literal di part.js:1136-1152 e 1168-1183 NON ha la chiave
+    // `answered`, quindi `this.answered = result.answered` (part.js:1275)
+    // assegna `undefined` — un valore che il resto del codice tratta come
+    // falso ma che non è un booleano. Qui è `false`. Vedi DIVERGENCES.md.
     answered: false,
     script_result: { stateErrors: { mark: error } },
   };

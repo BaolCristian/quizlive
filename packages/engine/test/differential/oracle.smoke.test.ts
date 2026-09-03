@@ -1,4 +1,6 @@
 // @vitest-environment node
+/* Derived from Numbas (https://github.com/numbas/Numbas), Copyright 2011-2026 Newcastle University.
+ * Licensed under the Apache License, Version 2.0. Ported to TypeScript for SAVINT; see packages/engine/NOTICE. */
 import { describe, it, expect } from "vitest";
 import { loadOracle } from "./oracle";
 

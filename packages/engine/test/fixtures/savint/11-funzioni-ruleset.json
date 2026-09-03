@@ -1,0 +1,54 @@
+{
+  "name": "Successione definita da una funzione",
+  "statement": "<p>Sia \\(a_n = \\var{a}n + \\var{b}\\). Allora \\(a_1 = \\var{termine(1)}\\) e \\(a_5 = \\var{termine(5)}\\).</p>",
+  "variables": {
+    "a": { "name": "a", "definition": "random(2..6)" },
+    "b": { "name": "b", "definition": "random(-5..5)" },
+    "somma5": { "name": "somma5", "definition": "sommaprimi(5)" }
+  },
+  "functions": {
+    "termine": {
+      "parameters": [["n", "number"]],
+      "type": "number",
+      "language": "jme",
+      "definition": "a*n + b"
+    },
+    "sommaprimi": {
+      "parameters": [["m", "number"]],
+      "type": "number",
+      "language": "jme",
+      "definition": "sum(map(termine(j), j, 1..m))"
+    }
+  },
+  "rulesets": {
+    "senzafrazioni": ["basic", "unitFactor", "unitPower", "zeroTerm", "zeroPower"]
+  },
+  "parts": [
+    {
+      "type": "numberentry",
+      "marks": 2,
+      "prompt": "<p>Quanto vale \\(a_1 + a_2 + a_3 + a_4 + a_5\\)?</p>",
+      "minValue": "somma5",
+      "maxValue": "somma5",
+      "allowFractions": false,
+      "notationStyles": ["plain", "en", "si-en"],
+      "correctAnswerStyle": "plain"
+    },
+    {
+      "type": "jme",
+      "marks": 2,
+      "prompt": "<p>Scrivi il termine generale \\(a_n\\) in funzione di \\(n\\).</p>",
+      "answer": "{a}*n + {b}",
+      "answerSimplification": "senzafrazioni",
+      "showPreview": true,
+      "checkingType": "absdiff",
+      "checkingAccuracy": 0.001,
+      "failureRate": 1,
+      "vsetRangePoints": 5,
+      "vsetRange": [0, 1],
+      "checkVariableNames": true,
+      "expectedVariableNames": ["n"],
+      "valuegenerators": [{ "name": "n", "value": "" }]
+    }
+  ]
+}

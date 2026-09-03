@@ -1,0 +1,25 @@
+{
+  "name": "Teorema di Pitagora",
+  "statement": "<p>Un triangolo rettangolo ha i cateti lunghi \\(\\var{a}\\) e \\(\\var{b}\\).</p>",
+  "variables": {
+    "a": { "name": "a", "definition": "random(3..12)" },
+    "b": { "name": "b", "definition": "random(3..12)" },
+    "c2": { "name": "c2", "definition": "a^2 + b^2" }
+  },
+  "parts": [
+    {
+      "type": "information",
+      "prompt": "<p>Ricorda: in un triangolo rettangolo il quadrato costruito sull'ipotenusa è equivalente alla somma dei quadrati costruiti sui cateti.</p>"
+    },
+    {
+      "type": "numberentry",
+      "marks": 2,
+      "prompt": "<p>Quanto vale il quadrato dell'ipotenusa?</p>",
+      "minValue": "c2",
+      "maxValue": "c2",
+      "allowFractions": false,
+      "notationStyles": ["plain", "en", "si-en"],
+      "correctAnswerStyle": "plain"
+    }
+  ]
+}

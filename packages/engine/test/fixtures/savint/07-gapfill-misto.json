@@ -1,0 +1,48 @@
+{
+  "name": "Studio di una parabola",
+  "statement": "<p>Considera la parabola di equazione \\(y = x^2 + \\var{p}x + \\var{r}\\).</p>",
+  "variables": {
+    "x1": { "name": "x1", "definition": "random(-6..6)" },
+    "x2": { "name": "x2", "definition": "random(-6..6 except x1)" },
+    "p": { "name": "p", "definition": "-(x1+x2)" },
+    "r": { "name": "r", "definition": "x1*x2" },
+    "xv": { "name": "xv", "definition": "(x1+x2)/2" }
+  },
+  "parts": [
+    {
+      "type": "gapfill",
+      "prompt": "<p>Ascissa del vertice: [[0]]. Equazione dell'asse di simmetria: [[1]]. La concavità è rivolta verso [[2]].</p>",
+      "gaps": [
+        {
+          "type": "numberentry",
+          "marks": 1,
+          "minValue": "xv",
+          "maxValue": "xv",
+          "allowFractions": true,
+          "notationStyles": ["plain", "en", "si-en"],
+          "correctAnswerStyle": "plain"
+        },
+        {
+          "type": "jme",
+          "marks": 2,
+          "answer": "x = {xv}",
+          "showPreview": true,
+          "checkingType": "absdiff",
+          "checkingAccuracy": 0.001,
+          "failureRate": 1,
+          "vsetRangePoints": 5,
+          "vsetRange": [0, 1],
+          "checkVariableNames": false,
+          "expectedVariableNames": []
+        },
+        {
+          "type": "patternmatch",
+          "marks": 1,
+          "answer": "alto",
+          "displayAnswer": "alto",
+          "matchMode": "exact"
+        }
+      ]
+    }
+  ]
+}

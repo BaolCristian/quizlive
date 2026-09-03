@@ -1,0 +1,38 @@
+{
+  "name": "Equazione di primo grado con {a} come coefficiente",
+  "statement": "<p>Risolvi l'equazione \\(\\var{a}x + \\var{b} = \\var{c}\\) nell'insieme dei numeri razionali.</p>",
+  "advice": "<p>Si porta il termine noto a destra e si divide per il coefficiente di \\(x\\): \\(x = \\simplify{(c-b)/a}\\).</p>",
+  "variables": {
+    "a": { "name": "a", "definition": "random(2..9)" },
+    "b": { "name": "b", "definition": "random(-9..9 except 0)" },
+    "k": { "name": "k", "definition": "random(-6..6 except 0)" },
+    "c": { "name": "c", "definition": "a*k + b" }
+  },
+  "parts": [
+    {
+      "type": "numberentry",
+      "marks": 2,
+      "prompt": "<p>\\(x = \\)</p>",
+      "minValue": "k",
+      "maxValue": "k",
+      "allowFractions": false,
+      "notationStyles": ["plain", "en", "si-en"],
+      "correctAnswerStyle": "plain"
+    },
+    {
+      "type": "numberentry",
+      "marks": 1,
+      "prompt": "<p>Quanto vale \\(2x\\), arrotondato a due cifre decimali?</p>",
+      "minValue": "2k",
+      "maxValue": "2k",
+      "precisionType": "dp",
+      "precision": "2",
+      "strictPrecision": false,
+      "precisionPartialCredit": 50,
+      "showPrecisionHint": true,
+      "allowFractions": false,
+      "notationStyles": ["plain", "en", "si-en"],
+      "correctAnswerStyle": "plain"
+    }
+  ]
+}
