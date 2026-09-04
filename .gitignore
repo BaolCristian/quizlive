@@ -68,6 +68,9 @@ docs/plans/
 # git worktrees
 .worktrees/
 
+# workspace di lavoro dei piani superpowers (ledger, report, pacchetti di revisione)
+.superpowers/
+
 # upstream Numbas source (script: scripts/engine/fetch-upstream.sh)
 .numbas-upstream/
 
