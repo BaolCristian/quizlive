@@ -1,0 +1,32 @@
+{
+  "name": "Proprietà dei numeri interi",
+  "statement": "<p>Considera l'intero \\(N = \\var{N}\\).</p>",
+  "variables": {
+    "N": { "name": "N", "definition": "random(12..60#6)" }
+  },
+  "parts": [
+    {
+      "type": "m_n_2",
+      "marks": 0,
+      "prompt": "<p>Seleziona tutte le affermazioni vere su \\(N\\).</p>",
+      "shuffleChoices": true,
+      "displayType": "checkbox",
+      "displayColumns": 0,
+      "minMarks": 0,
+      "maxMarks": 0,
+      "minAnswers": 0,
+      "maxAnswers": 0,
+      "warningType": "none",
+      "showCellAnswerState": true,
+      "choices": [
+        "\\(N\\) è divisibile per 2",
+        "\\(N\\) è divisibile per 3",
+        "\\(N\\) è un numero primo",
+        "\\(N\\) è un quadrato perfetto",
+        "\\(N\\) è divisibile per 6"
+      ],
+      "matrix": ["1", "1", "-1", "-1", "1"],
+      "distractors": ["", "", "", "", ""]
+    }
+  ]
+}

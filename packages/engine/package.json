@@ -1,0 +1,53 @@
+{
+  "name": "@savint/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "description": "Motore matematico di SAVINT Esercizi: porting in TypeScript del runtime Numbas (Apache 2.0).",
+  "keywords": [
+    "numbas",
+    "jme",
+    "quiz",
+    "marking"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BaolCristian/savint.git",
+    "directory": "packages/engine"
+  },
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "NOTICE",
+    "LICENSE-Apache-2.0.txt",
+    "DIVERGENCES.md"
+  ],
+  "sideEffects": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "decimal.js": "^10.6.0",
+    "seedrandom": "^3.0.5"
+  },
+  "devDependencies": {
+    "@types/seedrandom": "^3.0.8",
+    "jsdom": "^27.0.1",
+    "vitest": "^3.2.4"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run ../../packages/engine"
+  }
+}

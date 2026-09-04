@@ -18,5 +18,10 @@ docker
 .env.*
 !.env.example
 tsconfig.tsbuildinfo
+# di `packages/engine` serve solo `src/` (è da lì che l'applicazione lo
+# importa): `oracle/` sono 2,4 MB di bundle Numbas compilato e `test/` porta i
+# fixture, entrambi solo per i test differenziali.
+packages/engine/oracle
+packages/engine/test
 update-server.sh
 .worktrees

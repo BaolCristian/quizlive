@@ -1,0 +1,32 @@
+{
+  "name": "Abbina funzione e grafico",
+  "statement": "<p>Nel piano cartesiano si considerano quattro funzioni elementari.</p>",
+  "variables": {
+    "m": { "name": "m", "definition": "random(2..5)" }
+  },
+  "parts": [
+    {
+      "type": "m_n_x",
+      "marks": 0,
+      "prompt": "<p>Per ogni funzione scegli la descrizione corretta del suo grafico.</p>",
+      "shuffleChoices": true,
+      "shuffleAnswers": true,
+      "displayType": "radiogroup",
+      "minMarks": 0,
+      "maxMarks": 0,
+      "minAnswers": 0,
+      "maxAnswers": 0,
+      "warningType": "none",
+      "showCellAnswerState": true,
+      "choices": ["\\(y = \\var{m}x\\)", "\\(y = x^2\\)", "\\(y = 1/x\\)", "\\(y = \\var{m}\\)"],
+      "answers": ["retta per l'origine", "parabola", "iperbole equilatera"],
+      "matrix": [
+        ["1", "-1", "-1"],
+        ["-1", "1", "-1"],
+        ["-1", "-1", "1"],
+        ["-1", "-1", "-1"]
+      ],
+      "layout": { "type": "all", "expression": "" }
+    }
+  ]
+}

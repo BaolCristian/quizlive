@@ -1,0 +1,132 @@
+[
+  {
+    "test": "marking",
+    "fixture": "upstream/08",
+    "path": "p1",
+    "field": "invio.answered[parziale]",
+    "reason": "La parte p1 sostituisce una variabile con la risposta a p0 (`must_go_first: true`) e p0 non è stata risposta: upstream prende il primo ramo del catch di `markAdaptive` (part.js:1124) e costruisce a part.js:1140-1155 un literal SENZA la chiave `answered`, che part.js:1276 assegna sopra il valore del prototipo. Il port mette `false`. Tutto il resto — feedback, `credit_message`, avvisi, punteggio — coincide esattamente.",
+    "detail": "nostro false vs oracolo undefined",
+    "divergence": "Risultato del marking adattivo fallito (`part.js:1136-1152`, 1168-1183)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/09",
+    "path": "p0",
+    "field": "invio.answered[corretta]",
+    "reason": "Il riferimento a una parte inesistente fa fallire la correzione adattiva: upstream prende il ramo generico del catch (part.js:1166-1183), il cui literal non ha la chiave `answered`. Il port mette `false`.",
+    "detail": "nostro false vs oracolo undefined",
+    "divergence": "Risultato del marking adattivo fallito (`part.js:1136-1152`, 1168-1183)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/09",
+    "path": "p0",
+    "field": "invio.answered[sbagliata]",
+    "reason": "Come sopra: la risposta data non cambia il ramo d'errore.",
+    "detail": "nostro false vs oracolo undefined",
+    "divergence": "Risultato del marking adattivo fallito (`part.js:1136-1152`, 1168-1183)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/09",
+    "path": "p0",
+    "field": "invio.answered[parziale]",
+    "reason": "Come sopra: la parte riferita non esiste, quindi lasciarne un'altra senza risposta non cambia il ramo.",
+    "detail": "nostro false vs oracolo undefined",
+    "divergence": "Risultato del marking adattivo fallito (`part.js:1136-1152`, 1168-1183)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/09",
+    "path": "p0",
+    "field": "invio.feedback[corretta]",
+    "reason": "Upstream `Question#getPart` lancia `question.no such part` passando per `Question#error`, che antepone «Question 1: » al messaggio; il port ritorna `undefined` e la parte solleva la propria chiave `part.marking.variable replacement part not found`, senza prefisso. Stesso effetto (la correzione adattiva fallisce e il messaggio finisce nel feedback), testo diverso. `credit_message`, `credit_change` e `reason` coincidono.",
+    "detail": "nostro [{\"message\":\"There was an error in the adaptive marking for this part. Please report this. Can't find part p1.\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}] vs oracolo [{\"message\":\"There was an error in the adaptive marking for this part. Please report this. Question 1: Can't find part p1.\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}]",
+    "divergence": "`Question#getPart` (`question.js:1202-1213`) + `errorCarriedForwardScope` — parte riferita inesistente (`part.js:1637`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/09",
+    "path": "p0",
+    "field": "invio.feedback[sbagliata]",
+    "reason": "Come sopra: la risposta data non cambia il ramo d'errore.",
+    "detail": "nostro [{\"message\":\"There was an error in the adaptive marking for this part. Please report this. Can't find part p1.\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}] vs oracolo [{\"message\":\"There was an error in the adaptive marking for this part. Please report this. Question 1: Can't find part p1.\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}]",
+    "divergence": "`Question#getPart` (`question.js:1202-1213`) + `errorCarriedForwardScope` — parte riferita inesistente (`part.js:1637`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/09",
+    "path": "p0",
+    "field": "invio.feedback[parziale]",
+    "reason": "Come sopra: la parte riferita non esiste comunque.",
+    "detail": "nostro [{\"message\":\"There was an error in the adaptive marking for this part. Please report this. Can't find part p1.\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}] vs oracolo [{\"message\":\"There was an error in the adaptive marking for this part. Please report this. Question 1: Can't find part p1.\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}]",
+    "divergence": "`Question#getPart` (`question.js:1202-1213`) + `errorCarriedForwardScope` — parte riferita inesistente (`part.js:1637`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/12",
+    "path": "p0",
+    "field": "invio.feedback[corretta]",
+    "reason": "Uno script di correzione che riferisce un nome che non è una nota (`mark: apply(z)`): upstream va in `TypeError` dentro `compute_note` (`todo[name].vars` su `undefined`) e lo riavvolge in `jme.variables.error computing dependency` («Error computing referenced variable z»); il port propaga l'errore vero, `jme.variables.variable not defined` («Variable z is not defined»). Stesso effetto — la nota `mark` fallisce e la parte non è valida — messaggio più preciso.",
+    "detail": "nostro [{\"message\":\"Variable z is not defined\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}] vs oracolo [{\"message\":\"Error computing referenced variable <code>z</code>\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}]",
+    "divergence": "`compute_note`, nome che non è una nota (`marking.js:545`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/12",
+    "path": "p0",
+    "field": "invio.feedback[sbagliata]",
+    "reason": "Come sopra: la risposta data non cambia il ramo d'errore.",
+    "detail": "nostro [{\"message\":\"Variable z is not defined\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}] vs oracolo [{\"message\":\"Error computing referenced variable <code>z</code>\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}]",
+    "divergence": "`compute_note`, nome che non è una nota (`marking.js:545`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/12",
+    "path": "p0",
+    "field": "invio.feedback[parziale]",
+    "reason": "Come sopra: la domanda ha una parte sola, quindi la variante coincide con quella non risposta.",
+    "detail": "nostro [{\"message\":\"Variable z is not defined\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}] vs oracolo [{\"message\":\"Error computing referenced variable <code>z</code>\",\"credit_message\":\"\",\"credit_change\":\"\",\"reason\":\"\"}]",
+    "divergence": "`compute_note`, nome che non è una nota (`marking.js:545`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/12",
+    "path": "p0",
+    "field": "invio.warnings[corretta]",
+    "reason": "Lo stesso messaggio della riga sopra: `markAgainstScope` (part.js:1561-1565) lo mette sia nel feedback sia negli avvisi, quindi la stessa divergenza si vede due volte.",
+    "detail": "nostro [\"Variable z is not defined\"] vs oracolo [\"Error computing referenced variable <code>z</code>\"]",
+    "divergence": "`compute_note`, nome che non è una nota (`marking.js:545`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/12",
+    "path": "p0",
+    "field": "invio.warnings[sbagliata]",
+    "reason": "Come sopra.",
+    "detail": "nostro [\"Variable z is not defined\"] vs oracolo [\"Error computing referenced variable <code>z</code>\"]",
+    "divergence": "`compute_note`, nome che non è una nota (`marking.js:545`)",
+    "since": "2026-09-03"
+  },
+  {
+    "test": "marking",
+    "fixture": "upstream/12",
+    "path": "p0",
+    "field": "invio.warnings[parziale]",
+    "reason": "Come sopra.",
+    "detail": "nostro [\"Variable z is not defined\"] vs oracolo [\"Error computing referenced variable <code>z</code>\"]",
+    "divergence": "`compute_note`, nome che non è una nota (`marking.js:545`)",
+    "since": "2026-09-03"
+  }
+]

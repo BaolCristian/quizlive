@@ -1,0 +1,25 @@
+{
+  "name": "Equazione della retta",
+  "statement": "<p>Una retta passa per il punto \\((0,\\var{q})\\) e ha coefficiente angolare \\(\\var{m}\\).</p>",
+  "variables": {
+    "m": { "name": "m", "definition": "random(-5..5 except 0)" },
+    "q": { "name": "q", "definition": "random(-8..8)" }
+  },
+  "parts": [
+    {
+      "type": "jme",
+      "marks": 3,
+      "prompt": "<p>Scrivi \\(y\\) in funzione di \\(x\\).</p>",
+      "answer": "{m}*x + {q}",
+      "showPreview": true,
+      "checkingType": "absdiff",
+      "checkingAccuracy": 0.001,
+      "failureRate": 1,
+      "vsetRangePoints": 5,
+      "vsetRange": [0, 1],
+      "checkVariableNames": true,
+      "expectedVariableNames": ["x"],
+      "valuegenerators": [{ "name": "x", "value": "" }]
+    }
+  ]
+}

@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     // Workspace locali e strumenti: non sono sorgenti del repo.
     ".worktrees/**",
     ".claire/**",
+    // Bundle Numbas vendorizzato/scaricato: non è sorgente nostro.
+    "packages/engine/oracle/**",
+    ".numbas-upstream/**",
   ]),
 ]);
 

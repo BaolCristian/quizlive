@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "noEmit": true,
+    "types": ["node"],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    // gli script generatori sotto `scripts/engine/` sono `.mjs` senza tipi: il
+    // test del modulo generato li importa, e `allowJs` (senza `checkJs`) basta
+    // a risolverli qui come già fa la configurazione dell'applicazione.
+    "allowJs": true
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

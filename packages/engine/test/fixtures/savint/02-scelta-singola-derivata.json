@@ -1,0 +1,33 @@
+{
+  "name": "Derivata di una potenza",
+  "statement": "<p>Sia \\(f(x) = x^{\\var{n}}\\) una funzione definita su \\(\\mathbb{R}\\).</p>",
+  "variables": {
+    "n": { "name": "n", "definition": "random(3..7)" }
+  },
+  "parts": [
+    {
+      "type": "1_n_2",
+      "marks": 0,
+      "prompt": "<p>Quale delle seguenti è la derivata \\(f'(x)\\)?</p>",
+      "shuffleChoices": true,
+      "displayType": "radiogroup",
+      "displayColumns": 0,
+      "minMarks": 0,
+      "maxMarks": 0,
+      "showCellAnswerState": true,
+      "choices": [
+        "\\(\\var{n}x^{\\var{n-1}}\\)",
+        "\\(x^{\\var{n-1}}\\)",
+        "\\(\\var{n}x^{\\var{n}}\\)",
+        "\\(\\frac{x^{\\var{n+1}}}{\\var{n+1}}\\)"
+      ],
+      "matrix": ["2", 0, 0, 0],
+      "distractors": [
+        "",
+        "Manca il coefficiente dato dall'esponente.",
+        "L'esponente va abbassato di uno.",
+        "Questa è una primitiva, non la derivata."
+      ]
+    }
+  ]
+}

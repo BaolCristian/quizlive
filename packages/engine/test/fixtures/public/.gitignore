@@ -1,0 +1,3 @@
+# Le domande scaricate dal database pubblico sono opera di terzi: si tengono
+# in locale, non nel repository. Vedi README.md.
+*.json

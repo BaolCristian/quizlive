@@ -1,0 +1,12 @@
+# Un URL di domanda del database pubblico dell'editor Numbas per riga
+# (https://numbas.mathcentre.ac.uk/question/<id>/<slug>/). Le righe vuote e
+# quelle che iniziano con `#` sono ignorate.
+#
+# `scripts/engine/fetch-public-questions.sh` scarica solo le domande con
+# licenza CC BY: le altre vengono saltate con un messaggio. Aggiungere qui gli
+# URL che si vogliono nel corpus; i JSON scaricati NON vanno committati
+# (`.gitignore` li esclude), perché sono opera di terzi.
+#
+# Esempio (questa è CC BY-NC-SA, quindi lo script la salta: serve solo a
+# provare che il meccanismo funziona):
+# https://numbas.mathcentre.ac.uk/question/212094/equations-du-2e-degre/
