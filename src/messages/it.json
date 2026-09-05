@@ -1079,6 +1079,26 @@
     "rispostaEspressione": "La tua espressione",
     "segnapostoTesto": "es. gatto",
     "segnapostoEspressione": "es. 2*x + 1",
-    "cellaGriglia": "Riga {riga}, colonna {colonna}"
+    "cellaGriglia": "Riga {riga}, colonna {colonna}",
+    "invia": "Invia",
+    "avanti": "Avanti",
+    "riprova": "Riprova",
+    "completa": "Completa il tentativo",
+    "punteggio": "Punteggio",
+    "riepilogo": "Riepilogo",
+    "caricamento": "Caricamento dell'esercizio…",
+    "erroreCaricamento": "Non è stato possibile caricare l'esercizio.",
+    "erroreRete": "Non è stato possibile inviare la risposta. Controlla la connessione e riprova.",
+    "rispostaCorretta": "Risposta corretta",
+    "rispostaSbagliata": "Risposta sbagliata",
+    "tentativoCompletato": "Tentativo completato.",
+    "mostraSoluzione": "Mostra la soluzione",
+    "titoloDocente": "Esercizi",
+    "titoloStudente": "I tuoi esercizi",
+    "annoArgomento": "Classe {anno} · {argomento}",
+    "difficolta": "Difficoltà {livello}",
+    "versione": "Versione {numero}",
+    "nessunEsercizio": "Non ci sono ancora esercizi disponibili.",
+    "tentativoInCorso": "Tentativo in corso: {score}/{maxScore}"
   }
 }

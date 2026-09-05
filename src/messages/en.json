@@ -1079,6 +1079,26 @@
     "rispostaEspressione": "Your expression",
     "segnapostoTesto": "e.g. cat",
     "segnapostoEspressione": "e.g. 2*x + 1",
-    "cellaGriglia": "Row {riga}, column {colonna}"
+    "cellaGriglia": "Row {riga}, column {colonna}",
+    "invia": "Submit",
+    "avanti": "Next",
+    "riprova": "Retry",
+    "completa": "Complete the attempt",
+    "punteggio": "Score",
+    "riepilogo": "Summary",
+    "caricamento": "Loading the exercise…",
+    "erroreCaricamento": "The exercise could not be loaded.",
+    "erroreRete": "Could not send the answer. Check your connection and try again.",
+    "rispostaCorretta": "Correct answer",
+    "rispostaSbagliata": "Wrong answer",
+    "tentativoCompletato": "Attempt completed.",
+    "mostraSoluzione": "Show solution",
+    "titoloDocente": "Exercises",
+    "titoloStudente": "Your exercises",
+    "annoArgomento": "Year {anno} · {argomento}",
+    "difficolta": "Difficulty {livello}",
+    "versione": "Version {numero}",
+    "nessunEsercizio": "No exercises are available yet.",
+    "tentativoInCorso": "Attempt in progress: {score}/{maxScore}"
   }
 }
