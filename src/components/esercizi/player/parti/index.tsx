@@ -32,12 +32,39 @@ export interface InputParteProps {
   valore: Answer;
   onChange: (v: Answer) => void;
   disabilitato: boolean;
+  /** Vero per uno spazio di un `gapfill` reso al posto del suo segnaposto
+   * `[[n]]`, in mezzo al testo del prompt: i contenitori diventano `span` e
+   * il campo si restringe, così la riga continua a leggersi come una frase
+   * invece di spezzarsi. */
+  inLinea?: boolean;
 }
 
 /** Dispatcher: rende il prompt una volta sola, poi il campo di input del
- * tipo giusto. I singoli campi non ripetono il prompt. */
+ * tipo giusto. I singoli campi non ripetono il prompt.
+ *
+ * Il `gapfill` è l'eccezione: il suo prompt contiene i segnaposti degli
+ * spazi, quindi è `InputGapfill` a renderlo — testo e campi si intrecciano e
+ * non si possono mettere uno sopra l'altro. */
 export function InputParte(props: InputParteProps) {
-  const { parte } = props;
+  const { parte, inLinea } = props;
+
+  if (parte.type === "gapfill") {
+    return (
+      <div className="space-y-2" data-parte={parte.path}>
+        <InputGapfill {...props} />
+      </div>
+    );
+  }
+
+  if (inLinea) {
+    return (
+      <span className="inline-flex items-center gap-2 align-middle" data-parte={parte.path}>
+        <ContenutoHtml html={parte.promptHtml} />
+        {campo(props)}
+      </span>
+    );
+  }
+
   return (
     <div className="space-y-2" data-parte={parte.path}>
       <ContenutoHtml html={parte.promptHtml} />
@@ -60,8 +87,6 @@ function campo(props: InputParteProps) {
       return <InputSceltaMultipla {...props} />;
     case "m_n_x":
       return <InputGriglia {...props} />;
-    case "gapfill":
-      return <InputGapfill {...props} />;
     case "information":
       return null;
     default:

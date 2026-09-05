@@ -6,11 +6,11 @@ import type { InputParteProps } from "./index";
 
 /** `jme`: la risposta è un'espressione matematica in sintassi JME, testo
  * libero (lettere, operatori, parentesi: non un `inputMode` numerico). */
-export function InputEspressione({ parte, valore, onChange, disabilitato }: InputParteProps) {
+export function InputEspressione({ parte, valore, onChange, disabilitato, inLinea }: InputParteProps) {
   const t = useTranslations("esercizi");
   const id = `campo-${parte.path}`;
-  return (
-    <div className="flex items-center gap-2">
+  const contenuto = (
+    <>
       <label htmlFor={id} className="sr-only">
         {t("rispostaEspressione")}
       </label>
@@ -18,11 +18,20 @@ export function InputEspressione({ parte, valore, onChange, disabilitato }: Inpu
         id={id}
         inputMode="text"
         autoComplete="off"
-        placeholder={t("segnapostoEspressione")}
+        placeholder={inLinea ? undefined : t("segnapostoEspressione")}
+        className={inLinea ? "w-40" : undefined}
         value={typeof valore === "string" ? valore : ""}
         disabled={disabilitato}
         onChange={(e) => onChange(e.target.value)}
       />
-    </div>
+    </>
+  );
+
+  // Vedi `numero.tsx`: in linea il contenitore è un `span`, perché il campo
+  // sta dentro la frase del prompt di un gapfill.
+  return inLinea ? (
+    <span className="inline-flex items-center gap-2 align-middle">{contenuto}</span>
+  ) : (
+    <div className="flex items-center gap-2">{contenuto}</div>
   );
 }

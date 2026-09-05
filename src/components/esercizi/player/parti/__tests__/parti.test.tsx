@@ -111,6 +111,47 @@ describe("InputParte", () => {
     expect(onChange).toHaveBeenLastCalledWith(["", "7"]);
   });
 
+  // Onda finale, punto 3: il prompt di 03-sistemi-lineari è
+  // `<p>\(x = \) [[0]], \(y = \) [[1]]</p>` e lo studente lo leggeva
+  // esattamente così, con due caselle nude sotto: quale fosse la x si poteva
+  // solo dedurre dalla posizione. I segnaposti li deve sostituire il player
+  // (il motore li lascia stare di proposito).
+  it("gapfill: ogni campo prende il posto del suo segnaposto nel testo", () => {
+    const parte = { ...base, type: "gapfill", promptHtml: "<p>Prima [[0]] in mezzo [[1]] dopo</p>", gaps: [
+      { path: "p0g0", type: "numberentry", promptHtml: "", marks: 1 },
+      { path: "p0g1", type: "numberentry", promptHtml: "", marks: 1 },
+    ] } as PartePubblica;
+    const { container } = renderIntl(
+      <InputParte parte={parte} valore={["", ""]} onChange={vi.fn()} disabilitato={false} />,
+    );
+
+    // Nessun segnaposto resta a schermo.
+    expect(container.textContent).not.toContain("[[0]]");
+    expect(container.textContent).not.toContain("[[1]]");
+
+    // E i campi sono davvero intercalati al testo, nell'ordine giusto:
+    // impilarli sotto il prompt farebbe fallire queste disuguaglianze.
+    const html = container.innerHTML;
+    const posizioni = [
+      html.indexOf("Prima"),
+      html.indexOf('data-parte="p0g0"'),
+      html.indexOf("in mezzo"),
+      html.indexOf('data-parte="p0g1"'),
+      html.indexOf("dopo"),
+    ];
+    expect(posizioni.every((p) => p >= 0)).toBe(true);
+    expect([...posizioni].sort((a, b) => a - b)).toEqual(posizioni);
+  });
+
+  it("gapfill: se il prompt non nomina tutti gli spazi, i campi restano visibili", () => {
+    const parte = { ...base, type: "gapfill", promptHtml: "<p>Solo il primo: [[0]]</p>", gaps: [
+      { path: "p0g0", type: "numberentry", promptHtml: "", marks: 1 },
+      { path: "p0g1", type: "numberentry", promptHtml: "", marks: 1 },
+    ] } as PartePubblica;
+    renderIntl(<InputParte parte={parte} valore={["", ""]} onChange={vi.fn()} disabilitato={false} />);
+    expect(screen.getAllByRole("textbox")).toHaveLength(2);
+  });
+
   it("information: nessun campo da compilare", () => {
     const parte = { ...base, type: "information" } as PartePubblica;
     renderIntl(<InputParte parte={parte} valore={null} onChange={vi.fn()} disabilitato={false} />);

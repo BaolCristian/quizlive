@@ -123,25 +123,75 @@ function dividiFormule(testo: string): ReactNode[] {
   return pezzi;
 }
 
-function rendi(nodo: Node, chiave: number): ReactNode {
+/** Il segnaposto di uno spazio nel prompt di un `gapfill`: `[[0]]`, `[[1]]`,
+ * … Il motore non li tocca di proposito (sono una questione di
+ * presentazione, e lui non ne ha una): finché il player non li sostituiva, il
+ * prompt di 03-sistemi-lineari arrivava allo studente com'era scritto —
+ * `\(x = \) [[0]], \(y = \) [[1]]` — con due caselle senza etichetta sotto,
+ * e quale delle due fosse la x si poteva solo indovinare dalla posizione. */
+const SEGNAPOSTO = /\[\[(\d+)\]\]/g;
+const CONTIENE_SEGNAPOSTO = /\[\[\d+\]\]/;
+
+/** Divide un nodo di testo tenendo conto dei segnaposti, quando ce ne sono da
+ * sostituire. Un `[[n]]` senza un elemento corrispondente in `segnaposti` non
+ * è nostro e resta testo. */
+function dividiTesto(testo: string, segnaposti: ReactNode[] | undefined): ReactNode[] {
+  if (!segnaposti) return dividiFormule(testo);
+
+  const pezzi: ReactNode[] = [];
+  let ultimo = 0;
+  let k = 0;
+  for (const trovato of testo.matchAll(SEGNAPOSTO)) {
+    const indice = Number(trovato[1]);
+    const campo = segnaposti[indice];
+    if (campo === undefined) continue;
+    if (trovato.index > ultimo) {
+      pezzi.push(<Fragment key={`t${k++}`}>{dividiFormule(testo.slice(ultimo, trovato.index))}</Fragment>);
+    }
+    pezzi.push(<Fragment key={`c${k++}`}>{campo}</Fragment>);
+    ultimo = trovato.index + trovato[0].length;
+  }
+  pezzi.push(<Fragment key={`t${k++}`}>{dividiFormule(testo.slice(ultimo))}</Fragment>);
+  return pezzi;
+}
+
+function rendi(nodo: Node, chiave: number, segnaposti?: ReactNode[]): ReactNode {
   if (nodo.nodeType === Node.TEXT_NODE) {
-    return <Fragment key={chiave}>{dividiFormule(nodo.textContent ?? "")}</Fragment>;
+    return <Fragment key={chiave}>{dividiTesto(nodo.textContent ?? "", segnaposti)}</Fragment>;
   }
   if (nodo.nodeType !== Node.ELEMENT_NODE) return null;
   const el = nodo as Element;
-  const Tag = el.tagName.toLowerCase() as keyof JSX.IntrinsicElements;
+  // Un paragrafo che ospita gli spazi di un gapfill diventa un `div`: un
+  // campo a scelta multipla porta con sé il suo contenitore, e un `<div>`
+  // non è contenuto valido di `<p>` (React lo segnala, e il parser HTML
+  // chiuderebbe il paragrafo in anticipo se la pagina fosse resa dal
+  // server). Fuori dal caso gapfill nulla cambia: senza `segnaposti` questo
+  // ramo non si attiva mai.
+  const nome =
+    segnaposti && el.tagName === "P" && CONTIENE_SEGNAPOSTO.test(el.textContent ?? "")
+      ? "div"
+      : el.tagName.toLowerCase();
+  const Tag = nome as keyof JSX.IntrinsicElements;
   const className = el.getAttribute("class") ?? undefined;
   if (TAG_VUOTI.has(el.tagName)) {
     return <Tag key={chiave} className={className} />;
   }
-  const figli = Array.from(el.childNodes).map((n, i) => rendi(n, i));
+  const figli = Array.from(el.childNodes).map((n, i) => rendi(n, i, segnaposti));
   return <Tag key={chiave} className={className}>{figli}</Tag>;
 }
 
-export function ContenutoHtml({ html }: { html: string }) {
+export interface ContenutoHtmlProps {
+  html: string;
+  /** Gli elementi con cui sostituire i segnaposti `[[n]]` del testo, in
+   * ordine di indice (il campo dello spazio 0 in posizione 0, e così via).
+   * Omesso — il caso normale — i `[[n]]` restano testo come qualunque altro. */
+  segnaposti?: ReactNode[];
+}
+
+export function ContenutoHtml({ html, segnaposti }: ContenutoHtmlProps) {
   if (!html) return null;
   const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
   const radice = doc.body.firstElementChild!;
   ripulisci(radice);
-  return <>{Array.from(radice.childNodes).map((n, i) => rendi(n, i))}</>;
+  return <>{Array.from(radice.childNodes).map((n, i) => rendi(n, i, segnaposti))}</>;
 }
