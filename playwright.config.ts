@@ -1,6 +1,10 @@
 import { defineConfig } from "@playwright/test";
 
-const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3000);
+// 3100, non 3000: la 3000 è la porta dell'utente, e con
+// `reuseExistingServer: true` una prova lanciata senza pensarci si
+// attaccherebbe a qualunque cosa vi stia già girando — girando i test contro
+// un'applicazione che non è quella del worktree, e scrivendone il database.
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
