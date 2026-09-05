@@ -123,6 +123,7 @@ model User {
   reportsResolved Report[]      @relation("reportsResolved")
   hubLink         HubLink?
   publishDefaults PublishDefaults?
+  tentativi       Tentativo[]
 }
 
 model Account {
@@ -577,4 +578,58 @@ model HubConfig {
   hubUrl       String
   connectedAt  DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model Esercizio {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  authorId    String?
+  yearLevel   Int
+  topic       String
+  tags        String[]
+  difficulty  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  versions    EsercizioVersione[]
+
+  @@index([yearLevel, topic])
+}
+
+model EsercizioVersione {
+  id          String   @id @default(cuid())
+  esercizioId String
+  version     Int
+  content     Json
+  hash        String
+  createdAt   DateTime @default(now())
+  esercizio   Esercizio @relation(fields: [esercizioId], references: [id], onDelete: Cascade)
+  tentativi   Tentativo[]
+
+  @@unique([esercizioId, version])
+}
+
+enum TentativoStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Tentativo {
+  id                  String   @id @default(cuid())
+  studentId           String
+  esercizioVersioneId String
+  compitoId           String?
+  seed                String
+  state               Json?
+  score               Float    @default(0)
+  maxScore            Float    @default(0)
+  status              TentativoStatus @default(IN_PROGRESS)
+  startedAt           DateTime @default(now())
+  completedAt         DateTime?
+  lastActivityAt      DateTime @updatedAt
+  student             User @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  versione            EsercizioVersione @relation(fields: [esercizioVersioneId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, esercizioVersioneId])
+  @@index([lastActivityAt])
 }
