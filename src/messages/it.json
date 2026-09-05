@@ -1101,6 +1101,8 @@
     "difficolta": "Difficoltà {livello}",
     "versione": "Versione {numero}",
     "nessunEsercizio": "Non ci sono ancora esercizi disponibili.",
-    "tentativoInCorso": "Tentativo in corso: {score}/{maxScore}"
+    "tentativoInCorso": "Tentativo in corso: {score}/{maxScore}",
+    "tentativoAperto": "Tentativo in corso",
+    "ultimoTentativo": "Ultimo tentativo: {score}/{maxScore}"
   }
 }

@@ -1101,6 +1101,8 @@
     "difficolta": "Difficulty {livello}",
     "versione": "Version {numero}",
     "nessunEsercizio": "No exercises are available yet.",
-    "tentativoInCorso": "Attempt in progress: {score}/{maxScore}"
+    "tentativoInCorso": "Attempt in progress: {score}/{maxScore}",
+    "tentativoAperto": "Attempt in progress",
+    "ultimoTentativo": "Last attempt: {score}/{maxScore}"
   }
 }

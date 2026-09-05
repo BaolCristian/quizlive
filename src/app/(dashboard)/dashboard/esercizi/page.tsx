@@ -21,7 +21,11 @@ export default async function Page() {
         <ul className="grid gap-3">
           {esercizi.map((e) => (
             <li key={e.id}>
-              <Card className="flex items-center justify-between p-4">
+              {/* `Card` fissa `flex flex-col`: senza `flex-row` la classe
+                  `items-center justify-between` passata qui sopravvive alla
+                  fusione ma agisce sull'asse sbagliato, e ogni riga finisce
+                  centrata con i bordi sinistri sfrangiati. */}
+              <Card className="flex-row items-center justify-between p-4">
                 <div>
                   <p className="font-medium">{e.title}</p>
                   <p className="text-sm text-muted-foreground">

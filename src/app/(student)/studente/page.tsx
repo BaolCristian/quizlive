@@ -6,6 +6,26 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/client";
 import { Card } from "@/components/ui/card";
 
+type Traduttore = (chiave: string, valori?: Record<string, string | number>) => string;
+type StatoTentativo = { status: string; score: number; maxScore: number };
+
+/** Cosa dire dell'ultimo tentativo di uno studente su un esercizio.
+ *
+ * L'elenco prendeva il tentativo più recente senza guardarne lo stato e lo
+ * annunciava sempre come "Tentativo in corso: {score}/{maxScore}", due volte
+ * in contrasto col dominio: un tentativo CHIUSO veniva detto in corso, e un
+ * tentativo appena aperto mostrava "0/0", perché il massimo lo scrive il
+ * server solo quando arriva la prima risposta (`applicaRisposta`) e fino ad
+ * allora la colonna vale zero — un massimo che non è mai stato zero per
+ * nessun esercizio. */
+function statoTentativo(t: Traduttore, tentativo: StatoTentativo): string {
+  const punteggi = { score: tentativo.score, maxScore: tentativo.maxScore };
+  if (tentativo.status === "COMPLETED") return t("ultimoTentativo", punteggi);
+  // Aperto ma senza nessuna risposta: non c'è ancora un massimo da mostrare.
+  if (tentativo.maxScore <= 0) return t("tentativoAperto");
+  return t("tentativoInCorso", punteggi);
+}
+
 export default async function StudentHomePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -50,7 +70,7 @@ export default async function StudentHomePage() {
             return (
               <li key={e.id}>
                 <Link href={`/studente/esercizio/${e.id}`} className="block">
-                  <Card className="flex items-center justify-between gap-4 p-4 transition hover:bg-muted/50">
+                  <Card className="flex-row items-center justify-between gap-4 p-4 transition hover:bg-muted/50">
                     <div>
                       <p className="font-medium text-slate-900">{e.title}</p>
                       <p className="text-sm text-muted-foreground">
@@ -60,7 +80,7 @@ export default async function StudentHomePage() {
                       </p>
                       {tentativo && (
                         <p className="mt-1 text-sm font-medium text-brand-blue">
-                          {t("tentativoInCorso", { score: tentativo.score, maxScore: tentativo.maxScore })}
+                          {statoTentativo(t, tentativo)}
                         </p>
                       )}
                     </div>
