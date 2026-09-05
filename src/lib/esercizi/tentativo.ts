@@ -57,12 +57,21 @@ type EsitoRisposta =
 
 /** Applica una risposta e riscrive il punteggio con quello che calcola il
  * server. Lo stato del client serve solo a ricostruire le risposte: i numeri
- * che dichiara non vengono mai copiati sul database. */
+ * che dichiara non vengono mai copiati sul database.
+ *
+ * `_answer` non entra nel calcolo: è nella firma per rispecchiare la singola
+ * risposta appena data dal punto di vista del chiamante (ed è quel che la
+ * rotta HTTP riceve come campo separato), ma la ricostruzione lavora solo su
+ * `statoClient` — la risposta che conta è quella già dentro
+ * `statoClient.parts[].answer` al percorso `partPath`. Non verificare che i
+ * due coincidano è deliberato: un disallineamento non può comunque gonfiare
+ * il punteggio, perché quello lo ricalcola sempre `ricalcola()` dal seme del
+ * tentativo, mai da un valore dichiarato dal client. */
 export async function applicaRisposta(
   tentativoId: string,
   studentId: string,
   partPath: string,
-  answer: Answer,
+  _answer: Answer,
   statoClient: QuestionState | null,
   locale: Locale,
 ): Promise<EsitoRisposta> {

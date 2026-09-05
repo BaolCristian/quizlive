@@ -5,8 +5,16 @@ import path from "path";
 import { prisma } from "@/lib/db/client";
 import { seedEsercizi } from "../seed";
 
+// Prefisso unico di questo file: Vitest esegue i file di test in parallelo e
+// più file toccano le stesse tabelle. Un `deleteMany()` senza filtro (come
+// c'era qui prima) cancella anche le righe che un altro file sta scrivendo
+// nello stesso istante — vedi `tentativo.test.ts`, che ci è cascato dentro.
+// Filtrando ogni cancellazione e ogni asserzione su questo prefisso, il file
+// possiede le proprie righe e non tocca quelle di nessun altro.
+const PREFIX = "seedtest-";
+
 function scriviEsercizio(dir: string, nome: string, titolo: string, question: unknown) {
-  writeFileSync(path.join(dir, nome), JSON.stringify({
+  writeFileSync(path.join(dir, `${PREFIX}${nome}`), JSON.stringify({
     savint: { version: 1, title: titolo, yearLevel: 1, topic: "prova", tags: [], difficulty: 1 },
     question,
   }));
@@ -18,9 +26,10 @@ const domanda = { name: "Prova", statement: "<p>Quanto fa 1+1?</p>", variables: 
 
 describe("seed degli esercizi", () => {
   beforeEach(async () => {
-    await prisma.tentativo.deleteMany();
-    await prisma.esercizioVersione.deleteMany();
-    await prisma.esercizio.deleteMany();
+    // L'eliminazione a cascata (Esercizio → EsercizioVersione → Tentativo) è
+    // a livello di database (vedi le migrazioni): basta cancellare Esercizio.
+    // Questo file non crea comunque nessun Tentativo.
+    await prisma.esercizio.deleteMany({ where: { id: { startsWith: PREFIX } } });
   });
 
   it("crea esercizio e prima versione", async () => {
@@ -28,7 +37,7 @@ describe("seed degli esercizi", () => {
     scriviEsercizio(dir, "01-prova.json", "Prova", domanda);
     const r = await seedEsercizi(dir);
     expect(r).toEqual({ creati: 1, aggiornati: 0, invariati: 0 });
-    const versioni = await prisma.esercizioVersione.findMany();
+    const versioni = await prisma.esercizioVersione.findMany({ where: { esercizioId: { startsWith: PREFIX } } });
     expect(versioni).toHaveLength(1);
     expect(versioni[0]!.version).toBe(1);
   });
@@ -39,7 +48,7 @@ describe("seed degli esercizi", () => {
     await seedEsercizi(dir);
     const r = await seedEsercizi(dir);
     expect(r).toEqual({ creati: 0, aggiornati: 0, invariati: 1 });
-    expect(await prisma.esercizioVersione.count()).toBe(1);
+    expect(await prisma.esercizioVersione.count({ where: { esercizioId: { startsWith: PREFIX } } })).toBe(1);
   });
 
   it("un contenuto cambiato alza la versione e lascia la vecchia", async () => {
@@ -49,7 +58,10 @@ describe("seed degli esercizi", () => {
     scriviEsercizio(dir, "01-prova.json", "Prova", { ...domanda, statement: "<p>Cambiato</p>" });
     const r = await seedEsercizi(dir);
     expect(r).toEqual({ creati: 0, aggiornati: 1, invariati: 0 });
-    const versioni = await prisma.esercizioVersione.findMany({ orderBy: { version: "asc" } });
+    const versioni = await prisma.esercizioVersione.findMany({
+      where: { esercizioId: { startsWith: PREFIX } },
+      orderBy: { version: "asc" },
+    });
     expect(versioni.map((v) => v.version)).toEqual([1, 2]);
   });
 
@@ -64,7 +76,7 @@ describe("seed degli esercizi", () => {
     scriviEsercizio(dir, "01-buono.json", "Buono", domanda);
     scriviEsercizio(dir, "02-rotta.json", "Rotta", { name: "x", partsMode: "explore", parts: [] });
     await expect(seedEsercizi(dir)).rejects.toThrow(/02-rotta\.json/);
-    expect(await prisma.esercizio.count()).toBe(0);
-    expect(await prisma.esercizioVersione.count()).toBe(0);
+    expect(await prisma.esercizio.count({ where: { id: { startsWith: PREFIX } } })).toBe(0);
+    expect(await prisma.esercizioVersione.count({ where: { esercizioId: { startsWith: PREFIX } } })).toBe(0);
   });
 });
