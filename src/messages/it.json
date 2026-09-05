@@ -54,8 +54,6 @@
   "student": {
     "areaTitle": "Area studente",
     "greeting": "Ciao, {name}",
-    "comingSoonTitle": "Qui troverai i tuoi esercizi",
-    "comingSoonBody": "Stiamo preparando la palestra di matematica. Quando il tuo docente assegnerà i primi esercizi, li vedrai in questa pagina.",
     "logout": "Esci"
   },
   "dashboard": {

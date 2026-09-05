@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
 import { readFileSync } from "fs";
 import path from "path";
-import { loadQuestion, type NumbasQuestionJSON } from "@savint/engine";
+import type { NumbasQuestionJSON } from "@savint/engine";
 import messaggiIt from "@/messages/it.json";
 import { PlayerEsercizio } from "../player-esercizio";
 

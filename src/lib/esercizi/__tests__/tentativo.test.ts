@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { mkdtempSync, readFileSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
@@ -36,6 +36,16 @@ beforeEach(async () => {
   );
   writeFileSync(path.join(dir, `${ESERCIZIO_ID}.json`), originale);
   await seedEsercizi(dir);
+});
+
+// La pulizia c'era solo PRIMA di ogni test, quindi le righe dell'ultimo
+// sopravvivevano alla corsa: un esercizio `tenttest-` è rimasto per giorni
+// nel database di sviluppo, e comparso allo studente nel suo elenco come un
+// doppione dell'esercizio vero. Quello che si crea qui va tolto anche alla
+// fine.
+afterAll(async () => {
+  await prisma.esercizio.deleteMany({ where: { id: { startsWith: PREFIX } } });
+  await prisma.user.deleteMany({ where: { email: { in: ["s1@test.it", "s2@test.it"] } } });
 });
 
 describe("ciclo di vita del tentativo", () => {

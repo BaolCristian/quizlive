@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { mkdtempSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
@@ -29,6 +29,14 @@ describe("seed degli esercizi", () => {
     // L'eliminazione a cascata (Esercizio → EsercizioVersione → Tentativo) è
     // a livello di database (vedi le migrazioni): basta cancellare Esercizio.
     // Questo file non crea comunque nessun Tentativo.
+    await prisma.esercizio.deleteMany({ where: { id: { startsWith: PREFIX } } });
+  });
+
+  // La pulizia c'era solo PRIMA di ogni test: le righe dell'ultimo
+  // sopravvivevano alla corsa e restavano nel database di sviluppo (vedi il
+  // commento gemello in `tentativo.test.ts`, dove un esercizio residuo è
+  // finito sotto gli occhi di uno studente).
+  afterAll(async () => {
     await prisma.esercizio.deleteMany({ where: { id: { startsWith: PREFIX } } });
   });
 
