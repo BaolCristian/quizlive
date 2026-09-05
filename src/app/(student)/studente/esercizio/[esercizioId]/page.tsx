@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { auth } from "@/lib/auth/config";
 import { avviaORiprendi } from "@/lib/esercizi/tentativo";
-import { PlayerEsercizio } from "@/components/esercizi/player/player-esercizio";
+import { PlayerEsercizioLazy } from "@/components/esercizi/player/player-esercizio-lazy";
 
 export default async function Page({ params }: { params: Promise<{ esercizioId: string }> }) {
   const session = await auth();
@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: Promise<{ esercizioId: 
   const locale = (await getLocale()) === "en" ? "en" : "it";
 
   return (
-    <PlayerEsercizio
+    <PlayerEsercizioLazy
       tentativoId={tentativo.tentativoId}
       seed={tentativo.seed}
       content={tentativo.content}
