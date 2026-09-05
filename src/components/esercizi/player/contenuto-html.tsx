@@ -12,36 +12,114 @@ const TAG_AMMESSI = new Set([
  * ricevono `children`. `BR` è l'unico dell'allowlist. */
 const TAG_VUOTI = new Set(["BR"]);
 
+/** Elementi il cui contenuto è codice o dichiarazioni, non testo per lo
+ * studente: vanno tolti insieme al contenuto, non scompattati come un tag
+ * sconosciuto qualsiasi (fix round 1, punto 2). Un `<script>` scompattato
+ * lascerebbe il suo sorgente come testo visibile nella pagina. */
+const TAG_DA_RIMUOVERE_CON_CONTENUTO = new Set(["SCRIPT", "STYLE", "TEMPLATE"]);
+
 /** Toglie tutto ciò che non è nell'allowlist e ogni attributo che non sia
- * `class`. I contenuti oggi vengono dal repository, ma dal sotto-progetto 6
- * arriveranno da altre installazioni: meglio averla adesso. */
-function ripulisci(nodo: Element): void {
-  for (const figlio of Array.from(nodo.children)) {
-    if (!TAG_AMMESSI.has(figlio.tagName)) {
-      figlio.replaceWith(...Array.from(figlio.childNodes));
+ * `class`, garantendo che al termine OGNI elemento rimasto nell'albero sia
+ * nell'allowlist, a qualunque profondità.
+ *
+ * Non si può ottenere ricorrendo solo nei figli di un elemento ammesso: un
+ * tag fuori allowlist (`<figure>`, `<mark>`, un custom element, ...) va
+ * scompattato, ma i suoi figli — appena promossi al posto suo — vanno
+ * riesaminati da capo, perché potrebbero essere a loro volta fuori
+ * allowlist (o contenere `<script>`/`<style>` da rimuovere). Ricorrere solo
+ * nel ramo "ammesso" spegne il filtro per l'intero sottoalbero del primo tag
+ * sconosciuto incontrato: è il bug critico della prima versione, dimostrato
+ * con `<figure><style>...</style></figure>` che metteva un foglio di stile
+ * live nel documento. Qui si usa una worklist: ogni elemento promosso da uno
+ * scompattamento torna in coda per essere trattato come tutti gli altri. */
+function ripulisci(radice: Element): void {
+  const daEsaminare: Element[] = Array.from(radice.children);
+
+  while (daEsaminare.length > 0) {
+    const el = daEsaminare.pop()!;
+
+    if (TAG_DA_RIMUOVERE_CON_CONTENUTO.has(el.tagName)) {
+      el.remove();
       continue;
     }
-    for (const attr of Array.from(figlio.attributes)) {
-      if (attr.name !== "class") figlio.removeAttribute(attr.name);
+
+    if (!TAG_AMMESSI.has(el.tagName)) {
+      const figli = Array.from(el.childNodes);
+      el.replaceWith(...figli);
+      for (const figlio of figli) {
+        if (figlio.nodeType === Node.ELEMENT_NODE) daEsaminare.push(figlio as Element);
+      }
+      continue;
     }
-    ripulisci(figlio);
+
+    for (const attr of Array.from(el.attributes)) {
+      if (attr.name !== "class") el.removeAttribute(attr.name);
+    }
+    daEsaminare.push(...Array.from(el.children));
   }
+}
+
+interface FormulaTrovata {
+  inizio: number;
+  fine: number;
+  inline: boolean;
+  contenuto: string;
+}
+
+/** Cerca la prossima formula `\( \)` o `\[ \]` a partire da `da`, seguendo
+ * la profondità delle graffe invece di fermarsi al primo delimitatore di
+ * chiusura letterale che incontra.
+ *
+ * Un `\)`/`\]` che compare mentre una graffa è ancora aperta (es. dentro
+ * `\text{...}`) non è il vero terminatore: è dato, non struttura. Una regex
+ * lazy (`\\\(.*?\\\)`) non lo sa e taglia lì, lasciando il resto della
+ * formula come testo grezzo visibile (fix round 1, punto 4). */
+function trovaProssimaFormula(testo: string, da: number): FormulaTrovata | null {
+  let inizio = -1;
+  let inline = true;
+  for (let k = da; k < testo.length - 1; k++) {
+    if (testo[k] === "\\" && (testo[k + 1] === "(" || testo[k + 1] === "[")) {
+      inizio = k;
+      inline = testo[k + 1] === "(";
+      break;
+    }
+  }
+  if (inizio === -1) return null;
+
+  const chiusura = inline ? ")" : "]";
+  let profondita = 0;
+  let j = inizio + 2;
+  let contenuto = "";
+  while (j < testo.length) {
+    const c = testo[j]!;
+    if (c === "{") { profondita++; contenuto += c; j++; continue; }
+    if (c === "}") { profondita = Math.max(0, profondita - 1); contenuto += c; j++; continue; }
+    if (profondita === 0 && c === "\\" && testo[j + 1] === chiusura) {
+      return { inizio, fine: j + 2, inline, contenuto };
+    }
+    contenuto += c;
+    j++;
+  }
+  // Nessun delimitatore di chiusura a profondità zero: non è una formula
+  // valida, resta testo grezzo.
+  return null;
 }
 
 /** Divide un testo in pezzi normali e formule. */
 function dividiFormule(testo: string): ReactNode[] {
   const pezzi: ReactNode[] = [];
-  const re = /\\\((.*?)\\\)|\\\[(.*?)\\\]/gs;
   let ultimo = 0;
-  let m: RegExpExecArray | null;
   let k = 0;
-  while ((m = re.exec(testo)) !== null) {
-    if (m.index > ultimo) pezzi.push(testo.slice(ultimo, m.index));
-    const inline = m[1] !== undefined;
-    pezzi.push(<Formula key={k++} tex={(m[1] ?? m[2] ?? "").trim()} display={!inline} />);
-    ultimo = m.index + m[0].length;
+  while (ultimo < testo.length) {
+    const trovata = trovaProssimaFormula(testo, ultimo);
+    if (!trovata) {
+      pezzi.push(testo.slice(ultimo));
+      break;
+    }
+    if (trovata.inizio > ultimo) pezzi.push(testo.slice(ultimo, trovata.inizio));
+    pezzi.push(<Formula key={k++} tex={trovata.contenuto.trim()} display={!trovata.inline} />);
+    ultimo = trovata.fine;
   }
-  if (ultimo < testo.length) pezzi.push(testo.slice(ultimo));
   return pezzi;
 }
 

@@ -32,4 +32,16 @@ describe("protezione del contenuto dei \\textrm{}", () => {
     expect(() => proteggiTextrm(String.raw`\textrm{}`)).not.toThrow();
     expect(proteggiTextrm(String.raw`\textrm{}`)).toBe(String.raw`\textrm{}`);
   });
+
+  it("non conta come chiusura una graffa preceduta da backslash (fix round 1, punto 3)", () => {
+    // `\textrm{a\}b}`: la `\}` è una graffa letterale scappata (dato, non
+    // annidamento) e KaTeX la rende così com'è, senza protezione.
+    const tex = String.raw`\textrm{a\}b}`;
+    expect(() => katex.renderToString(tex, { throwOnError: true })).not.toThrow();
+    // Un contatore di profondità che non riconosce l'escape la conterebbe come
+    // chiusura del gruppo, troncando il contenuto a "a\" e lasciando "b}" a
+    // penzolare fuori da \textrm{}: la protezione introdurrebbe un fallimento
+    // che il testo grezzo non aveva.
+    expect(() => katex.renderToString(proteggiTextrm(tex), { throwOnError: true })).not.toThrow();
+  });
 });
