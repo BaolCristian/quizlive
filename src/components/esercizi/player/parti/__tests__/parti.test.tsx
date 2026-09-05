@@ -1,0 +1,126 @@
+import { useState } from "react";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { NextIntlClientProvider } from "next-intl";
+import type { Answer } from "@savint/engine";
+import it_ from "@/messages/it.json";
+import { InputParte, type PartePubblica } from "../index";
+
+const base = { path: "p0", promptHtml: "<p>Domanda</p>", marks: 1 };
+
+function renderIntl(ui: React.ReactElement) {
+  return render(
+    <NextIntlClientProvider locale="it" messages={it_}>
+      {ui}
+    </NextIntlClientProvider>,
+  );
+}
+
+/** `InputParte` è un componente controllato: senza uno stato che si
+ * aggiorna a ogni `onChange` e rimonta il valore, React ripristina il
+ * valore del campo nativo dopo ogni tasto (il valore del prop `valore` non
+ * cambia mai), e digitare più di un carattere lascerebbe solo l'ultimo.
+ * Questo wrapper riproduce come lo userà davvero la pagina del player: uno
+ * stato che tiene il valore corrente e lo ripassa al componente. */
+function NumeroControllato({ onChange }: { onChange: (v: Answer) => void }) {
+  const [valore, setValore] = useState<Answer>("");
+  const parte = { ...base, type: "numberentry" } as PartePubblica;
+  return (
+    <InputParte
+      parte={parte}
+      valore={valore}
+      onChange={(v) => {
+        setValore(v);
+        onChange(v);
+      }}
+      disabilitato={false}
+    />
+  );
+}
+
+describe("InputParte", () => {
+  it("numberentry: scrive il valore digitato", async () => {
+    const onChange = vi.fn();
+    renderIntl(<NumeroControllato onChange={onChange} />);
+    await userEvent.type(screen.getByRole("textbox"), "42");
+    expect(onChange).toHaveBeenLastCalledWith("42");
+  });
+
+  it("1_n_2: una scelta sola, manda l'indice", async () => {
+    const onChange = vi.fn();
+    const parte = { ...base, type: "1_n_2", scelte: ["<p>tre</p>", "<p>quattro</p>"] } as PartePubblica;
+    renderIntl(<InputParte parte={parte} valore={null} onChange={onChange} disabilitato={false} />);
+    await userEvent.click(screen.getAllByRole("radio")[1]!);
+    expect(onChange).toHaveBeenLastCalledWith(1);
+  });
+
+  it("m_n_2: piu' scelte, manda un vettore di booleani", async () => {
+    const onChange = vi.fn();
+    const parte = { ...base, type: "m_n_2", scelte: ["<p>a</p>", "<p>b</p>"] } as PartePubblica;
+    renderIntl(<InputParte parte={parte} valore={[false, false]} onChange={onChange} disabilitato={false} />);
+    await userEvent.click(screen.getAllByRole("checkbox")[0]!);
+    expect(onChange).toHaveBeenLastCalledWith([true, false]);
+  });
+
+  it("m_n_x: manda sempre la matrice ticks [risposta][scelta]", async () => {
+    const onChange = vi.fn();
+    const parte = { ...base, type: "m_n_x", righe: ["<p>r1</p>", "<p>r2</p>"], colonne: ["<p>c1</p>", "<p>c2</p>"] } as PartePubblica;
+    renderIntl(<InputParte parte={parte} valore={[[false, false], [false, false]]} onChange={onChange} disabilitato={false} />);
+    await userEvent.click(screen.getAllByRole("checkbox")[0]!);
+    expect(onChange).toHaveBeenLastCalledWith([[true, false], [false, false]]);
+  });
+
+  it("m_n_x: l'orientamento e' [risposta][scelta] anche su una griglia non quadrata (fallirebbe se gli indici fossero scambiati)", async () => {
+    // 2 righe (scelte) x 3 colonne (risposte): una griglia quadrata non può
+    // dimostrare l'orientamento, perché scambiare gli indici sulla cella
+    // (0,0) produce comunque lo stesso risultato. Qui la forma della matrice
+    // ([risposta][scelta] = [3][2]) e la posizione toccata sono diverse a
+    // seconda dell'orientamento, quindi un'inversione fa fallire l'asserzione
+    // finale invece di passarla per caso.
+    const onChange = vi.fn();
+    const parte = {
+      ...base,
+      type: "m_n_x",
+      righe: ["<p>r1</p>", "<p>r2</p>"],
+      colonne: ["<p>c1</p>", "<p>c2</p>", "<p>c3</p>"],
+    } as PartePubblica;
+    const vuota = [
+      [false, false],
+      [false, false],
+      [false, false],
+    ];
+    renderIntl(<InputParte parte={parte} valore={vuota} onChange={onChange} disabilitato={false} />);
+    // Riga 0 (prima <tr>), terza colonna: il terzo checkbox del DOM.
+    await userEvent.click(screen.getAllByRole("checkbox")[2]!);
+    expect(onChange).toHaveBeenLastCalledWith([
+      [false, false],
+      [false, false],
+      [true, false],
+    ]);
+  });
+
+  it("gapfill: un input per gap, manda un vettore", async () => {
+    const onChange = vi.fn();
+    const parte = { ...base, type: "gapfill", gaps: [
+      { path: "p0g0", type: "numberentry", promptHtml: "", marks: 1 },
+      { path: "p0g1", type: "numberentry", promptHtml: "", marks: 1 },
+    ] } as PartePubblica;
+    renderIntl(<InputParte parte={parte} valore={["", ""]} onChange={onChange} disabilitato={false} />);
+    await userEvent.type(screen.getAllByRole("textbox")[1]!, "7");
+    expect(onChange).toHaveBeenLastCalledWith(["", "7"]);
+  });
+
+  it("information: nessun campo da compilare", () => {
+    const parte = { ...base, type: "information" } as PartePubblica;
+    renderIntl(<InputParte parte={parte} valore={null} onChange={vi.fn()} disabilitato={false} />);
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(screen.queryByRole("checkbox")).toBeNull();
+  });
+
+  it("disabilitato: i campi non si possono toccare", () => {
+    const parte = { ...base, type: "numberentry" } as PartePubblica;
+    renderIntl(<InputParte parte={parte} valore="1" onChange={vi.fn()} disabilitato />);
+    expect(screen.getByRole("textbox")).toBeDisabled();
+  });
+});

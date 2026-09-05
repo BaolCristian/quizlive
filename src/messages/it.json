@@ -1072,5 +1072,13 @@
     "transferSuccess": "{count} quiz trasferiti a SAVINT.",
     "transferNotFound": "Nessun account registrato con questa email.",
     "transferSystemMissing": "Account SAVINT non configurato sull'hub."
+  },
+  "esercizi": {
+    "laTuaRisposta": "La tua risposta",
+    "rispostaTesto": "Scrivi la tua risposta",
+    "rispostaEspressione": "La tua espressione",
+    "segnapostoTesto": "es. gatto",
+    "segnapostoEspressione": "es. 2*x + 1",
+    "cellaGriglia": "Riga {riga}, colonna {colonna}"
   }
 }
