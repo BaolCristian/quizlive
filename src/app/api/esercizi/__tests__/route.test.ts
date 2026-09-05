@@ -12,13 +12,22 @@ vi.mock("@/lib/rate-limit/db-rate-limit", () => ({
 }));
 
 import { requireStudent } from "@/lib/auth/require-role";
-import { applicaRisposta } from "@/lib/esercizi/tentativo";
+import { applicaRisposta, completa } from "@/lib/esercizi/tentativo";
 import { checkRateLimit } from "@/lib/rate-limit/db-rate-limit";
 import { POST } from "@/app/api/esercizi/tentativi/[id]/risposta/route";
+import { POST as POST_COMPLETA } from "@/app/api/esercizi/tentativi/[id]/completa/route";
 
 const params = Promise.resolve({ id: "t1" });
 const richiesta = (body: unknown) =>
   new Request("http://x/api/esercizi/tentativi/t1/risposta", { method: "POST", body: JSON.stringify(body) });
+// Per i corpi che non si possono costruire con `JSON.stringify` (l'array
+// innestato dell'attacco è così profondo che `JSON.stringify` stessa
+// rischierebbe uno sforamento dello stack lato test): si scrive il testo
+// JSON a mano e lo si passa come corpo grezzo. `request.json()` nella rotta
+// lo legge con `JSON.parse`, nativo e non ricorsivo in JS: arriva intero a
+// zod, che è il punto che deve fermarlo.
+const richiestaGrezza = (corpoTesto: string) =>
+  new Request("http://x/api/esercizi/tentativi/t1/risposta", { method: "POST", body: corpoTesto });
 
 const corpoValido = { partPath: "p0", answer: "2", state: { seed: "s", answered: false, submitted: 0,
   adviceDisplayed: false, revealed: false, score: 0, marks: 2, parts: [] } };
@@ -64,5 +73,73 @@ describe("POST risposta", () => {
     const r = await POST(richiesta(corpoValido), { params });
     expect(r.status).toBe(200);
     expect(await r.json()).toEqual({ score: 2, maxScore: 2, feedback: [] });
+  });
+
+  // Fix round 1, finding 2: due modi con cui uno studente autenticato poteva
+  // far cadere il processo con un corpo piccolo, invece di ricevere un 400.
+
+  it("400 con un answer innestato a profondita' enorme, senza sforare lo stack", async () => {
+    // ~120 KB, 60.000 livelli: prima dello schema a profondita' finita, lo
+    // stesso schema ricorsivo che valida `answer` lanciava
+    // `RangeError: Maximum call stack size exceeded` dentro `safeParse` — non
+    // uno `ZodError`, quindi non veniva intercettato e usciva come eccezione
+    // non gestita. Verificato separatamente che lo schema precedente
+    // (ricostruito identico, fuori da questo file) lancia davvero a questa
+    // profondita', e che quello attuale no.
+    const profondo = "[".repeat(60_000) + "null" + "]".repeat(60_000);
+    const corpo = `{"partPath":"p0","answer":${profondo},"state":${JSON.stringify(corpoValido.state)}}`;
+    const r = await POST(richiestaGrezza(corpo), { params });
+    expect(r.status).toBe(400);
+  });
+
+  it("400 con una voce nulla dentro state.parts (non arriva mai al motore)", async () => {
+    const chiamateIniziali = vi.mocked(applicaRisposta).mock.calls.length;
+    const corpo = { ...corpoValido, state: { ...corpoValido.state, parts: [null] } };
+    const r = await POST(richiesta(corpo), { params });
+    expect(r.status).toBe(400);
+    // Lo schema deve fermarla in validazione, prima di arrivare al dominio:
+    // nessuna nuova chiamata rispetto a prima di questa richiesta.
+    expect(vi.mocked(applicaRisposta).mock.calls.length).toBe(chiamateIniziali);
+  });
+
+  it("400 se la ricostruzione lato server lancia comunque (stato malformato ma sintatticamente valido)", async () => {
+    vi.mocked(applicaRisposta).mockRejectedValue(new Error("stato non ricostruibile"));
+    const r = await POST(richiesta(corpoValido), { params });
+    expect(r.status).toBe(400);
+  });
+});
+
+describe("POST completa", () => {
+  const paramsCompleta = Promise.resolve({ id: "t1" });
+  const richiestaCompleta = () =>
+    new Request("http://x/api/esercizi/tentativi/t1/completa", { method: "POST" });
+
+  it("401 se non autenticato", async () => {
+    vi.mocked(requireStudent).mockResolvedValue({ ok: false, response: new Response(null, { status: 401 }) } as never);
+    expect((await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta })).status).toBe(401);
+  });
+
+  it("404 se il tentativo non esiste", async () => {
+    vi.mocked(completa).mockResolvedValue({ ok: false, motivo: "non_trovato" });
+    expect((await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta })).status).toBe(404);
+  });
+
+  it("403 se il tentativo e' di un altro", async () => {
+    vi.mocked(completa).mockResolvedValue({ ok: false, motivo: "non_tuo" });
+    expect((await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta })).status).toBe(403);
+  });
+
+  it("200 con il punteggio del server", async () => {
+    vi.mocked(completa).mockResolvedValue({ ok: true, score: 2, maxScore: 2 });
+    const r = await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta });
+    expect(r.status).toBe(200);
+    expect(await r.json()).toEqual({ score: 2, maxScore: 2 });
+  });
+
+  it("passa lo studente della sessione, non uno arbitrario", async () => {
+    vi.mocked(requireStudent).mockResolvedValue({ ok: true, session: { user: { id: "u-vero" } } } as never);
+    vi.mocked(completa).mockResolvedValue({ ok: true, score: 1, maxScore: 1 });
+    await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta });
+    expect(completa).toHaveBeenCalledWith("t1", "u-vero", "it");
   });
 });
