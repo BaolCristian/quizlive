@@ -19,9 +19,17 @@ import { applicaRisposta } from "@/lib/esercizi/tentativo";
 // lunghezza di ogni livello, contro un array piatto ma enorme.
 const ANSWER_MAX_DEPTH = 6;
 const ANSWER_MAX_ITEMS = 256;
+// La foglia stringa non aveva alcun limite di lunghezza: una risposta da
+// 300.000 caratteri tornava 200 e finiva persa dentro lo `state` del
+// tentativo (provato con una richiesta vera). A 120 richieste al minuto per
+// studente — il tetto del rate limit qui sotto — è una trentina di MB al
+// minuto di stato scritto da un solo account autenticato, e rispedito al
+// browser al caricamento successivo. Nessuna risposta reale si avvicina a
+// questo tetto: la più lunga è un'espressione JME scritta a mano.
+const ANSWER_MAX_CHARS = 512;
 
 function buildAnswerSchema(depth: number): z.ZodType<unknown> {
-  const leaf = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+  const leaf = z.union([z.string().max(ANSWER_MAX_CHARS), z.number(), z.boolean(), z.null()]);
   if (depth <= 0) return leaf;
   return z.union([leaf, z.array(buildAnswerSchema(depth - 1)).max(ANSWER_MAX_ITEMS)]);
 }

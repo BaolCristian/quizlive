@@ -92,6 +92,47 @@ describe("POST risposta", () => {
     expect(r.status).toBe(400);
   });
 
+  // Onda finale, punto 4: la foglia stringa di `answer` non aveva un tetto.
+  // Provato con una richiesta vera: 300.000 caratteri tornavano 200 e
+  // finivano dentro lo `state` persistito del tentativo — a 120 richieste al
+  // minuto, decine di MB al minuto da un solo account, rispediti al browser
+  // al caricamento successivo.
+  it("400 con una risposta lunghissima, e non arriva al dominio", async () => {
+    const chiamateIniziali = vi.mocked(applicaRisposta).mock.calls.length;
+    const corpo = { ...corpoValido, answer: "x".repeat(300_000) };
+    const r = await POST(richiesta(corpo), { params });
+    expect(r.status).toBe(400);
+    expect(vi.mocked(applicaRisposta).mock.calls.length).toBe(chiamateIniziali);
+  });
+
+  it("400 anche se la stringa lunghissima e' annidata in un array (i gap di un gapfill)", async () => {
+    const chiamateIniziali = vi.mocked(applicaRisposta).mock.calls.length;
+    const corpo = { ...corpoValido, answer: ["2", "y".repeat(300_000)] };
+    const r = await POST(richiesta(corpo), { params });
+    expect(r.status).toBe(400);
+    expect(vi.mocked(applicaRisposta).mock.calls.length).toBe(chiamateIniziali);
+  });
+
+  it("400 se la stringa lunghissima arriva dentro state.parts[].answer", async () => {
+    const chiamateIniziali = vi.mocked(applicaRisposta).mock.calls.length;
+    const corpo = {
+      ...corpoValido,
+      state: {
+        ...corpoValido.state,
+        parts: [{ path: "p0", answered: true, score: 0, marks: 2, answer: "z".repeat(300_000) }],
+      },
+    };
+    const r = await POST(richiesta(corpo), { params });
+    expect(r.status).toBe(400);
+    expect(vi.mocked(applicaRisposta).mock.calls.length).toBe(chiamateIniziali);
+  });
+
+  it("una risposta di lunghezza plausibile passa comunque", async () => {
+    vi.mocked(applicaRisposta).mockResolvedValue({ ok: true, score: 1, maxScore: 2, feedback: [] });
+    const corpo = { ...corpoValido, answer: "(x^2 + 2*x + 1)/(x - 1)".repeat(4) };
+    expect((await POST(richiesta(corpo), { params })).status).toBe(200);
+  });
+
   it("400 con una voce nulla dentro state.parts (non arriva mai al motore)", async () => {
     const chiamateIniziali = vi.mocked(applicaRisposta).mock.calls.length;
     const corpo = { ...corpoValido, state: { ...corpoValido.state, parts: [null] } };
