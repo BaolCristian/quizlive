@@ -177,6 +177,27 @@ describe("POST completa", () => {
     expect(await r.json()).toEqual({ score: 2, maxScore: 2 });
   });
 
+  // Onda finale, punto 9: la rotta sorella aveva un tetto di richieste,
+  // questa no, eppure anche qui ogni chiamata faceva girare l'intero motore.
+  it("429 quando il rate limit scatta", async () => {
+    const chiamateIniziali = vi.mocked(completa).mock.calls.length;
+    vi.mocked(checkRateLimit).mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
+    const r = await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta });
+    expect(r.status).toBe(429);
+    expect(r.headers.get("Retry-After")).toBe("30");
+    // Il tetto si applica prima del dominio: nessuna chiusura tentata.
+    expect(vi.mocked(completa).mock.calls.length).toBe(chiamateIniziali);
+  });
+
+  it("il tetto e' contato per studente, con una chiave diversa da quella delle risposte", async () => {
+    vi.mocked(requireStudent).mockResolvedValue({ ok: true, session: { user: { id: "u-vero" } } } as never);
+    vi.mocked(completa).mockResolvedValue({ ok: true, score: 1, maxScore: 1 });
+    await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta });
+    expect(checkRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({ key: "esercizi:completa:u-vero" }),
+    );
+  });
+
   it("passa lo studente della sessione, non uno arbitrario", async () => {
     vi.mocked(requireStudent).mockResolvedValue({ ok: true, session: { user: { id: "u-vero" } } } as never);
     vi.mocked(completa).mockResolvedValue({ ok: true, score: 1, maxScore: 1 });

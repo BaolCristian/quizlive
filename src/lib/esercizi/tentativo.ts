@@ -95,7 +95,16 @@ export async function applicaRisposta(
   return { ok: true, score: esito.score, maxScore: esito.maxScore, feedback: parte.items };
 }
 
-/** Chiude il tentativo fissando il punteggio ricalcolato. */
+/** Chiude il tentativo fissando il punteggio ricalcolato.
+ *
+ * Chiudere un tentativo già chiuso non fa nulla: si restituisce il punteggio
+ * fissato allora, senza rifar girare il motore e senza riscrivere
+ * `completedAt`. Prima ogni chiamata ripeteva l'intero ricalcolo e spostava
+ * in avanti il timestamp di chiusura, quindi un pulsante premuto due volte
+ * (o una richiesta ritentata dopo un timeout) riscriveva la storia del
+ * tentativo. Idempotente e non 409, a differenza della rotta sorella: un
+ * ritentativo dopo una risposta persa deve trovare il tentativo chiuso e il
+ * punteggio giusto, non un errore. */
 export async function completa(
   tentativoId: string,
   studentId: string,
@@ -104,6 +113,7 @@ export async function completa(
   const t = await prisma.tentativo.findUnique({ where: { id: tentativoId }, include: { versione: true } });
   if (!t) return { ok: false, motivo: "non_trovato" };
   if (t.studentId !== studentId) return { ok: false, motivo: "non_tuo" };
+  if (t.status === "COMPLETED") return { ok: true, score: t.score, maxScore: t.maxScore };
 
   const esito = ricalcola(t.versione.content, t.seed, (t.state as QuestionState | null) ?? null, locale);
   await prisma.tentativo.update({

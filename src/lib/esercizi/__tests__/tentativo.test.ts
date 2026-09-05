@@ -132,6 +132,27 @@ describe("ciclo di vita del tentativo", () => {
     expect(b!.status).toBe("IN_PROGRESS");
   });
 
+  // Onda finale, punto 9: `completa` ripeteva l'intero ricalcolo e
+  // riscriveva `completedAt` a ogni chiamata, quindi un doppio clic o una
+  // richiesta ritentata dopo un timeout spostava in avanti la chiusura di un
+  // tentativo già chiuso. Ora la seconda chiamata non tocca nulla e
+  // restituisce il punteggio fissato allora.
+  it("chiudere due volte lo stesso tentativo non riscrive nulla", async () => {
+    const t = await avviaORiprendi(studentId, ESERCIZIO_ID);
+    const primo = await completa(t!.tentativoId, studentId, "it");
+    const dopoIlPrimo = await prisma.tentativo.findUnique({ where: { id: t!.tentativoId } });
+
+    const secondo = await completa(t!.tentativoId, studentId, "it");
+    const dopoIlSecondo = await prisma.tentativo.findUnique({ where: { id: t!.tentativoId } });
+
+    // Stesso esito, e nessuna riscrittura: il timestamp di chiusura è
+    // ancora quello della prima volta.
+    expect(secondo).toEqual(primo);
+    expect(dopoIlSecondo!.completedAt).toEqual(dopoIlPrimo!.completedAt);
+    expect(dopoIlSecondo!.score).toBe(dopoIlPrimo!.score);
+    expect(dopoIlSecondo!.maxScore).toBe(dopoIlPrimo!.maxScore);
+  });
+
   it("un tentativo piu' vecchio della conservazione non si riprende", async () => {
     const a = await avviaORiprendi(studentId, ESERCIZIO_ID);
     const giorni = Number(process.env.TENTATIVI_RETENTION_DAYS ?? 180);
