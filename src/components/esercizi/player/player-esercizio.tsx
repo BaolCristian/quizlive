@@ -32,14 +32,17 @@ export interface PlayerEsercizioProps {
 }
 
 /** Costruisce la forma pubblica di una parte per il player (Task 7:
- * `PartePubblica`). Punto 1 del dispaccio: il motore restituisce il markup
- * AUTORALE, mai quello reso — `p.promptHtml` porta ancora `\var{r1}` finché
- * non passa da `variables.substituteHtml(html, parte.getScope())`, e lo
- * stesso vale per le scelte (`1_n_2`/`m_n_2`) e per righe/colonne di una
- * griglia (`m_n_x`, dove `choices` sono le righe e `answers` le colonne —
- * vedi il commento di `InputGriglia`). Chi costruisce `PartePubblica` è
- * l'unico punto in cui questo càpita: se si saltasse, tre degli otto
- * esercizi mostrerebbero allo studente markup grezzo. */
+ * `PartePubblica`). Il motore sostituisce già da sé `p.promptHtml` (e quello
+ * dei gap): `Question`'s constructor chiama `substitutePartPrompts` su ogni
+ * parte al caricamento, quindi la `sostituisci(p.promptHtml)` qui sotto è
+ * ridondante — innocua, ma non è lei a salvare la situazione. Il varco che il
+ * motore lascia davvero aperto è nelle IMPOSTAZIONI di tipo (`p.settings`),
+ * mai toccate da quel passaggio: le scelte di `1_n_2`/`m_n_2` e le righe/
+ * colonne di una griglia `m_n_x` (`choices` sono le righe, `answers` le
+ * colonne — vedi il commento di `InputGriglia`) arrivano qui ancora col
+ * markup autorale (`\var{r1}`). È per questi tre campi che la sostituzione
+ * qui sotto è necessaria: senza, tre degli otto esercizi mostrerebbero allo
+ * studente markup grezzo nelle scelte o nella griglia. */
 function costruisciParte(p: PartBase): PartePubblica {
   const scope = p.getScope();
   const sostituisci = (html: string) => variables.substituteHtml(html, scope);
@@ -134,10 +137,21 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
       const partiCostruite = q.parts.map(costruisciParte);
       const risposteIniziali: Record<string, Answer> = {};
       const rispostoIniziale: Record<string, boolean> = {};
+      const feedbackIniziale: Record<string, FeedbackItem[]> = {};
       for (const parte of partiCostruite) {
         risposteIniziali[parte.path] = rispostaDaStato(parte, statoIniziale?.parts);
         if (trovaStato(parte.path, statoIniziale?.parts)?.answered) {
           rispostoIniziale[parte.path] = true;
+        }
+        // `restoreQuestion` rinvia da sé le parti già risposte
+        // (`applyQuestionState`, engine): a questo punto una parte ripresa
+        // ha già un `result` fresco, con lo stesso feedback che avrebbe
+        // mostrato al momento dell'invio originale. Senza questo, riprendere
+        // un tentativo mostrerebbe il punteggio giusto ma nessuna delle
+        // spiegazioni sotto ogni parte — un mezzo ripristino.
+        const parteEngine = q.getPart(parte.path);
+        if (parteEngine?.result) {
+          feedbackIniziale[parte.path] = parteEngine.result.feedback;
         }
       }
 
@@ -145,6 +159,7 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
       setStatementHtml(q.statementHtml);
       setRisposte(risposteIniziali);
       setRispostoConSuccesso(rispostoIniziale);
+      setFeedbackPerParte(feedbackIniziale);
       const totale = q.score();
       setPunteggio({ score: totale.score, maxScore: totale.marks });
       setFase("esercizio");
@@ -168,6 +183,14 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
 
     const path = parte.path;
     const valoreGrezzo = risposte[path] ?? null;
+    // L'ultimo punteggio e feedback CONFERMATI dal server, prima di questo
+    // invio: se la richiesta fallisce, si torna esattamente qui, mai al
+    // valore ottimistico appena calcolato in locale qualche riga sotto — il
+    // punto centrale del disegno (punto 3 del dispaccio) è che sullo
+    // schermo non deve mai restare un numero che il server non ha
+    // confermato, nemmeno per un attimo dopo che la richiesta è fallita.
+    const punteggioConfermato = punteggio;
+    const feedbackConfermato = feedbackPerParte[path];
 
     setErroriRete((e) => ({ ...e, [path]: false }));
     setInviando((s) => ({ ...s, [path]: true }));
@@ -201,6 +224,11 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
       }
     } catch (e) {
       console.error("[esercizi/player] invio della risposta fallito", e);
+      // Nessun numero non confermato dal server resta in vista: si torna al
+      // punteggio e al feedback di prima di questo invio, non a quello
+      // ottimistico calcolato in locale sopra.
+      setPunteggio(punteggioConfermato);
+      setFeedbackPerParte((f) => ({ ...f, [path]: feedbackConfermato ?? [] }));
       setErroriRete((er) => ({ ...er, [path]: true }));
     } finally {
       setInviando((s) => ({ ...s, [path]: false }));

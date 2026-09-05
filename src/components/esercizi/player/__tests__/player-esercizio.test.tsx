@@ -37,6 +37,29 @@ const gapfillConSceltaFixture = {
   ],
 } as unknown as NumbasQuestionJSON;
 
+// Fixture minimale per il ramo `m_n_x` di `costruisciParte`: nessun esercizio
+// spedito ha variabili nelle righe o nelle colonne di una griglia, quindi
+// senza questa fixture quel ramo non è provato da nessun test (fix round 1,
+// punto 4). `choices` sono le righe, `answers` le colonne.
+const grigliaConVariabiliFixture = {
+  name: "Prova griglia",
+  statement: "<p>Prova</p>",
+  variables: { a: { name: "a", definition: "3" }, b: { name: "b", definition: "5" } },
+  parts: [
+    {
+      type: "m_n_x",
+      marks: 0,
+      prompt: "<p>Abbina</p>",
+      choices: ["riga \\(\\var{a}\\)", "riga fissa"],
+      answers: ["colonna \\(\\var{b}\\)", "colonna fissa"],
+      matrix: [
+        ["1", "-1"],
+        ["-1", "1"],
+      ],
+    },
+  ],
+} as unknown as NumbasQuestionJSON;
+
 function montaggio(props: Partial<React.ComponentProps<typeof PlayerEsercizio>> = {}) {
   return render(
     <NextIntlClientProvider locale="it" messages={messaggiIt}>
@@ -94,6 +117,24 @@ describe("PlayerEsercizio", () => {
     };
     montaggio({ statoIniziale: stato as never });
     await waitFor(() => expect(screen.getByRole("textbox")).toHaveValue("3"));
+  });
+
+  // Fix round 1, punto 2: `restoreQuestion` rinvia da sé le parti già
+  // risposte (`applyQuestionState`, engine), quindi al ripristino la parte
+  // ha già un `result` fresco. "3" non è la soluzione di questa domanda con
+  // questo seme (lo stesso invio a un caricamento fresco dà punteggio
+  // locale 0, vedi il test sopra sul disallineamento col server): il
+  // feedback riportato deve essere quello "sbagliato" vero, non un riquadro
+  // vuoto sotto un punteggio che intanto è corretto.
+  it("riprende anche il feedback della parte, non solo la risposta e il punteggio", async () => {
+    const stato = {
+      seed: "seme-di-prova", answered: true, submitted: 1, adviceDisplayed: false, revealed: false,
+      score: 0, marks: 2,
+      parts: [{ path: "p0", answered: true, score: 0, marks: 2, answer: "3" }],
+    };
+    montaggio({ statoIniziale: stato as never });
+    await waitFor(() => expect(screen.getByRole("textbox")).toHaveValue("3"));
+    expect(screen.getByText("La tua risposta non è corretta.")).toBeInTheDocument();
   });
 
   it("mostra la fase di errore se il contenuto non si carica", async () => {
@@ -180,5 +221,39 @@ describe("PlayerEsercizio", () => {
     // che il player mostrerebbe se la correzione locale avesse lanciato.
     await waitFor(() => expect(screen.getByText("Giusto.")).toBeInTheDocument());
     expect(screen.queryByText(messaggiIt.esercizi.erroreRete)).toBeNull();
+  });
+
+  // Fix round 1, punto 1 (Important): il punteggio ottimistico calcolato in
+  // locale non deve mai restare in vista quando l'invio al server fallisce.
+  // Si conferma prima un punteggio col server (2/2), poi si invia di nuovo
+  // con una risposta chiaramente sbagliata (punteggio locale: 0/2) mentre la
+  // rete cade: se il player non ripristinasse il valore confermato, lo
+  // schermo mostrerebbe 0/2 accanto all'errore di rete — un numero che il
+  // server non ha mai confermato.
+  it("un errore di rete non lascia in vista il punteggio ottimistico locale", async () => {
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    await userEvent.type(screen.getByRole("textbox"), "3");
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.invia }));
+    await waitFor(() => expect(screen.getByText(/2\s*\/\s*2/)).toBeInTheDocument());
+
+    global.fetch = vi.fn(async () => { throw new Error("rete giù"); }) as never;
+    await userEvent.clear(screen.getByRole("textbox"));
+    await userEvent.type(screen.getByRole("textbox"), "999999");
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.invia }));
+
+    await waitFor(() => expect(screen.getByText(messaggiIt.esercizi.erroreRete)).toBeInTheDocument());
+    expect(screen.getByText(/2\s*\/\s*2/)).toBeInTheDocument();
+    expect(screen.queryByText(/0\s*\/\s*2/)).toBeNull();
+  });
+
+  // Fix round 1, punto 4: nessun esercizio spedito ha variabili nelle righe
+  // o nelle colonne di una griglia (`m_n_x`), quindi quel ramo di
+  // `costruisciParte` non era provato da nessun test.
+  it("sostituisce le variabili anche nelle righe e nelle colonne di una griglia", async () => {
+    const { container } = montaggio({ content: grigliaConVariabiliFixture, seed: "seme-griglia" });
+    await waitFor(() => expect(container.querySelectorAll(".katex").length).toBeGreaterThan(1));
+    expect(container.textContent).not.toMatch(/\\var\{/);
+    expect(screen.getAllByRole("checkbox").length).toBe(4);
   });
 });
