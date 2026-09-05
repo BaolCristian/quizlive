@@ -32,7 +32,8 @@
         "maxValue": "k",
         "correctAnswerFraction": false,
         "allowFractions": false,
-        "notationStyles": ["plain"]
+        "notationStyles": ["plain", "en", "si-en", "plain-eu", "eu", "si-fr"],
+        "correctAnswerStyle": "plain-eu"
       }
     ]
   }

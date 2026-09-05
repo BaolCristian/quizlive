@@ -28,8 +28,8 @@
         "precisionPartialCredit": 50,
         "showPrecisionHint": true,
         "allowFractions": false,
-        "notationStyles": ["plain", "en", "si-en"],
-        "correctAnswerStyle": "plain"
+        "notationStyles": ["plain", "en", "si-en", "plain-eu", "eu", "si-fr"],
+        "correctAnswerStyle": "plain-eu"
       }
     ]
   }

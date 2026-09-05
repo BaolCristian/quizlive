@@ -34,8 +34,8 @@
             "minValue": "x0",
             "maxValue": "x0",
             "allowFractions": false,
-            "notationStyles": ["plain", "en", "si-en"],
-            "correctAnswerStyle": "plain"
+            "notationStyles": ["plain", "en", "si-en", "plain-eu", "eu", "si-fr"],
+            "correctAnswerStyle": "plain-eu"
           },
           {
             "type": "numberentry",
@@ -43,8 +43,8 @@
             "minValue": "y0",
             "maxValue": "y0",
             "allowFractions": false,
-            "notationStyles": ["plain", "en", "si-en"],
-            "correctAnswerStyle": "plain"
+            "notationStyles": ["plain", "en", "si-en", "plain-eu", "eu", "si-fr"],
+            "correctAnswerStyle": "plain-eu"
           }
         ]
       }
