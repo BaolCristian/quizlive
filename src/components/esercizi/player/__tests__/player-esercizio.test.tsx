@@ -247,6 +247,31 @@ describe("PlayerEsercizio", () => {
     expect(screen.queryByText(/0\s*\/\s*2/)).toBeNull();
   });
 
+  // Onda finale, punto 2: i messaggi del motore portano marcatori (una
+  // quindicina in `packages/engine/src/i18n/it.ts`, `<strong>` e `<code>` in
+  // testa) e resi come testo semplice lo studente leggeva davvero
+  // "<strong>Spazio 0</strong>" — verificato sull'esercizio gapfill.
+  it("rende i marcatori del feedback invece di mostrarli allo studente", async () => {
+    global.fetch = vi.fn(async () => new Response(
+      JSON.stringify({
+        score: 1, maxScore: 2,
+        feedback: [{ type: "incorrect", message: "<strong>Spazio 0</strong>: sbagliato \\(x^2\\)" }],
+      }),
+      { status: 200 },
+    )) as never;
+    const { container } = montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    await userEvent.type(screen.getByRole("textbox"), "3");
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.invia }));
+
+    await waitFor(() => expect(container.querySelector("strong")).not.toBeNull());
+    expect(container.querySelector("strong")!.textContent).toBe("Spazio 0");
+    // Nessun tag rimasto come testo, e la formula dentro il messaggio passa
+    // comunque da KaTeX (il motivo per cui non si usa dangerouslySetInnerHTML).
+    expect(container.textContent).not.toContain("<strong>");
+    expect(container.querySelectorAll(".katex").length).toBeGreaterThan(0);
+  });
+
   // Onda finale, punto 1. Lo stub di `fetch` di questo file finge un server
   // generoso: qualunque richiesta torna con una voce di feedback e 2/2.
   // Nessun test poteva quindi vedere il caso reale peggiore — una parte che

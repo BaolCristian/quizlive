@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { CheckCircle2, XCircle } from "lucide-react";
 import {
   loadQuestion,
   restoreQuestion,
@@ -105,6 +106,51 @@ function preparaRispostaPerMotore(parte: PartePubblica, valore: Answer): Answer 
   if (parte.type !== "gapfill" || !Array.isArray(valore)) return valore;
   const senzaNull = valore.map((v) => (v === null ? undefined : v));
   return senzaNull as unknown as Answer;
+}
+
+/** Una voce di feedback del motore.
+ *
+ * Il messaggio NON è testo semplice: una quindicina di voci di
+ * `packages/engine/src/i18n/it.ts` portano marcatori (`<strong>{name}</strong>`
+ * per l'intestazione di uno spazio di un gapfill, `<code>`, `<span
+ * class="monospace">`), e resi come testo lo studente leggeva davvero
+ * "<strong>Spazio 0</strong>". `dangerouslySetInnerHTML` non è la via
+ * d'uscita: alcune di queste voci contengono anche formule, e il markup
+ * arriva comunque da contenuti autorali. Si passa da `ContenutoHtml`, che ha
+ * già l'allowlist dei tag e la divisione delle formule.
+ *
+ * Corretto e sbagliato avevano lo stesso identico aspetto — stesso colore,
+ * nessuna icona — e l'unica distinzione era un `aria-label` su un `<p>`, un
+ * elemento a cui l'ARIA vieta un nome accessibile: le tecnologie assistive lo
+ * ignoravano, quindi la distinzione non esisteva né per gli occhi né per lo
+ * screen reader. Qui il colore e l'icona la danno a vista, e un testo
+ * `sr-only` — un nome vero, non un attributo su un elemento che non lo
+ * ammette — la dà a chi ascolta. */
+function VoceFeedback({ voce }: { voce: FeedbackItem }) {
+  const t = useTranslations("esercizi");
+  const corretta = voce.type === "correct";
+  const sbagliata = voce.type === "incorrect";
+
+  const stile = corretta
+    ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-100"
+    : sbagliata
+      ? "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-100"
+      : "border-transparent text-muted-foreground";
+
+  return (
+    <div className={`flex items-start gap-2 rounded-md border px-2 py-1 text-sm ${stile}`}>
+      {corretta && <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />}
+      {sbagliata && <XCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />}
+      <div className="min-w-0">
+        {(corretta || sbagliata) && (
+          <span className="sr-only">{corretta ? t("rispostaCorretta") : t("rispostaSbagliata")}: </span>
+        )}
+        <span>
+          <ContenutoHtml html={voce.message} />
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, locale }: PlayerEsercizioProps) {
@@ -324,18 +370,7 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
             </Button>
           )}
           {(feedbackPerParte[parte.path] ?? []).map((f, i) => (
-            <p
-              key={i}
-              aria-label={
-                f.type === "correct"
-                  ? t("rispostaCorretta")
-                  : f.type === "incorrect"
-                    ? t("rispostaSbagliata")
-                    : undefined
-              }
-            >
-              {f.message}
-            </p>
+            <VoceFeedback key={i} voce={f} />
           ))}
           {erroriRete[parte.path] && (
             <div role="alert" className="space-y-1">
