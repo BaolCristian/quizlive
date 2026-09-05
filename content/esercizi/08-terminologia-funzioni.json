@@ -1,0 +1,34 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Terminologia delle funzioni",
+    "description": "Riconoscere il nome corretto di dominio e codominio di una funzione.",
+    "yearLevel": 3,
+    "topic": "funzioni",
+    "tags": ["funzioni", "terminologia"],
+    "difficulty": 1
+  },
+  "question": {
+    "name": "Terminologia delle funzioni",
+    "statement": "<p>Sia \\(f\\) una funzione reale di variabile reale.</p>",
+    "variables": {},
+    "parts": [
+      {
+        "type": "patternmatch",
+        "marks": 1,
+        "prompt": "<p>Come si chiama l'insieme dei valori di \\(x\\) per cui \\(f\\) è definita? (una sola parola)</p>",
+        "answer": "dominio",
+        "displayAnswer": "dominio",
+        "matchMode": "exact"
+      },
+      {
+        "type": "patternmatch",
+        "marks": 1,
+        "prompt": "<p>Come si chiama l'insieme dei valori assunti da \\(f\\), cioè le immagini degli elementi del dominio? (una sola parola)</p>",
+        "answer": "codominio|immagine",
+        "displayAnswer": "codominio",
+        "matchMode": "regex"
+      }
+    ]
+  }
+}

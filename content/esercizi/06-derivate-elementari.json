@@ -1,0 +1,37 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Derivata di una potenza",
+    "description": "Calcolare la derivata di una funzione potenza con coefficiente ed esponente interi.",
+    "yearLevel": 5,
+    "topic": "derivate",
+    "tags": ["derivate", "regola-di-potenza"],
+    "difficulty": 2
+  },
+  "question": {
+    "name": "Derivata di una potenza",
+    "statement": "<p>Calcola la derivata della funzione \\(f(x) = \\var{a}x^{\\var{n}}\\).</p>",
+    "advice": "<p>Per la regola di derivazione delle potenze, \\(\\frac{d}{dx}\\left(\\var{a}x^{\\var{n}}\\right) = \\var{a}\\cdot\\var{n}\\cdot x^{\\var{n}-1}\\).</p>",
+    "variables": {
+      "a": { "name": "a", "definition": "random(2..6)" },
+      "n": { "name": "n", "definition": "random(2..5)" }
+    },
+    "parts": [
+      {
+        "type": "jme",
+        "marks": 3,
+        "prompt": "<p>\\(f'(x) = \\)</p>",
+        "answer": "{a}*{n}*x^({n-1})",
+        "showPreview": true,
+        "checkingType": "absdiff",
+        "checkingAccuracy": 0.001,
+        "failureRate": 1,
+        "vsetRangePoints": 5,
+        "vsetRange": [0, 1],
+        "checkVariableNames": true,
+        "expectedVariableNames": ["x"],
+        "valuegenerators": [{ "name": "x", "value": "" }]
+      }
+    ]
+  }
+}

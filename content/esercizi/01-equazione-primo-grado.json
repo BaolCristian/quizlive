@@ -1,0 +1,39 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Equazione di primo grado",
+    "description": "Risolvere un'equazione di primo grado a coefficienti interi.",
+    "yearLevel": 1,
+    "topic": "equazioni",
+    "tags": ["primo-grado", "equazioni"],
+    "difficulty": 1
+  },
+  "question": {
+    "name": "Equazione di primo grado",
+    "statement": "<p>Risolvi l'equazione \\(\\var{a}x + \\var{b} = \\var{c}\\).</p>",
+    "advice": "<p>Sottrai \\(\\var{b}\\) da entrambi i membri e dividi per \\(\\var{a}\\): \\(x = \\simplify{({c}-{b})/{a}}\\).</p>",
+    "variables": {
+      "a": { "name": "a", "definition": "random(2..9)", "description": "" },
+      "k": { "name": "k", "definition": "random(-6..6 except 0)", "description": "" },
+      "b": { "name": "b", "definition": "random(-9..9 except 0)", "description": "" },
+      "c": { "name": "c", "definition": "a*k + b", "description": "" }
+    },
+    "variablesTest": { "condition": "", "maxRuns": 10 },
+    "ungrouped_variables": ["a", "k", "b", "c"],
+    "variable_groups": [],
+    "functions": {},
+    "rulesets": {},
+    "parts": [
+      {
+        "type": "numberentry",
+        "marks": 2,
+        "prompt": "<p>\\(x = \\)</p>",
+        "minValue": "k",
+        "maxValue": "k",
+        "correctAnswerFraction": false,
+        "allowFractions": false,
+        "notationStyles": ["plain"]
+      }
+    ]
+  }
+}

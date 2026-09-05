@@ -1,0 +1,53 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Sistema lineare 2x2",
+    "description": "Risolvere un sistema di due equazioni lineari in due incognite con il metodo preferito.",
+    "yearLevel": 2,
+    "topic": "sistemi",
+    "tags": ["sistemi-lineari", "due-incognite"],
+    "difficulty": 2
+  },
+  "question": {
+    "name": "Sistema lineare 2x2",
+    "statement": "<p>Risolvi il sistema \\[\\begin{cases} \\var{a}x + \\var{b}y = \\var{c} \\\\ \\var{d}x + \\var{e}y = \\var{f} \\end{cases}\\]</p>",
+    "advice": "<p>Con il metodo di sostituzione o di riduzione si trova \\(x = \\var{x0}\\) e \\(y = \\var{y0}\\). Puoi verificare il risultato sostituendo i valori trovati in entrambe le equazioni.</p>",
+    "variables": {
+      "a": { "name": "a", "definition": "random(2..6)" },
+      "b": { "name": "b", "definition": "random(-6..6 except 0)" },
+      "d": { "name": "d", "definition": "random(2..6 except a)" },
+      "e": { "name": "e", "definition": "random(-6..6 except 0)" },
+      "x0": { "name": "x0", "definition": "random(-5..5 except 0)" },
+      "y0": { "name": "y0", "definition": "random(-5..5 except 0)" },
+      "c": { "name": "c", "definition": "a*x0 + b*y0" },
+      "f": { "name": "f", "definition": "d*x0 + e*y0" }
+    },
+    "variablesTest": { "condition": "a*e - b*d <> 0", "maxRuns": 200 },
+    "parts": [
+      {
+        "type": "gapfill",
+        "prompt": "<p>\\(x = \\) [[0]], \\(y = \\) [[1]]</p>",
+        "gaps": [
+          {
+            "type": "numberentry",
+            "marks": 1,
+            "minValue": "x0",
+            "maxValue": "x0",
+            "allowFractions": false,
+            "notationStyles": ["plain", "en", "si-en"],
+            "correctAnswerStyle": "plain"
+          },
+          {
+            "type": "numberentry",
+            "marks": 1,
+            "minValue": "y0",
+            "maxValue": "y0",
+            "allowFractions": false,
+            "notationStyles": ["plain", "en", "si-en"],
+            "correctAnswerStyle": "plain"
+          }
+        ]
+      }
+    ]
+  }
+}

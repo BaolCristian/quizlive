@@ -1,0 +1,45 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Scomposizione di una differenza di quadrati",
+    "description": "Riconoscere la scomposizione in fattori di un binomio del tipo x^2 - a^2.",
+    "yearLevel": 2,
+    "topic": "polinomi",
+    "tags": ["scomposizione", "differenza-di-quadrati"],
+    "difficulty": 1
+  },
+  "question": {
+    "name": "Scomposizione di una differenza di quadrati",
+    "statement": "<p>Considera il polinomio \\(x^2 - \\var{a}^2\\).</p>",
+    "advice": "<p>È una differenza di quadrati: si scompone come \\((x-\\var{a})(x+\\var{a})\\).</p>",
+    "variables": {
+      "a": { "name": "a", "definition": "random(2..9)" }
+    },
+    "parts": [
+      {
+        "type": "1_n_2",
+        "marks": 0,
+        "prompt": "<p>Quale delle seguenti è la scomposizione in fattori corretta?</p>",
+        "shuffleChoices": true,
+        "displayType": "radiogroup",
+        "displayColumns": 0,
+        "minMarks": 0,
+        "maxMarks": 0,
+        "showCellAnswerState": true,
+        "choices": [
+          "\\((x - \\var{a})(x + \\var{a})\\)",
+          "\\((x - \\var{a})^2\\)",
+          "\\((x + \\var{a})^2\\)",
+          "Il polinomio non si può scomporre"
+        ],
+        "matrix": ["2", 0, 0, 0],
+        "distractors": [
+          "",
+          "Manca il doppio prodotto cambiato di segno: questo è il quadrato di un binomio, non una differenza di quadrati.",
+          "Anche qui manca il doppio prodotto cambiato di segno.",
+          "Una differenza di quadrati si scompone sempre come somma per differenza."
+        ]
+      }
+    ]
+  }
+}
