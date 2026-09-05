@@ -10,7 +10,7 @@
   },
   "question": {
     "name": "Disequazione di secondo grado",
-    "statement": "<p>Considera la disequazione di secondo grado \\(x^2 - \\var{s}x + \\var{p} < 0\\), le cui soluzioni sono i valori di \\(x\\) compresi fra le radici \\(\\var{r1}\\) e \\(\\var{r2}\\) (con \\(\\var{r1} < \\var{r2}\\)).</p>",
+    "statement": "<p>Considera la disequazione di secondo grado \\(\\simplify{ x^2-{s}x+{p} } < 0\\), le cui soluzioni sono i valori di \\(x\\) compresi fra le radici \\(\\var{r1}\\) e \\(\\var{r2}\\) (con \\(\\var{r1} < \\var{r2}\\)).</p>",
     "advice": "<p>Una parabola con la concavità verso l'alto è negativa fra le sue due radici: la disequazione è verificata per \\(\\var{r1} < x < \\var{r2}\\), estremi esclusi.</p>",
     "variables": {
       "r1": { "name": "r1", "definition": "random(-6..3)" },

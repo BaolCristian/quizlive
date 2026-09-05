@@ -10,8 +10,8 @@
   },
   "question": {
     "name": "Equazione di primo grado",
-    "statement": "<p>Risolvi l'equazione \\(\\var{a}x + \\var{b} = \\var{c}\\).</p>",
-    "advice": "<p>Sottrai \\(\\var{b}\\) da entrambi i membri e dividi per \\(\\var{a}\\): \\(x = \\simplify{({c}-{b})/{a}}\\).</p>",
+    "statement": "<p>Risolvi l'equazione \\(\\simplify{ {a}x+{b} } = \\var{c}\\).</p>",
+    "advice": "<p>Porta \\(\\var{b}\\) al secondo membro, cambiandogli il segno, e dividi per \\(\\var{a}\\): \\(x = \\simplify{({c}-{b})/{a}}\\).</p>",
     "variables": {
       "a": { "name": "a", "definition": "random(2..9)", "description": "" },
       "k": { "name": "k", "definition": "random(-6..6 except 0)", "description": "" },

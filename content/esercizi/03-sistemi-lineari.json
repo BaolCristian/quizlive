@@ -10,7 +10,7 @@
   },
   "question": {
     "name": "Sistema lineare 2x2",
-    "statement": "<p>Risolvi il sistema \\[\\begin{cases} \\var{a}x + \\var{b}y = \\var{c} \\\\ \\var{d}x + \\var{e}y = \\var{f} \\end{cases}\\]</p>",
+    "statement": "<p>Risolvi il sistema \\[\\begin{cases} \\simplify{ {a}x+{b}y } = \\var{c} \\\\ \\simplify{ {d}x+{e}y } = \\var{f} \\end{cases}\\]</p>",
     "advice": "<p>Con il metodo di sostituzione o di riduzione si trova \\(x = \\var{x0}\\) e \\(y = \\var{y0}\\). Puoi verificare il risultato sostituendo i valori trovati in entrambe le equazioni.</p>",
     "variables": {
       "a": { "name": "a", "definition": "random(2..6)" },

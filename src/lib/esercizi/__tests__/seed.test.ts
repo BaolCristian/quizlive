@@ -58,4 +58,13 @@ describe("seed degli esercizi", () => {
     scriviEsercizio(dir, "01-rotta.json", "Rotta", { name: "x", partsMode: "explore", parts: [] });
     await expect(seedEsercizi(dir)).rejects.toThrow(/01-rotta\.json/);
   });
+
+  it("un file rotto non lascia scritti nel database i file gia' validati nello stesso giro", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "es-"));
+    scriviEsercizio(dir, "01-buono.json", "Buono", domanda);
+    scriviEsercizio(dir, "02-rotta.json", "Rotta", { name: "x", partsMode: "explore", parts: [] });
+    await expect(seedEsercizi(dir)).rejects.toThrow(/02-rotta\.json/);
+    expect(await prisma.esercizio.count()).toBe(0);
+    expect(await prisma.esercizioVersione.count()).toBe(0);
+  });
 });
