@@ -1,0 +1,30 @@
+import { describe, it, expect, vi } from "vitest";
+
+vi.mock("@/lib/auth/config", () => ({ auth: vi.fn(async () => ({ user: { id: "u1", role: "STUDENT" } })) }));
+vi.mock("@/lib/esercizi/tentativo", () => ({ avviaORiprendi: vi.fn() }));
+vi.mock("next/navigation", () => ({ redirect: vi.fn(), notFound: vi.fn(() => { throw new Error("NEXT_NOT_FOUND"); }) }));
+vi.mock("next-intl/server", () => ({ getLocale: vi.fn(async () => "it") }));
+
+import { avviaORiprendi } from "@/lib/esercizi/tentativo";
+import { notFound } from "next/navigation";
+import Page from "../[esercizioId]/page";
+
+describe("pagina dell'esercizio", () => {
+  it("404 se l'esercizio non esiste", async () => {
+    vi.mocked(avviaORiprendi).mockResolvedValue(null);
+    await expect(Page({ params: Promise.resolve({ esercizioId: "boh" }) })).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(notFound).toHaveBeenCalled();
+  });
+
+  it("passa al player tentativo, seme, contenuto e stato", async () => {
+    vi.mocked(avviaORiprendi).mockResolvedValue({
+      tentativoId: "t1", seed: "s1", content: { name: "x" }, state: null,
+      score: 0, maxScore: 2, status: "IN_PROGRESS",
+    });
+    const albero = await Page({ params: Promise.resolve({ esercizioId: "01-equazione-primo-grado" }) });
+    const props = (albero as { props: Record<string, unknown> }).props;
+    expect(props.tentativoId).toBe("t1");
+    expect(props.seed).toBe("s1");
+    expect(props.statoIniziale).toBeNull();
+  });
+});
