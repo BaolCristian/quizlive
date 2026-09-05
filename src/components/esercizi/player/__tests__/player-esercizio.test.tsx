@@ -247,6 +247,57 @@ describe("PlayerEsercizio", () => {
     expect(screen.queryByText(/0\s*\/\s*2/)).toBeNull();
   });
 
+  // Onda finale, punto 1. Lo stub di `fetch` di questo file finge un server
+  // generoso: qualunque richiesta torna con una voce di feedback e 2/2.
+  // Nessun test poteva quindi vedere il caso reale peggiore — una parte che
+  // il MOTORE considera non risposta. Il server rinvia solo le parti con
+  // `answered: true` (engine, `applyQuestionState`) e restituisce
+  // `p.result?.feedback ?? []` (`marking.ts`): per un campo lasciato vuoto la
+  // risposta HTTP è 200, `feedback: []` e il punteggio invariato. Lo stub qui
+  // sotto si comporta così. Prima del fix questo bastava a produrre lo
+  // schermo muto visto al banco: nessun messaggio e "Completa il tentativo"
+  // in vista dopo un Invia a vuoto.
+  it("un Invia a campo vuoto spiega perche' e non sblocca il completamento", async () => {
+    const chiamate: unknown[] = [];
+    global.fetch = vi.fn(async (...args: unknown[]) => {
+      chiamate.push(args);
+      // Come la rotta vera su una parte che il motore non considera risposta.
+      return new Response(JSON.stringify({ score: 0, maxScore: 2, feedback: [] }), { status: 200 });
+    }) as never;
+
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    // Nessuna digitazione: si preme Invia sul campo vuoto.
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.invia }));
+    await waitFor(() => expect(chiamate.length).toBe(1));
+
+    // 1. Lo studente riceve una spiegazione, non il silenzio: quando il
+    //    server non manda feedback si mostra quello calcolato in locale.
+    //    (Su 07-limiti-notevoli il motore dice "Non hai inserito un numero
+    //    valido."; su questo esercizio, con il campo lasciato del tutto in
+    //    bianco, dice "Non hai risposto a questa domanda." — è lo stesso
+    //    percorso `submit_no_staged_answer`.)
+    await waitFor(() =>
+      expect(screen.getByText("Non hai risposto a questa domanda.")).toBeInTheDocument(),
+    );
+    // 2. La parte NON risulta risposta: il bottone di completamento resta
+    //    fuori vista, quindi non si può chiudere il tentativo a 0 premendo
+    //    Invia due volte a vuoto.
+    expect(screen.queryByRole("button", { name: messaggiIt.esercizi.completa })).toBeNull();
+  });
+
+  // La faccia opposta dello stesso flag: una risposta che il motore accetta
+  // deve sbloccare il completamento (nessuna regressione dal punto 1).
+  it("una risposta accettata dal motore sblocca il completamento", async () => {
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    await userEvent.type(screen.getByRole("textbox"), "3");
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.invia }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: messaggiIt.esercizi.completa })).toBeInTheDocument(),
+    );
+  });
+
   // Fix round 1, punto 4: nessun esercizio spedito ha variabili nelle righe
   // o nelle colonne di una griglia (`m_n_x`), quindi quel ramo di
   // `costruisciParte` non era provato da nessun test.

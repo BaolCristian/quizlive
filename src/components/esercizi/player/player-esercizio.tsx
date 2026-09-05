@@ -202,6 +202,12 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
       const valorePerMotore = preparaRispostaPerMotore(parte, valoreGrezzo);
       const risultatoLocale = parteEngine.submit(valorePerMotore);
       const totaleLocale = q.score();
+      // Il motore, e non l'esito HTTP, decide se la parte risulta RISPOSTA:
+      // `submit()` mette `answered = false` quando non c'è una risposta da
+      // correggere (`part-base.ts`, ramo `submit_no_staged_answer`). È lo
+      // stesso criterio che userà il server, che rinvia solo le parti con
+      // `answered: true` (engine, `applyQuestionState`).
+      const parteRisposta = parteEngine.answered === true;
 
       setFeedbackPerParte((f) => ({ ...f, [path]: risultatoLocale.feedback }));
       setPunteggio({ score: totaleLocale.score, maxScore: totaleLocale.marks });
@@ -209,10 +215,30 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
       const esito = await inviaRisposta(tentativoId, path, valoreGrezzo, q.toState(), locale);
 
       // Il server sostituisce sempre punteggio e feedback locali: è lui
-      // l'autorità (punto 3 del dispaccio).
-      setFeedbackPerParte((f) => ({ ...f, [path]: esito.feedback }));
+      // l'autorità (punto 3 del dispaccio). Con una eccezione precisa: se non
+      // manda NESSUNA voce di feedback. Succede per una parte che il motore
+      // considera non risposta — il server rinvia solo le parti con
+      // `answered: true`, quindi la sua `p.result` resta vuota e
+      // `marking.ts` restituisce `[]`. Sostituire lì il feedback locale con
+      // un array vuoto lasciava lo studente davanti a uno schermo muto: campo
+      // vuoto, "Invia" premuto, punteggio fermo, nessuna spiegazione. Il
+      // motivo — "Non hai inserito un numero valido." — è già stato calcolato
+      // qui dal motore del browser: è quello che va mostrato. Non è un
+      // punteggio, quindi non viola la regola che i numeri arrivano solo dal
+      // server.
+      setFeedbackPerParte((f) => ({
+        ...f,
+        [path]: esito.feedback.length > 0 ? esito.feedback : risultatoLocale.feedback,
+      }));
       setPunteggio({ score: esito.score, maxScore: esito.maxScore });
-      setRispostoConSuccesso((s) => ({ ...s, [path]: true }));
+      // Non "la richiesta è andata a buon fine", ma "la parte risulta
+      // risposta": una POST riuscita su una parte lasciata in bianco tornava
+      // 200, e marcarla risposta faceva comparire "Completa il tentativo"
+      // dopo due Invia a vuoto — con un tentativo chiuso a 0 e un seme nuovo
+      // alla visita seguente. È anche l'asimmetria che faceva sparire quel
+      // bottone dopo una ricarica: al ripristino il flag arriva già dallo
+      // stato del motore, che qui non veniva consultato.
+      setRispostoConSuccesso((s) => ({ ...s, [path]: parteRisposta }));
 
       if (esito.score !== totaleLocale.score || esito.maxScore !== totaleLocale.marks) {
         // Browser e Node dovrebbero concordare sullo stesso motore: un
