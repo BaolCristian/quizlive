@@ -18,6 +18,7 @@ export default async function Page({ params }: { params: Promise<{ esercizioId: 
   return (
     <PlayerEsercizioLazy
       tentativoId={tentativo.tentativoId}
+      esercizioId={esercizioId}
       seed={tentativo.seed}
       content={tentativo.content}
       statoIniziale={tentativo.state}

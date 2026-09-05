@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { CheckCircle2, XCircle } from "lucide-react";
 import {
@@ -15,7 +16,8 @@ import {
   type QuestionState,
   Question,
 } from "@savint/engine";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { withBasePath } from "@/lib/base-path";
 import { ContenutoHtml } from "./contenuto-html";
 import { InputParte, type PartePubblica } from "./parti";
 import { completaTentativo, inviaRisposta } from "./usa-tentativo";
@@ -26,6 +28,9 @@ type Punteggio = { score: number; maxScore: number };
 
 export interface PlayerEsercizioProps {
   tentativoId: string;
+  /** L'esercizio a cui appartiene il tentativo: serve al riepilogo per
+   * offrire un nuovo tentativo senza far indovinare l'indirizzo. */
+  esercizioId: string;
   seed: string;
   content: unknown;
   statoIniziale: QuestionState | null;
@@ -153,7 +158,9 @@ function VoceFeedback({ voce }: { voce: FeedbackItem }) {
   );
 }
 
-export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, locale }: PlayerEsercizioProps) {
+export function PlayerEsercizio({
+  tentativoId, esercizioId, seed, content, statoIniziale, locale,
+}: PlayerEsercizioProps) {
   const t = useTranslations("esercizi");
   // Lo stato del motore è un oggetto vivo (chiama `submit`, tiene punteggio e
   // storico): un `useRef`, non uno stato React, perché mutarlo non deve
@@ -331,15 +338,33 @@ export function PlayerEsercizio({ tentativoId, seed, content, statoIniziale, loc
   }
 
   if (fase === "riepilogo") {
+    // Il riepilogo era un vicolo cieco: titolo, "Tentativo completato.",
+    // punteggio, e nient'altro. Su un telefono le uniche uscite erano il
+    // tasto indietro e la disconnessione, e una ricarica apriva un tentativo
+    // nuovo con un altro seme — il punteggio appena preso diventava
+    // irraggiungibile senza che nessuno lo avesse detto. Due uscite
+    // esplicite, quindi: l'elenco degli esercizi e un nuovo tentativo.
     return (
-      <section className="space-y-2">
+      <section className="space-y-4">
         <h1 className="text-xl font-semibold">{t("riepilogo")}</h1>
         <p>{t("tentativoCompletato")}</p>
         {punteggio && (
-          <p>
+          <p className="text-lg font-semibold">
             {t("punteggio")}: {punteggio.score} / {punteggio.maxScore}
           </p>
         )}
+        <div className="flex flex-wrap gap-3">
+          <Link href="/studente" className={buttonVariants({ variant: "outline" })}>
+            {t("tornaAgliEsercizi")}
+          </Link>
+          {/* Un'ancora vera, non un `Link`: aprire un nuovo tentativo è un
+              giro dal server (`avviaORiprendi` ne crea uno con un seme
+              nuovo, visto che questo è ormai chiuso), e una navigazione
+              client verso la rotta su cui siamo già non lo farebbe. */}
+          <a href={withBasePath(`/studente/esercizio/${esercizioId}`)} className={buttonVariants()}>
+            {t("riprovaEsercizio")}
+          </a>
+        </div>
       </section>
     );
   }

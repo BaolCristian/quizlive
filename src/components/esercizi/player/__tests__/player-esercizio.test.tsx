@@ -65,6 +65,7 @@ function montaggio(props: Partial<React.ComponentProps<typeof PlayerEsercizio>> 
     <NextIntlClientProvider locale="it" messages={messaggiIt}>
       <PlayerEsercizio
         tentativoId="t1"
+        esercizioId="01-equazione-primo-grado"
         seed="seme-di-prova"
         content={question}
         statoIniziale={null}
@@ -245,6 +246,32 @@ describe("PlayerEsercizio", () => {
     await waitFor(() => expect(screen.getByText(messaggiIt.esercizi.erroreRete)).toBeInTheDocument());
     expect(screen.getByText(/2\s*\/\s*2/)).toBeInTheDocument();
     expect(screen.queryByText(/0\s*\/\s*2/)).toBeNull();
+  });
+
+  // Onda finale, punto 5: il riepilogo era un vicolo cieco — punteggio e
+  // nient'altro. Su un telefono le uniche uscite erano il tasto indietro e la
+  // disconnessione, e una ricarica apriva un tentativo nuovo con un altro
+  // seme, rendendo irraggiungibile il punteggio appena preso.
+  it("il riepilogo offre due uscite: l'elenco e un nuovo tentativo", async () => {
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    await userEvent.type(screen.getByRole("textbox"), "3");
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.invia }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: messaggiIt.esercizi.completa }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText(messaggiIt.esercizi.tentativoCompletato)).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("link", { name: messaggiIt.esercizi.tornaAgliEsercizi }),
+    ).toHaveAttribute("href", "/studente");
+    // L'esercizio si riapre dal suo indirizzo: un nuovo tentativo, non la
+    // stessa pagina già chiusa.
+    expect(
+      screen.getByRole("link", { name: messaggiIt.esercizi.riprovaEsercizio }),
+    ).toHaveAttribute("href", expect.stringContaining("/studente/esercizio/01-equazione-primo-grado"));
   });
 
   // Onda finale, punto 2: i messaggi del motore portano marcatori (una
