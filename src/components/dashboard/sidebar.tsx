@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu, Home, BookOpen, Play, BarChart3, Share2, Sparkles, Library, LogOut, Moon, Sun, ShieldCheck, Globe } from "lucide-react";
+import { Menu, Home, BookOpen, Play, BarChart3, Share2, Sparkles, Library, LogOut, Moon, Sun, ShieldCheck, Globe, Sigma } from "lucide-react";
 import { useTheme } from "@/components/dashboard/theme-provider";
 import { withBasePath } from "@/lib/base-path";
 import { useTranslations } from "next-intl";
@@ -23,6 +23,7 @@ function SidebarContent({ user, onNavigate, hubEnabled }: { user: any; onNavigat
   const navItems = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/dashboard/quiz", label: t("myQuizzes"), icon: BookOpen },
+    { href: "/dashboard/esercizi", label: t("exercises"), icon: Sigma },
     { href: "/dashboard/sessions", label: t("sessions"), icon: Play },
     { href: "/dashboard/stats", label: t("statistics"), icon: BarChart3 },
     { href: "/dashboard/share", label: t("shares"), icon: Share2 },
