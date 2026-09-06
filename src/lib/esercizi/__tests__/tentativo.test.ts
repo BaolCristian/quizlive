@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import path from "path";
 import { prisma } from "@/lib/db/client";
-import { avviaORiprendi, applicaRisposta, completa } from "../tentativo";
+import { avviaORiprendi, applicaRisposta, completa, abbandona } from "../tentativo";
 import { seedEsercizi } from "../seed";
 
 // Prefisso unico di questo file — vedi il commento gemello in
@@ -172,5 +172,75 @@ describe("ciclo di vita del tentativo", () => {
     });
     const b = await avviaORiprendi(studentId, ESERCIZIO_ID);
     expect(b!.tentativoId).not.toBe(a!.tentativoId);
+  });
+
+  // Il banner di ripresa (player) ha bisogno di sapere QUANDO il tentativo è
+  // stato toccato l'ultima volta: senza questo campo non c'è nulla da
+  // mostrare oltre "stai riprendendo qualcosa".
+  it("avviaORiprendi espone il momento dell'ultima attività", async () => {
+    const t = await avviaORiprendi(studentId, ESERCIZIO_ID);
+    expect(t!.lastActivityAt).toBeInstanceOf(Date);
+  });
+});
+
+describe("abbandonare un tentativo", () => {
+  // Il cuore della funzionalità "ricomincia": lo stato del vecchio tentativo
+  // diventa ABANDONED (mai COMPLETED — un sotto-progetto futuro conterà i
+  // completamenti per stabilire se un compito è stato consegnato, e un
+  // tentativo abbandonato non deve mai poter sembrare consegnato), e il primo
+  // accesso successivo apre un tentativo nuovo con un seme diverso: la stessa
+  // strada già presa da "dopo il completamento un nuovo accesso apre un
+  // tentativo nuovo" qui sopra, non una scorciatoia nuova.
+  it("marca il vecchio tentativo ABANDONED, mai COMPLETED, e il prossimo accesso ne apre uno nuovo con un altro seme", async () => {
+    const a = await avviaORiprendi(studentId, ESERCIZIO_ID);
+    const r = await abbandona(a!.tentativoId, studentId);
+    expect(r).toEqual({ ok: true });
+
+    const rigaVecchia = await prisma.tentativo.findUnique({ where: { id: a!.tentativoId } });
+    expect(rigaVecchia!.status).toBe("ABANDONED");
+    expect(rigaVecchia!.status).not.toBe("COMPLETED");
+
+    const b = await avviaORiprendi(studentId, ESERCIZIO_ID);
+    expect(b!.tentativoId).not.toBe(a!.tentativoId);
+    expect(b!.seed).not.toBe(a!.seed);
+    expect(b!.status).toBe("IN_PROGRESS");
+  });
+
+  it("il tentativo di un altro studente viene rifiutato, e resta intatto", async () => {
+    const t = await avviaORiprendi(studentId, ESERCIZIO_ID);
+    const r = await abbandona(t!.tentativoId, altroId);
+    expect(r).toEqual({ ok: false, motivo: "non_tuo" });
+
+    const riga = await prisma.tentativo.findUnique({ where: { id: t!.tentativoId } });
+    expect(riga!.status).toBe("IN_PROGRESS");
+  });
+
+  it("un tentativo inesistente da' non_trovato", async () => {
+    const r = await abbandona("non-esiste", studentId);
+    expect(r).toEqual({ ok: false, motivo: "non_trovato" });
+  });
+
+  // La garanzia che conta di più per il conteggio futuro delle consegne: un
+  // tentativo già COMPLETED non deve mai poter tornare indietro né essere
+  // scambiato per un abbandono.
+  it("un tentativo gia' completato non si abbandona, e resta COMPLETED", async () => {
+    const t = await avviaORiprendi(studentId, ESERCIZIO_ID);
+    await completa(t!.tentativoId, studentId, "it");
+    const r = await abbandona(t!.tentativoId, studentId);
+    expect(r).toEqual({ ok: false, motivo: "gia_completato" });
+
+    const riga = await prisma.tentativo.findUnique({ where: { id: t!.tentativoId } });
+    expect(riga!.status).toBe("COMPLETED");
+  });
+
+  it("abbandonare due volte lo stesso tentativo resta idempotente", async () => {
+    const t = await avviaORiprendi(studentId, ESERCIZIO_ID);
+    const primo = await abbandona(t!.tentativoId, studentId);
+    const secondo = await abbandona(t!.tentativoId, studentId);
+    expect(primo).toEqual({ ok: true });
+    expect(secondo).toEqual({ ok: true });
+
+    const riga = await prisma.tentativo.findUnique({ where: { id: t!.tentativoId } });
+    expect(riga!.status).toBe("ABANDONED");
   });
 });

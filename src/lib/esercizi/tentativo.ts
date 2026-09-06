@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import type { TentativoStatus } from "@prisma/client";
 import type { Answer, QuestionState, MarkingResult, Locale } from "@savint/engine";
 import { prisma } from "@/lib/db/client";
 import { ricalcola } from "./marking";
@@ -10,7 +11,11 @@ export interface TentativoAperto {
   state: QuestionState | null;
   score: number;
   maxScore: number;
-  status: "IN_PROGRESS" | "COMPLETED";
+  status: TentativoStatus;
+  /** L'ultimo tocco sul tentativo (`@updatedAt`): serve al player per dire
+   * QUANDO risale il lavoro che sta riprendendo, non solo che lo sta
+   * riprendendo. */
+  lastActivityAt: Date;
 }
 
 /** Restituisce il tentativo in corso dello studente su quell'esercizio, o ne
@@ -48,6 +53,7 @@ export async function avviaORiprendi(studentId: string, esercizioId: string): Pr
     score: t.score,
     maxScore: t.maxScore,
     status: t.status,
+    lastActivityAt: t.lastActivityAt,
   };
 }
 
@@ -124,4 +130,36 @@ export async function completa(
     },
   });
   return { ok: true, score: esito.score, maxScore: esito.maxScore };
+}
+
+/** Abbandona il tentativo in corso: lo studente ricomincia da capo, senza
+ * dover finire quello che ha davanti per liberarsi di risposte che non
+ * riconosce più (il difetto riportato dal committente — vedi il dispaccio).
+ *
+ * Segna lo stato `ABANDONED`, mai `COMPLETED`: un sotto-progetto futuro
+ * conterà i completamenti per stabilire se un compito è stato consegnato, e
+ * un tentativo abbandonato non deve mai poter sembrare consegnato. Non crea
+ * qui il tentativo nuovo — quello resta compito di `avviaORiprendi`, che ne
+ * apre uno con un seme nuovo al primo accesso successivo, la stessa strada
+ * già presa dopo un completamento (vedi il test gemello). Un solo punto che
+ * sa come nasce un tentativo, non due.
+ *
+ * Rifiuta un tentativo già `COMPLETED`: abbandonare un lavoro già consegnato
+ * non ha senso, e soprattutto non deve MAI poter spostare indietro quello
+ * stato — è la garanzia che conta di più per il conteggio futuro. Idempotente
+ * su un tentativo già `ABANDONED` (un doppio clic, o una richiesta ritentata
+ * dopo un timeout, non deve fallire né riscrivere nulla), sullo stesso
+ * modello di `completa` sopra. */
+export async function abbandona(
+  tentativoId: string,
+  studentId: string,
+): Promise<{ ok: true } | { ok: false; motivo: "non_trovato" | "non_tuo" | "gia_completato" }> {
+  const t = await prisma.tentativo.findUnique({ where: { id: tentativoId } });
+  if (!t) return { ok: false, motivo: "non_trovato" };
+  if (t.studentId !== studentId) return { ok: false, motivo: "non_tuo" };
+  if (t.status === "COMPLETED") return { ok: false, motivo: "gia_completato" };
+  if (t.status === "ABANDONED") return { ok: true };
+
+  await prisma.tentativo.update({ where: { id: t.id }, data: { status: "ABANDONED" } });
+  return { ok: true };
 }

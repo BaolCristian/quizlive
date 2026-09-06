@@ -1112,6 +1112,13 @@
     "nessunEsercizio": "No exercises are available yet.",
     "tentativoInCorso": "Attempt in progress: {score}/{maxScore}",
     "tentativoAperto": "Attempt in progress",
-    "ultimoTentativo": "Last attempt: {score}/{maxScore}"
+    "ultimoTentativo": "Last attempt: {score}/{maxScore}",
+    "ripresaTentativo": "You're continuing an attempt you already started. Last edited: {quando}.",
+    "ricomincia": "Start over",
+    "ricominciaTitolo": "Start over?",
+    "ricominciaDescrizione": "Your answers so far will be lost: the exercise will restart from scratch, with different numbers.",
+    "ricominciaAzione": "Start over",
+    "annulla": "Cancel",
+    "erroreRicomincio": "Could not start over. Please try again."
   }
 }

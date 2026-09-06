@@ -1,11 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
 import { readFileSync } from "fs";
 import path from "path";
 import type { NumbasQuestionJSON } from "@savint/engine";
 import messaggiIt from "@/messages/it.json";
+
+// `useRouter` (chiamato da `confermaRicomincio`, dopo che "Ricomincia" ha
+// avuto successo): fuori da un vero App Router lancia — nessun test qui sotto
+// monta la pagina intera. `mockRefresh` è condiviso e ripulito in
+// `beforeEach`, così i test sul "ricomincia" possono verificarne le chiamate.
+const mockRefresh = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: mockRefresh }) }));
+
 import { PlayerEsercizio } from "../player-esercizio";
 
 const { question } = JSON.parse(
@@ -85,6 +93,7 @@ function montaggio(props: Partial<React.ComponentProps<typeof PlayerEsercizio>> 
         seed="seme-di-prova"
         content={question}
         statoIniziale={null}
+        lastActivityAt={new Date("2026-09-01T10:00:00Z")}
         locale="it"
         {...props}
       />
@@ -93,6 +102,7 @@ function montaggio(props: Partial<React.ComponentProps<typeof PlayerEsercizio>> 
 }
 
 beforeEach(() => {
+  mockRefresh.mockClear();
   global.fetch = vi.fn(async () => new Response(
     JSON.stringify({ score: 2, maxScore: 2, feedback: [{ type: "correct", message: "Giusto." }] }),
     { status: 200 },
@@ -576,5 +586,141 @@ describe("PlayerEsercizio — ripasso dopo un errore", () => {
     // Con questo seme l'abbinamento è diagonale: 4 righe, 4 coppie.
     expect(rispostaAttesa.querySelectorAll("li").length).toBe(4);
     expect(rispostaAttesa.textContent).not.toMatch(/\btrue\b|\bfalse\b/i);
+  });
+});
+
+// Il difetto riportato dal committente: uno studente apriva un esercizio e
+// vedeva subito due campi già compilati, un punteggio di 0/2 e un riquadro
+// rosso sotto ciascun campo — PRIMA di aver risposto a qualunque cosa. Vero
+// (il tentativo era ancora in corso da prima), ma niente in pagina lo diceva:
+// un ripristino silenzioso è indistinguibile da un bug. Il banner qui sotto è
+// la correzione — e solo quando c'è davvero qualcosa da spiegare.
+describe("PlayerEsercizio — banner di ripresa", () => {
+  const TESTO_BANNER = /Stai riprendendo un tentativo già iniziato/;
+
+  const statoConRisposta = {
+    seed: "seme-di-prova", answered: true, submitted: 1, adviceDisplayed: false, revealed: false,
+    score: 0, marks: 2,
+    parts: [{ path: "p0", answered: true, score: 0, marks: 2, answer: "3" }],
+  };
+
+  it("non compare su un tentativo appena aperto, senza stato salvato", async () => {
+    montaggio({ statoIniziale: null });
+    await waitFor(() => screen.getByRole("textbox"));
+    expect(screen.queryByText(TESTO_BANNER)).toBeNull();
+  });
+
+  // Il punto esatto della segnalazione: una riga esiste (il tentativo è
+  // stato creato al primo accesso, `avviaORiprendi`) ma nessuna parte è
+  // ancora stata risposta. Non è una ripresa, è un esercizio mai iniziato.
+  it("non compare quando lo stato esiste ma nessuna parte e' stata risposta", async () => {
+    const statoVuoto = {
+      seed: "seme-di-prova", answered: false, submitted: 0, adviceDisplayed: false, revealed: false,
+      score: 0, marks: 2,
+      parts: [{ path: "p0", answered: false, score: 0, marks: 2 }],
+    };
+    montaggio({ statoIniziale: statoVuoto as never });
+    await waitFor(() => screen.getByRole("textbox"));
+    expect(screen.queryByText(TESTO_BANNER)).toBeNull();
+  });
+
+  it("compare, con quando risale il lavoro, quando almeno una parte e' stata risposta", async () => {
+    montaggio({
+      statoIniziale: statoConRisposta as never,
+      lastActivityAt: new Date("2026-09-01T10:00:00Z"),
+    });
+    const banner = await screen.findByText(TESTO_BANNER);
+    expect(banner).toBeInTheDocument();
+    // Non solo la frase fissa: risponde anche a "quando", altrimenti il
+    // banner solleverebbe la stessa domanda del difetto originale invece di
+    // rispondere. `{quando}` non sostituito lascerebbe l'anno fuori dal testo.
+    expect(banner.closest("[role='status']")?.textContent).toContain("2026");
+  });
+
+  it("resta visibile finche' lo studente non interagisce (non e' un toast a tempo)", async () => {
+    montaggio({ statoIniziale: statoConRisposta as never });
+    await screen.findByText(TESTO_BANNER);
+    // Nessuna interazione: il banner c'è ancora un istante dopo, non è
+    // sparito da solo.
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.getByText(TESTO_BANNER)).toBeInTheDocument();
+  });
+
+  it("sparisce non appena lo studente modifica una risposta", async () => {
+    montaggio({ statoIniziale: statoConRisposta as never });
+    await screen.findByText(TESTO_BANNER);
+    await userEvent.clear(screen.getByRole("textbox"));
+    await userEvent.type(screen.getByRole("textbox"), "5");
+    expect(screen.queryByText(TESTO_BANNER)).toBeNull();
+  });
+});
+
+// "Let them start over": una via per abbandonare il tentativo in corso e
+// aprirne uno nuovo, dietro conferma esplicita — mai un bottone che distrugge
+// risposte al primo clic, accanto a "Invia".
+describe("PlayerEsercizio — ricomincia", () => {
+  it("il bottone apre una richiesta di conferma, senza mandare nessuna chiamata", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    global.fetch = fetchMock as never;
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.ricomincia }));
+
+    expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
+    expect(screen.getByText(messaggiIt.esercizi.ricominciaDescrizione)).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("annullare chiude la richiesta senza distruggere nulla", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 }));
+    global.fetch = fetchMock as never;
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.ricomincia }));
+    const dialogo = await screen.findByRole("alertdialog");
+
+    await userEvent.click(within(dialogo).getByRole("button", { name: messaggiIt.esercizi.annulla }));
+
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  // Il cuore del test-driven: solo la conferma ESPLICITA nel dialogo deve
+  // arrivare a distruggere qualcosa. La rotta è `.../abbandona`, mai
+  // `.../completa` — un tentativo abbandonato non deve mai poter sembrare
+  // consegnato (vedi il dominio).
+  it("confermare abbandona il tentativo e aggiorna la pagina", async () => {
+    const fetchMock = vi.fn(async (input: string | URL | Request) => {
+      expect(String(input)).toContain("/api/esercizi/tentativi/t1/abbandona");
+      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    });
+    global.fetch = fetchMock as never;
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.ricomincia }));
+    const dialogo = await screen.findByRole("alertdialog");
+
+    await userEvent.click(within(dialogo).getByRole("button", { name: messaggiIt.esercizi.ricominciaAzione }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+  });
+
+  it("un errore di rete mostra un messaggio, non chiude il dialogo e non aggiorna la pagina", async () => {
+    global.fetch = vi.fn(async () => { throw new Error("rete giù"); }) as never;
+    montaggio();
+    await waitFor(() => screen.getByRole("textbox"));
+    await userEvent.click(screen.getByRole("button", { name: messaggiIt.esercizi.ricomincia }));
+    const dialogo = await screen.findByRole("alertdialog");
+
+    await userEvent.click(within(dialogo).getByRole("button", { name: messaggiIt.esercizi.ricominciaAzione }));
+
+    await waitFor(() => expect(screen.getByText(messaggiIt.esercizi.erroreRicomincio)).toBeInTheDocument());
+    expect(mockRefresh).not.toHaveBeenCalled();
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
   });
 });

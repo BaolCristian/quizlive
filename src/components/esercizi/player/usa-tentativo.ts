@@ -56,3 +56,11 @@ export function inviaRisposta(
 export function completaTentativo(tentativoId: string, locale: "it" | "en"): Promise<EsitoCompletamento> {
   return postJson<EsitoCompletamento>(`/api/esercizi/tentativi/${tentativoId}/completa`, undefined, locale);
 }
+
+/** Abbandona il tentativo in corso: la rotta lo marca `ABANDONED` (mai
+ * `COMPLETED`, vedi il dominio) senza aprirne uno nuovo. È compito di chi
+ * chiama far ripartire `avviaORiprendi` — di norma un `router.refresh()` sulla
+ * stessa pagina — così un solo posto sa come nasce un tentativo. */
+export function abbandonaTentativo(tentativoId: string, locale: "it" | "en"): Promise<{ ok: true }> {
+  return postJson<{ ok: true }>(`/api/esercizi/tentativi/${tentativoId}/abbandona`, undefined, locale);
+}

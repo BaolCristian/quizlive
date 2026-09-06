@@ -6,16 +6,18 @@ vi.mock("@/lib/auth/require-role", () => ({
 vi.mock("@/lib/esercizi/tentativo", () => ({
   applicaRisposta: vi.fn(),
   completa: vi.fn(),
+  abbandona: vi.fn(),
 }));
 vi.mock("@/lib/rate-limit/db-rate-limit", () => ({
   checkRateLimit: vi.fn(async () => ({ allowed: true })),
 }));
 
 import { requireStudent } from "@/lib/auth/require-role";
-import { applicaRisposta, completa } from "@/lib/esercizi/tentativo";
+import { applicaRisposta, completa, abbandona } from "@/lib/esercizi/tentativo";
 import { checkRateLimit } from "@/lib/rate-limit/db-rate-limit";
 import { POST } from "@/app/api/esercizi/tentativi/[id]/risposta/route";
 import { POST as POST_COMPLETA } from "@/app/api/esercizi/tentativi/[id]/completa/route";
+import { POST as POST_ABBANDONA } from "@/app/api/esercizi/tentativi/[id]/abbandona/route";
 
 const params = Promise.resolve({ id: "t1" });
 const richiesta = (body: unknown) =>
@@ -203,5 +205,68 @@ describe("POST completa", () => {
     vi.mocked(completa).mockResolvedValue({ ok: true, score: 1, maxScore: 1 });
     await POST_COMPLETA(richiestaCompleta(), { params: paramsCompleta });
     expect(completa).toHaveBeenCalledWith("t1", "u-vero", "it");
+  });
+});
+
+describe("POST abbandona", () => {
+  const paramsAbbandona = Promise.resolve({ id: "t1" });
+  const richiestaAbbandona = () =>
+    new Request("http://x/api/esercizi/tentativi/t1/abbandona", { method: "POST" });
+
+  it("401 se non autenticato", async () => {
+    vi.mocked(requireStudent).mockResolvedValue({ ok: false, response: new Response(null, { status: 401 }) } as never);
+    expect((await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona })).status).toBe(401);
+  });
+
+  it("404 se il tentativo non esiste", async () => {
+    vi.mocked(abbandona).mockResolvedValue({ ok: false, motivo: "non_trovato" });
+    expect((await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona })).status).toBe(404);
+  });
+
+  // La verifica di proprietà: senza questo controllo uno studente potrebbe
+  // distruggere il tentativo di un altro passandone semplicemente l'id.
+  it("403 se il tentativo e' di un altro", async () => {
+    vi.mocked(abbandona).mockResolvedValue({ ok: false, motivo: "non_tuo" });
+    expect((await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona })).status).toBe(403);
+  });
+
+  // Un tentativo già consegnato non deve poter tornare indietro: vedi il
+  // commento su `abbandona` nel dominio.
+  it("409 se gia' completato", async () => {
+    vi.mocked(abbandona).mockResolvedValue({ ok: false, motivo: "gia_completato" });
+    expect((await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona })).status).toBe(409);
+  });
+
+  it("200 quando l'abbandono riesce", async () => {
+    vi.mocked(abbandona).mockResolvedValue({ ok: true });
+    const r = await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona });
+    expect(r.status).toBe(200);
+    expect(await r.json()).toEqual({ ok: true });
+  });
+
+  it("429 quando il rate limit scatta", async () => {
+    const chiamateIniziali = vi.mocked(abbandona).mock.calls.length;
+    vi.mocked(checkRateLimit).mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
+    const r = await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona });
+    expect(r.status).toBe(429);
+    expect(r.headers.get("Retry-After")).toBe("30");
+    // Il tetto si applica prima del dominio: nessun abbandono tentato.
+    expect(vi.mocked(abbandona).mock.calls.length).toBe(chiamateIniziali);
+  });
+
+  it("il tetto e' contato per studente, con una chiave propria", async () => {
+    vi.mocked(requireStudent).mockResolvedValue({ ok: true, session: { user: { id: "u-vero" } } } as never);
+    vi.mocked(abbandona).mockResolvedValue({ ok: true });
+    await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona });
+    expect(checkRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({ key: "esercizi:abbandona:u-vero" }),
+    );
+  });
+
+  it("passa lo studente della sessione, non uno arbitrario", async () => {
+    vi.mocked(requireStudent).mockResolvedValue({ ok: true, session: { user: { id: "u-vero" } } } as never);
+    vi.mocked(abbandona).mockResolvedValue({ ok: true });
+    await POST_ABBANDONA(richiestaAbbandona(), { params: paramsAbbandona });
+    expect(abbandona).toHaveBeenCalledWith("t1", "u-vero");
   });
 });

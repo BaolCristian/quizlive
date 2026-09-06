@@ -612,6 +612,13 @@ model EsercizioVersione {
 enum TentativoStatus {
   IN_PROGRESS
   COMPLETED
+  // Aggiunto senza toccare i due valori esistenti (migrazione additiva, DB
+  // condiviso con l'ambiente di sviluppo del committente): un tentativo
+  // abbandonato dallo studente per ricominciare da capo. Mai `COMPLETED` — un
+  // sotto-progetto futuro conterà i completamenti per stabilire se un
+  // compito è stato consegnato, e un tentativo abbandonato non deve mai poter
+  // sembrare consegnato.
+  ABANDONED
 }
 
 model Tentativo {

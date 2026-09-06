@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Info, XCircle } from "lucide-react";
 import {
   loadQuestion,
   restoreQuestion,
@@ -20,7 +21,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { withBasePath } from "@/lib/base-path";
 import { ContenutoHtml } from "./contenuto-html";
 import { InputParte, type PartePubblica } from "./parti";
-import { completaTentativo, inviaRisposta } from "./usa-tentativo";
+import { abbandonaTentativo, completaTentativo, inviaRisposta } from "./usa-tentativo";
 
 type Fase = "caricamento" | "esercizio" | "riepilogo" | "errore";
 type PartBase = InstanceType<typeof parts.PartBase>;
@@ -34,7 +35,25 @@ export interface PlayerEsercizioProps {
   seed: string;
   content: unknown;
   statoIniziale: QuestionState | null;
+  /** Quando il tentativo è stato toccato l'ultima volta (`Tentativo.lastActivityAt`):
+   * serve solo al banner di ripresa, per dire QUANDO risale il lavoro che si
+   * sta riprendendo, non se riprenderlo — quella decisione la prende
+   * `statoGiaRisposto` da `statoIniziale`, mai da questa data. */
+  lastActivityAt: Date;
   locale: "it" | "en";
+}
+
+/** Un tentativo conta come "ripreso" solo se lo stato salvato contiene
+ * ALMENO una parte già risposta (`answered: true`), mai perché esiste
+ * semplicemente una riga in database. Il difetto riportato dal committente:
+ * uno studente vedeva due campi già compilati e un punteggio di 0/2 PRIMA di
+ * aver toccato nulla, senza che nulla in pagina dicesse che si trattava di
+ * un tentativo in corso da prima — un ripristino silenzioso, indistinguibile
+ * da un bug. Un tentativo appena creato ha comunque una riga (`avviaORiprendi`
+ * la crea al primo accesso) ma nessuna parte risposta: mostrare il banner
+ * anche lì trasformerebbe un esercizio mai iniziato in un falso allarme. */
+function statoGiaRisposto(stato: QuestionState | null): boolean {
+  return (stato?.parts ?? []).some((p) => p.answered);
 }
 
 /** Costruisce la forma pubblica di una parte per il player (Task 7:
@@ -360,13 +379,28 @@ function SpiegazioneParte({
 }
 
 export function PlayerEsercizio({
-  tentativoId, esercizioId, seed, content, statoIniziale, locale,
+  tentativoId, esercizioId, seed, content, statoIniziale, lastActivityAt, locale,
 }: PlayerEsercizioProps) {
   const t = useTranslations("esercizi");
+  const router = useRouter();
   // Lo stato del motore è un oggetto vivo (chiama `submit`, tiene punteggio e
   // storico): un `useRef`, non uno stato React, perché mutarlo non deve
   // ridisegnare da solo il componente.
   const domandaRef = useRef<Question | null>(null);
+
+  // Il banner di ripresa: visibile fin dal PRIMO render se lo stato arrivato
+  // da `page.tsx` porta già almeno una risposta (mai da un effetto — a quel
+  // punto lo studente avrebbe già visto un istante di schermo muto). Non un
+  // toast che sparisce da solo: resta finché lo studente non interagisce
+  // davvero con l'esercizio (la prima `cambiaRisposta`, sotto), perché può
+  // aver aperto la pagina ed essersi allontanato prima di leggerlo.
+  const [bannerRipresaVisibile, setBannerRipresaVisibile] = useState(() => statoGiaRisposto(statoIniziale));
+  const quandoRipreso = useMemo(
+    () => new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "it-IT", {
+      dateStyle: "medium", timeStyle: "short",
+    }).format(lastActivityAt),
+    [lastActivityAt, locale],
+  );
 
   const [fase, setFase] = useState<Fase>("caricamento");
   const [statementHtml, setStatementHtml] = useState("");
@@ -388,6 +422,13 @@ export function PlayerEsercizio({
   // nessuno deve sapere se lo studente ha guardato (vedi il dispaccio).
   const [soluzioneRivelata, setSoluzioneRivelata] = useState(false);
   const [rispostaRivelataPerParte, setRispostaRivelataPerParte] = useState<Record<string, boolean>>({});
+  // "Ricomincia": deliberatamente a due passi, mai un solo bottone accanto a
+  // "Invia" — `dialogoRicominciaAperto` apre solo la richiesta di conferma,
+  // `abbandonaTentativo` (che distrugge le risposte date finora) parte solo
+  // da `confermaRicomincio`, mai dal bottone che apre la conferma.
+  const [dialogoRicominciaAperto, setDialogoRicominciaAperto] = useState(false);
+  const [ricominciando, setRicominciando] = useState(false);
+  const [erroreRicomincio, setErroreRicomincio] = useState(false);
 
   useEffect(() => {
     try {
@@ -438,6 +479,10 @@ export function PlayerEsercizio({
 
   function cambiaRisposta(path: string, valore: Answer) {
     setRisposte((r) => ({ ...r, [path]: valore }));
+    // Il primo segno che lo studente è davvero tornato ed è al lavoro: il
+    // banner di ripresa ha fatto il suo compito, non deve restare a
+    // ingombrare mentre risponde a domande nuove.
+    setBannerRipresaVisibile(false);
   }
 
   /** Una parte è "confermata sbagliata" — la condizione che fa comparire il
@@ -567,6 +612,27 @@ export function PlayerEsercizio({
     }
   }
 
+  /** Distrugge il tentativo attuale (segnato `ABANDONED` dal server, mai
+   * `COMPLETED` — vedi `abbandona` nel dominio) e fa ripartire la pagina da
+   * capo: `router.refresh()` rifà girare `avviaORiprendi` lato server, che
+   * trova il vecchio tentativo non più `IN_PROGRESS` e ne apre uno nuovo con
+   * un seme diverso. Chiamata solo da `confermaRicomincio` DOPO la conferma
+   * esplicita nel dialogo — mai dal bottone che lo apre. */
+  async function confermaRicomincio() {
+    setRicominciando(true);
+    setErroreRicomincio(false);
+    try {
+      await abbandonaTentativo(tentativoId, locale);
+      setDialogoRicominciaAperto(false);
+      router.refresh();
+    } catch (e) {
+      console.error("[esercizi/player] abbandono del tentativo fallito", e);
+      setErroreRicomincio(true);
+    } finally {
+      setRicominciando(false);
+    }
+  }
+
   if (fase === "caricamento") {
     return <p>{t("caricamento")}</p>;
   }
@@ -613,12 +679,72 @@ export function PlayerEsercizio({
 
   return (
     <section className="space-y-6">
+      {bannerRipresaVisibile && (
+        // `role="status"` (live region "polite"): comparire in silenzio,
+        // senza che chi usa uno screen reader se ne accorga, sarebbe
+        // esattamente il difetto originale — uno stato reale mostrato come
+        // se non ci fosse nulla da spiegare. Resta finché lo studente non
+        // interagisce (`cambiaRisposta` la spegne): niente timeout, perché
+        // può aver aperto la pagina ed essersi allontanato.
+        <div
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-100"
+        >
+          <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+          <span>{t("ripresaTentativo", { quando: quandoRipreso })}</span>
+        </div>
+      )}
       <ContenutoHtml html={statementHtml} />
       {punteggio && (
         <p>
           {t("punteggio")}: {punteggio.score} / {punteggio.maxScore}
         </p>
       )}
+      <div>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setDialogoRicominciaAperto(true)}
+        >
+          {t("ricomincia")}
+        </Button>
+        {dialogoRicominciaAperto && (
+          // Conferma inline, non un bottone unico accanto a "Invia": lo
+          // studente deve leggere che le risposte date finora andranno
+          // perse PRIMA che qualcosa venga distrutto. `role="alertdialog"`:
+          // è una richiesta che interrompe per un sì/no immediato, non un
+          // annuncio passivo come i `role="status"` sopra.
+          <div
+            role="alertdialog"
+            aria-label={t("ricominciaTitolo")}
+            className="mt-2 space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4"
+          >
+            <p className="font-medium">{t("ricominciaTitolo")}</p>
+            <p className="text-sm text-muted-foreground">{t("ricominciaDescrizione")}</p>
+            {erroreRicomincio && (
+              <p role="alert" className="text-sm text-destructive">{t("erroreRicomincio")}</p>
+            )}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogoRicominciaAperto(false)}
+                disabled={ricominciando}
+              >
+                {t("annulla")}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={confermaRicomincio}
+                disabled={ricominciando}
+              >
+                {t("ricominciaAzione")}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
       {parti.map((parte) => (
         <div key={parte.path} className="space-y-2 rounded-lg border p-4">
           <InputParte

@@ -17,14 +17,30 @@ describe("pagina dell'esercizio", () => {
   });
 
   it("passa al player tentativo, seme, contenuto e stato", async () => {
+    const ultimaAttivita = new Date("2026-09-01T10:00:00Z");
     vi.mocked(avviaORiprendi).mockResolvedValue({
       tentativoId: "t1", seed: "s1", content: { name: "x" }, state: null,
-      score: 0, maxScore: 2, status: "IN_PROGRESS",
+      score: 0, maxScore: 2, status: "IN_PROGRESS", lastActivityAt: ultimaAttivita,
     });
     const albero = await Page({ params: Promise.resolve({ esercizioId: "01-equazione-primo-grado" }) });
     const props = (albero as { props: Record<string, unknown> }).props;
     expect(props.tentativoId).toBe("t1");
     expect(props.seed).toBe("s1");
     expect(props.statoIniziale).toBeNull();
+    expect(props.lastActivityAt).toBe(ultimaAttivita);
+  });
+
+  // Onda "spiega la ripresa": senza una `key` diversa per tentativo, dopo un
+  // abbandono (`router.refresh()`, vedi il player) React riutilizzerebbe la
+  // stessa istanza del player invece di montarne una nuova sul tentativo
+  // appena creato — la domanda e il seme restano quelli fissati al primo
+  // montaggio (commento gemello in `player-esercizio.tsx`).
+  it("usa il tentativoId come key, cosi' un tentativo diverso rimonta il player", async () => {
+    vi.mocked(avviaORiprendi).mockResolvedValue({
+      tentativoId: "t1", seed: "s1", content: { name: "x" }, state: null,
+      score: 0, maxScore: 2, status: "IN_PROGRESS", lastActivityAt: new Date(),
+    });
+    const albero = await Page({ params: Promise.resolve({ esercizioId: "01-equazione-primo-grado" }) });
+    expect((albero as { key: string | null }).key).toBe("t1");
   });
 });
