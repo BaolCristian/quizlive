@@ -1,0 +1,52 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Seno degli angoli notevoli",
+    "description": "Abbinare gli angoli notevoli del primo quadrante al valore corrispondente del seno.",
+    "yearLevel": 4,
+    "topic": "goniometria",
+    "tags": ["angoli-notevoli", "seno"],
+    "difficulty": 2
+  },
+  "question": {
+    "name": "Seno degli angoli notevoli",
+    "statement": "<p>Per ciascun angolo notevole, scegli il corrispondente valore del seno.</p>",
+    "advice": "<p>I valori del seno per gli angoli notevoli del primo quadrante sono \\(\\sin(30°) = \\frac{1}{2}\\), \\(\\sin(45°) = \\frac{\\sqrt{2}}{2}\\), \\(\\sin(60°) = \\frac{\\sqrt{3}}{2}\\), \\(\\sin(90°) = 1\\).</p>",
+    "variables": {},
+    "parts": [
+      {
+        "type": "m_n_x",
+        "marks": 0,
+        "prompt": "<p>Abbina ogni angolo al valore del suo seno.</p>",
+        "shuffleChoices": true,
+        "shuffleAnswers": true,
+        "displayType": "radiogroup",
+        "minMarks": 0,
+        "maxMarks": 0,
+        "minAnswers": 0,
+        "maxAnswers": 0,
+        "warningType": "none",
+        "showCellAnswerState": true,
+        "choices": [
+          "\\(\\sin(30°)\\)",
+          "\\(\\sin(45°)\\)",
+          "\\(\\sin(60°)\\)",
+          "\\(\\sin(90°)\\)"
+        ],
+        "answers": [
+          "\\(\\frac{1}{2}\\)",
+          "\\(\\frac{\\sqrt{2}}{2}\\)",
+          "\\(\\frac{\\sqrt{3}}{2}\\)",
+          "\\(1\\)"
+        ],
+        "matrix": [
+          ["1", "-1", "-1", "-1"],
+          ["-1", "1", "-1", "-1"],
+          ["-1", "-1", "1", "-1"],
+          ["-1", "-1", "-1", "1"]
+        ],
+        "layout": { "type": "all", "expression": "" }
+      }
+    ]
+  }
+}

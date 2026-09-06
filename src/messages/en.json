@@ -28,6 +28,7 @@
   },
   "sidebar": {
     "myQuizzes": "My Quizzes",
+    "exercises": "Exercises",
     "sessions": "Sessions",
     "statistics": "Statistics",
     "shares": "Shares",
@@ -53,8 +54,6 @@
   "student": {
     "areaTitle": "Student area",
     "greeting": "Hi, {name}",
-    "comingSoonTitle": "Your exercises will appear here",
-    "comingSoonBody": "We are setting up the maths practice area. When your teacher assigns the first exercises, you will see them on this page.",
     "logout": "Sign out"
   },
   "dashboard": {
@@ -1072,5 +1071,37 @@
     "transferSuccess": "{count} quizzes transferred to SAVINT.",
     "transferNotFound": "No account registered with this email.",
     "transferSystemMissing": "SAVINT account not configured on the hub."
+  },
+  "esercizi": {
+    "laTuaRisposta": "Your answer",
+    "rispostaTesto": "Write your answer",
+    "rispostaEspressione": "Your expression",
+    "segnapostoTesto": "e.g. cat",
+    "segnapostoEspressione": "e.g. 2*x + 1",
+    "cellaGriglia": "Row {riga}, column {colonna}",
+    "invia": "Submit",
+    "avanti": "Next",
+    "riprova": "Retry",
+    "completa": "Complete the attempt",
+    "punteggio": "Score",
+    "riepilogo": "Summary",
+    "caricamento": "Loading the exercise…",
+    "erroreCaricamento": "The exercise could not be loaded.",
+    "erroreRete": "Could not send the answer. Check your connection and try again.",
+    "rispostaCorretta": "Correct answer",
+    "rispostaSbagliata": "Wrong answer",
+    "tentativoCompletato": "Attempt completed.",
+    "tornaAgliEsercizi": "Back to your exercises",
+    "riprovaEsercizio": "Try the exercise again",
+    "mostraSoluzione": "Show solution",
+    "titoloDocente": "Exercises",
+    "titoloStudente": "Your exercises",
+    "annoArgomento": "Year {anno} · {argomento}",
+    "difficolta": "Difficulty {livello}",
+    "versione": "Version {numero}",
+    "nessunEsercizio": "No exercises are available yet.",
+    "tentativoInCorso": "Attempt in progress: {score}/{maxScore}",
+    "tentativoAperto": "Attempt in progress",
+    "ultimoTentativo": "Last attempt: {score}/{maxScore}"
   }
 }

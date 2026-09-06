@@ -1,0 +1,46 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Disequazione di secondo grado",
+    "description": "Riconoscere le proprietà dell'insieme delle soluzioni di una disequazione di secondo grado con radici note.",
+    "yearLevel": 3,
+    "topic": "disequazioni",
+    "tags": ["disequazioni", "secondo-grado"],
+    "difficulty": 2
+  },
+  "question": {
+    "name": "Disequazione di secondo grado",
+    "statement": "<p>Considera la disequazione di secondo grado \\(\\simplify{ x^2-{s}x+{p} } < 0\\), le cui soluzioni sono i valori di \\(x\\) compresi fra le radici \\(\\var{r1}\\) e \\(\\var{r2}\\) (con \\(\\var{r1} < \\var{r2}\\)).</p>",
+    "advice": "<p>Una parabola con la concavità verso l'alto è negativa fra le sue due radici: la disequazione è verificata per \\(\\var{r1} < x < \\var{r2}\\), estremi esclusi.</p>",
+    "variables": {
+      "r1": { "name": "r1", "definition": "random(-6..3)" },
+      "r2": { "name": "r2", "definition": "r1 + random(2..8)" },
+      "s": { "name": "s", "definition": "r1 + r2" },
+      "p": { "name": "p", "definition": "r1 * r2" }
+    },
+    "parts": [
+      {
+        "type": "m_n_2",
+        "marks": 0,
+        "prompt": "<p>Seleziona tutte le affermazioni vere sull'insieme delle soluzioni.</p>",
+        "shuffleChoices": true,
+        "displayType": "checkbox",
+        "displayColumns": 0,
+        "minMarks": 0,
+        "maxMarks": 0,
+        "minAnswers": 0,
+        "maxAnswers": 0,
+        "warningType": "none",
+        "showCellAnswerState": true,
+        "choices": [
+          "L'insieme delle soluzioni è \\(\\var{r1} < x < \\var{r2}\\)",
+          "L'insieme delle soluzioni è \\(x < \\var{r1}\\) oppure \\(x > \\var{r2}\\)",
+          "Il valore \\(x = \\var{r1}\\) è soluzione della disequazione",
+          "Il valore medio \\(\\frac{\\var{r1}+\\var{r2}}{2}\\) è soluzione della disequazione"
+        ],
+        "matrix": ["1", "-1", "-1", "1"],
+        "distractors": ["", "", "", ""]
+      }
+    ]
+  }
+}

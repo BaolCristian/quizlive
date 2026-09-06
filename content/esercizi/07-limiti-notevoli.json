@@ -1,0 +1,36 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Limite notevole del numero di Nepero",
+    "description": "Calcolare, con una tolleranza numerica, un limite notevole che generalizza la definizione del numero e.",
+    "yearLevel": 5,
+    "topic": "limiti",
+    "tags": ["limiti-notevoli", "numero-di-nepero"],
+    "difficulty": 3
+  },
+  "question": {
+    "name": "Limite notevole del numero di Nepero",
+    "statement": "<p>Calcola, con due cifre decimali, il limite notevole \\[\\lim_{x \\to +\\infty} \\left(1 + \\frac{\\var{k}}{x}\\right)^x.\\]</p>",
+    "advice": "<p>Il limite notevole \\(\\lim_{x \\to +\\infty} \\left(1+\\frac{k}{x}\\right)^x = e^k\\) generalizza la definizione del numero di Nepero. Con \\(k = \\var{k}\\) si ottiene \\(e^{\\var{k}} \\approx \\simplify{e^{k}}\\).</p>",
+    "variables": {
+      "k": { "name": "k", "definition": "random(1..4)" }
+    },
+    "parts": [
+      {
+        "type": "numberentry",
+        "marks": 2,
+        "prompt": "<p>Limite (con tolleranza \\(\\pm 0{,}05\\)):</p>",
+        "minValue": "e^k - 0.05",
+        "maxValue": "e^k + 0.05",
+        "precisionType": "dp",
+        "precision": "2",
+        "strictPrecision": false,
+        "precisionPartialCredit": 50,
+        "showPrecisionHint": true,
+        "allowFractions": false,
+        "notationStyles": ["plain", "en", "si-en", "plain-eu", "eu", "si-fr"],
+        "correctAnswerStyle": "plain-eu"
+      }
+    ]
+  }
+}

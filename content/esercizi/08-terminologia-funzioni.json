@@ -1,0 +1,56 @@
+{
+  "savint": {
+    "version": 1,
+    "title": "Terminologia delle funzioni",
+    "description": "Riconoscere la terminologia di base delle funzioni: dominio, codominio, iniettività, suriettività, parità e disparità. Ogni tentativo pesca due termini a caso da un elenco di sei.",
+    "yearLevel": 3,
+    "topic": "funzioni",
+    "tags": ["funzioni", "terminologia"],
+    "difficulty": 1
+  },
+  "question": {
+    "name": "Terminologia delle funzioni",
+    "statement": "<p>Sia \\(f\\) una funzione reale di variabile reale.</p>",
+    "variables": {
+      "domande": {
+        "name": "domande",
+        "definition": "[ \"<p>Come si chiama l'insieme dei valori della variabile indipendente per cui una funzione è definita?</p>\", \"<p>Come si chiama l'insieme dei valori assunti da una funzione, cioè le immagini di tutti gli elementi del dominio?</p>\", \"<p>Una funzione si dice ... se a valori distinti della variabile indipendente corrispondono sempre valori distinti della funzione. Quale aggettivo completa la frase? (una sola parola)</p>\", \"<p>Una funzione si dice ... se ogni elemento del codominio è immagine di almeno un elemento del dominio. Quale aggettivo completa la frase? (una sola parola)</p>\", \"<p>Una funzione si dice ... se il suo grafico è simmetrico rispetto all'asse delle ordinate. Quale aggettivo completa la frase? (una sola parola)</p>\", \"<p>Una funzione si dice ... se il suo grafico è simmetrico rispetto all'origine degli assi. Quale aggettivo completa la frase? (una sola parola)</p>\" ]"
+      },
+      "risposte": {
+        "name": "risposte",
+        "definition": "[ \"dominio\", \"codominio|immagine\", \"iniettiva\", \"suriettiva\", \"pari\", \"dispari\" ]"
+      },
+      "risposte_display": {
+        "name": "risposte_display",
+        "definition": "[ \"dominio\", \"codominio\", \"iniettiva\", \"suriettiva\", \"pari\", \"dispari\" ]"
+      },
+      "ordine": { "name": "ordine", "definition": "shuffle(0..5)" },
+      "i0": { "name": "i0", "definition": "ordine[0]" },
+      "i1": { "name": "i1", "definition": "ordine[1]" },
+      "domanda0": { "name": "domanda0", "definition": "domande[i0]" },
+      "domanda1": { "name": "domanda1", "definition": "domande[i1]" },
+      "risposta0": { "name": "risposta0", "definition": "risposte[i0]" },
+      "risposta1": { "name": "risposta1", "definition": "risposte[i1]" },
+      "risposta0_display": { "name": "risposta0_display", "definition": "risposte_display[i0]" },
+      "risposta1_display": { "name": "risposta1_display", "definition": "risposte_display[i1]" }
+    },
+    "parts": [
+      {
+        "type": "patternmatch",
+        "marks": 1,
+        "prompt": "{domanda0}",
+        "answer": "{risposta0}",
+        "displayAnswer": "{risposta0_display}",
+        "matchMode": "regex"
+      },
+      {
+        "type": "patternmatch",
+        "marks": 1,
+        "prompt": "{domanda1}",
+        "answer": "{risposta1}",
+        "displayAnswer": "{risposta1_display}",
+        "matchMode": "regex"
+      }
+    ]
+  }
+}

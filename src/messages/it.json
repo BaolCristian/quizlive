@@ -28,6 +28,7 @@
   },
   "sidebar": {
     "myQuizzes": "I miei Quiz",
+    "exercises": "Esercizi",
     "sessions": "Sessioni",
     "statistics": "Statistiche",
     "shares": "Condivisioni",
@@ -53,8 +54,6 @@
   "student": {
     "areaTitle": "Area studente",
     "greeting": "Ciao, {name}",
-    "comingSoonTitle": "Qui troverai i tuoi esercizi",
-    "comingSoonBody": "Stiamo preparando la palestra di matematica. Quando il tuo docente assegnerà i primi esercizi, li vedrai in questa pagina.",
     "logout": "Esci"
   },
   "dashboard": {
@@ -1072,5 +1071,37 @@
     "transferSuccess": "{count} quiz trasferiti a SAVINT.",
     "transferNotFound": "Nessun account registrato con questa email.",
     "transferSystemMissing": "Account SAVINT non configurato sull'hub."
+  },
+  "esercizi": {
+    "laTuaRisposta": "La tua risposta",
+    "rispostaTesto": "Scrivi la tua risposta",
+    "rispostaEspressione": "La tua espressione",
+    "segnapostoTesto": "es. gatto",
+    "segnapostoEspressione": "es. 2*x + 1",
+    "cellaGriglia": "Riga {riga}, colonna {colonna}",
+    "invia": "Invia",
+    "avanti": "Avanti",
+    "riprova": "Riprova",
+    "completa": "Completa il tentativo",
+    "punteggio": "Punteggio",
+    "riepilogo": "Riepilogo",
+    "caricamento": "Caricamento dell'esercizio…",
+    "erroreCaricamento": "Non è stato possibile caricare l'esercizio.",
+    "erroreRete": "Non è stato possibile inviare la risposta. Controlla la connessione e riprova.",
+    "rispostaCorretta": "Risposta corretta",
+    "rispostaSbagliata": "Risposta sbagliata",
+    "tentativoCompletato": "Tentativo completato.",
+    "tornaAgliEsercizi": "Torna ai tuoi esercizi",
+    "riprovaEsercizio": "Riprova l'esercizio",
+    "mostraSoluzione": "Mostra la soluzione",
+    "titoloDocente": "Esercizi",
+    "titoloStudente": "I tuoi esercizi",
+    "annoArgomento": "Classe {anno} · {argomento}",
+    "difficolta": "Difficoltà {livello}",
+    "versione": "Versione {numero}",
+    "nessunEsercizio": "Non ci sono ancora esercizi disponibili.",
+    "tentativoInCorso": "Tentativo in corso: {score}/{maxScore}",
+    "tentativoAperto": "Tentativo in corso",
+    "ultimoTentativo": "Ultimo tentativo: {score}/{maxScore}"
   }
 }
