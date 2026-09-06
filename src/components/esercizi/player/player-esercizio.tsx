@@ -158,6 +158,207 @@ function VoceFeedback({ voce }: { voce: FeedbackItem }) {
   );
 }
 
+/** Gli indici (0-based) delle celle vere in una colonna di matrice booleana,
+ * `matrice[i][0]`: la forma che `correctAnswer()` restituisce SEMPRE per
+ * `1_n_2` e `m_n_2` (`MultipleResponsePart#getCorrectAnswer`, `maxMatrix`
+ * dopo il "flip" — una colonna sola, una riga per scelta), mai un indice
+ * nudo. Per `1_n_2` un solo indice è vero; per `m_n_2` possono esserlo più
+ * d'uno. */
+function indiciSceltaCorretta(matrice: unknown): number[] {
+  if (!Array.isArray(matrice)) return [];
+  const indici: number[] = [];
+  matrice.forEach((riga, i) => {
+    const valore = Array.isArray(riga) ? riga[0] : riga;
+    if (valore) indici.push(i);
+  });
+  return indici;
+}
+
+/** Le coppie riga→colonna vere di una griglia `m_n_x`: `correctAnswer()`
+ * restituisce la matrice indicizzata `[colonna][riga]` (la stessa
+ * convenzione di `ticks`, vedi il commento di `InputGriglia`), quindi va
+ * letta `matrice[colonna][riga]`, mai `matrice[riga][colonna]`. */
+function coppieCorretteGriglia(
+  matrice: unknown,
+  numRighe: number,
+  numColonne: number,
+): Array<{ riga: number; colonna: number }> {
+  if (!Array.isArray(matrice)) return [];
+  const coppie: Array<{ riga: number; colonna: number }> = [];
+  for (let riga = 0; riga < numRighe; riga++) {
+    for (let colonna = 0; colonna < numColonne; colonna++) {
+      if ((matrice[colonna] as boolean[] | undefined)?.[riga]) {
+        coppie.push({ riga, colonna });
+        break;
+      }
+    }
+  }
+  return coppie;
+}
+
+/** La risposta attesa di UNA parte semplice (mai un `gapfill`, che si
+ * scompone gap per gap in `RispostaAttesa` sotto), letta da
+ * `PartBase#correctAnswer()` e mai dal meccanismo di rivelazione del motore
+ * (`getAdvice`/`revealAnswer`, vietati: mutano lo stato e rischiano di
+ * perdere le risposte alla riserializzazione — vedi il dispaccio).
+ *
+ * La forma dipende dal tipo (part-base.ts, gapfill-part.ts,
+ * multiple-response-part.ts): una stringa già pronta per `numberentry`,
+ * `jme` e `patternmatch`; sempre una matrice booleana per le scelte
+ * (`1_n_2`, `m_n_2`, `m_n_x`) — mostrarla così com'è sarebbe peggio che non
+ * mostrare niente, quindi qui si traduce nella scelta o nelle coppie che
+ * rappresenta. */
+function RispostaAttesaValore({
+  parteEngine,
+  partePubblica,
+}: {
+  parteEngine: PartBase;
+  partePubblica: PartePubblica;
+}) {
+  const risposta = parteEngine.correctAnswer();
+
+  if (partePubblica.type === "1_n_2" || partePubblica.type === "m_n_2") {
+    const scelte = partePubblica.scelte ?? [];
+    const indici = indiciSceltaCorretta(risposta);
+    if (indici.length === 0) return null;
+    return (
+      <ul className="list-disc space-y-1 pl-5">
+        {indici.map((i) => (
+          <li key={i}>
+            <ContenutoHtml html={scelte[i] ?? ""} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  if (partePubblica.type === "m_n_x") {
+    const righe = partePubblica.righe ?? [];
+    const colonne = partePubblica.colonne ?? [];
+    const coppie = coppieCorretteGriglia(risposta, righe.length, colonne.length);
+    return (
+      <ul className="list-disc space-y-1 pl-5">
+        {coppie.map(({ riga, colonna }) => (
+          <li key={riga}>
+            <ContenutoHtml html={righe[riga] ?? ""} /> → <ContenutoHtml html={colonne[colonna] ?? ""} />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  // numberentry, jme, patternmatch: `correctAnswer()` è già una stringa
+  // pronta per lo studente (part-base.ts, ciascuna col proprio
+  // `getCorrectAnswer`).
+  return <ContenutoHtml html={risposta === null || risposta === undefined ? "" : String(risposta)} />;
+}
+
+/** La risposta attesa di una parte, gap per gap quando è un `gapfill`: la
+ * risposta attesa appartiene alla PARTE (a differenza della soluzione
+ * svolta, che appartiene alla domanda, vedi `SpiegazioneParte`), e per un
+ * gapfill quella parte è ciascuno spazio — non l'array che
+ * `GapFillPart#correctAnswer()` restituirebbe per l'intero gapfill. Ogni
+ * spazio è etichettato col nome che il motore gli assegna già
+ * (`PartBase#name`, "Spazio 0", "Spazio 1", …), lo stesso che compare nel
+ * feedback del motore: nessuna nuova chiave i18n per numerarli. */
+function RispostaAttesa({ parteEngine, partePubblica }: { parteEngine: PartBase; partePubblica: PartePubblica }) {
+  if (partePubblica.type === "gapfill") {
+    const gaps = partePubblica.gaps ?? [];
+    return (
+      <ul className="space-y-1">
+        {gaps.map((gapPubblico, i) => {
+          const gapEngine = parteEngine.gaps[i];
+          if (!gapEngine) return null;
+          return (
+            <li key={gapPubblico.path}>
+              <strong>{gapEngine.name}</strong>: <RispostaAttesaValore parteEngine={gapEngine} partePubblica={gapPubblico} />
+            </li>
+          );
+        })}
+      </ul>
+    );
+  }
+  return <RispostaAttesaValore parteEngine={parteEngine} partePubblica={partePubblica} />;
+}
+
+/** Il ripasso dopo un errore: due passi, mai simultanei.
+ *
+ * Primo passo — un bottone "Come si risolve" rivela `Question#adviceHtml`,
+ * la soluzione svolta con il seme dello studente già sostituito. La
+ * soluzione appartiene alla DOMANDA, non alla parte (`soluzioneRivelata` è
+ * un solo flag per l'intero esercizio, passato dal chiamante): su un
+ * gapfill con più spazi sbagliati va mostrata una volta sola, non una volta
+ * per spazio — altrimenti si legge lo stesso paragrafo due volte (vedi
+ * 03-sistemi-lineari). Quando `adviceHtml` è vuoto (08-terminologia-funzioni,
+ * l'unico degli otto esercizi senza una soluzione scritta) questo primo
+ * passo si salta del tutto: si passa dritti al secondo.
+ *
+ * Secondo passo — un bottone rivela la risposta attesa DI QUESTA parte
+ * (`rispostaRivelata`, per parte: ognuna la propria).
+ *
+ * Il contenuto rivelato è in un `role="status"` (live region "polite",
+ * annunciata da sé): comparire in silenzio, senza che chi usa uno screen
+ * reader se ne accorga, sarebbe come non comparire affatto. */
+function SpiegazioneParte({
+  parte,
+  parteEngine,
+  adviceHtml,
+  soluzioneRivelata,
+  onRivelaSoluzione,
+  rispostaRivelata,
+  onRivelaRisposta,
+}: {
+  parte: PartePubblica;
+  parteEngine: PartBase;
+  adviceHtml: string;
+  soluzioneRivelata: boolean;
+  onRivelaSoluzione: () => void;
+  rispostaRivelata: boolean;
+  onRivelaRisposta: () => void;
+}) {
+  const t = useTranslations("esercizi");
+  const haSoluzione = adviceHtml.trim().length > 0;
+  const prontoPerRisposta = !haSoluzione || soluzioneRivelata;
+
+  return (
+    <div className="space-y-2 border-t pt-2">
+      {haSoluzione && !soluzioneRivelata && (
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11"
+          aria-expanded={false}
+          onClick={onRivelaSoluzione}
+        >
+          {t("comeSiRisolve")}
+        </Button>
+      )}
+      {haSoluzione && soluzioneRivelata && (
+        <div role="status" aria-label={t("mostraSoluzione")} className="rounded-md bg-muted/50 p-3 text-sm">
+          <ContenutoHtml html={adviceHtml} />
+        </div>
+      )}
+      {prontoPerRisposta && !rispostaRivelata && (
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11"
+          aria-expanded={false}
+          onClick={onRivelaRisposta}
+        >
+          {t("mostraRispostaAttesa")}
+        </Button>
+      )}
+      {prontoPerRisposta && rispostaRivelata && (
+        <div role="status" aria-label={t("rispostaAttesa")} className="rounded-md bg-muted/50 p-3 text-sm">
+          <strong>{t("rispostaAttesa")}: </strong>
+          <RispostaAttesa parteEngine={parteEngine} partePubblica={parte} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function PlayerEsercizio({
   tentativoId, esercizioId, seed, content, statoIniziale, locale,
 }: PlayerEsercizioProps) {
@@ -169,6 +370,7 @@ export function PlayerEsercizio({
 
   const [fase, setFase] = useState<Fase>("caricamento");
   const [statementHtml, setStatementHtml] = useState("");
+  const [adviceHtml, setAdviceHtml] = useState("");
   const [parti, setParti] = useState<PartePubblica[]>([]);
   const [risposte, setRisposte] = useState<Record<string, Answer>>({});
   const [feedbackPerParte, setFeedbackPerParte] = useState<Record<string, FeedbackItem[]>>({});
@@ -178,6 +380,14 @@ export function PlayerEsercizio({
   const [punteggio, setPunteggio] = useState<Punteggio | null>(null);
   const [completando, setCompletando] = useState(false);
   const [erroreCompletamento, setErroreCompletamento] = useState(false);
+  // Il ripasso dopo un errore (`SpiegazioneParte`): `soluzioneRivelata` è UN
+  // solo flag per l'intera domanda (la soluzione svolta appartiene alla
+  // domanda, non alla parte), `rispostaRivelataPerParte` uno per parte (la
+  // risposta attesa appartiene alla parte). Nessuno dei due viaggia verso il
+  // server: è pratica libera, senza tentativi limitati né classifica, e
+  // nessuno deve sapere se lo studente ha guardato (vedi il dispaccio).
+  const [soluzioneRivelata, setSoluzioneRivelata] = useState(false);
+  const [rispostaRivelataPerParte, setRispostaRivelataPerParte] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     try {
@@ -210,6 +420,7 @@ export function PlayerEsercizio({
 
       setParti(partiCostruite);
       setStatementHtml(q.statementHtml);
+      setAdviceHtml(q.adviceHtml);
       setRisposte(risposteIniziali);
       setRispostoConSuccesso(rispostoIniziale);
       setFeedbackPerParte(feedbackIniziale);
@@ -227,6 +438,33 @@ export function PlayerEsercizio({
 
   function cambiaRisposta(path: string, valore: Answer) {
     setRisposte((r) => ({ ...r, [path]: valore }));
+  }
+
+  /** Una parte è "confermata sbagliata" — la condizione che fa comparire il
+   * ripasso — solo dopo un giro di rete riuscito (`rispostoConSuccesso`, mai
+   * prima: niente ripasso su un calcolo ottimistico che il server potrebbe
+   * ancora smentire).
+   *
+   * Il tipo delle voci di feedback (`"incorrect"`) NON è un segnale
+   * affidabile per questo, a differenza di quanto sembra sulle parti a
+   * risposta singola: per `1_n_2`/`m_n_2`/`m_n_x` lo script di correzione
+   * (`multipleresponse.jme`, ramo `only_ticked_score_ticks`) dà quasi sempre
+   * il proprio commento per cella con `add_credit`, che NON porta un
+   * `reason` — sia per una spunta giusta sia per una sbagliata — e diventa
+   * "info" (grigio, senza icona) in `publicFeedbackType`. Passa a
+   * "incorrect" (`negative_feedback`) solo se quella cella ha peso ESATTAMENTE
+   * zero nella matrice E l'autore ha scritto un distrattore non vuoto — vero
+   * per 02-scomposizione-polinomi, falso per 04 e 05 (pesi tutti ±1, nessun
+   * distrattore): verificato al banco, un 0/2 su 04 non mostrava alcun
+   * bottone. Il segnale giusto è quindi il credito della parte
+   * (`PartBase#result.correct`, `credit >= 1`): calcolato dallo stesso
+   * motore che gira anche sul server, sullo stesso stato appena confermato
+   * dal giro di rete riuscito — è quello, e non il tipo dei messaggi, a
+   * dire se la parte è a posto. */
+  function parteConfermataSbagliata(path: string): boolean {
+    if (!rispostoConSuccesso[path]) return false;
+    const parteEngine = domandaRef.current?.getPart(path);
+    return parteEngine?.result?.correct === false;
   }
 
   async function inviaParte(parte: PartePubblica) {
@@ -405,6 +643,24 @@ export function PlayerEsercizio({
               </Button>
             </div>
           )}
+          {parteConfermataSbagliata(parte.path) &&
+            (() => {
+              const parteEngine = domandaRef.current?.getPart(parte.path);
+              if (!parteEngine) return null;
+              return (
+                <SpiegazioneParte
+                  parte={parte}
+                  parteEngine={parteEngine}
+                  adviceHtml={adviceHtml}
+                  soluzioneRivelata={soluzioneRivelata}
+                  onRivelaSoluzione={() => setSoluzioneRivelata(true)}
+                  rispostaRivelata={rispostaRivelataPerParte[parte.path] === true}
+                  onRivelaRisposta={() =>
+                    setRispostaRivelataPerParte((r) => ({ ...r, [parte.path]: true }))
+                  }
+                />
+              );
+            })()}
         </div>
       ))}
       {tutteRisposte && (
