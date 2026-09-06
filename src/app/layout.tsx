@@ -7,6 +7,10 @@ import { HubHeader } from "@/components/hub/hub-header";
 import { isHubMode } from "@/lib/config/savint-mode";
 import { getHubSessionFromCookies } from "@/lib/auth/hub-session";
 import "./globals.css";
+// Gli stili di KaTeX vanno importati da qui e non da globals.css: Tailwind 4
+// non risolve un @import verso node_modules, e senza la regola che nasconde il
+// MathML il browser rende ogni formula DUE volte (MathML nativo + HTML di KaTeX).
+import "katex/dist/katex.min.css";
 
 const atkinson = Atkinson_Hyperlegible({
   variable: "--font-sans",
