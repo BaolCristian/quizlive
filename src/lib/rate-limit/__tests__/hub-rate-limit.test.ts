@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { hubRateLimit, _resetForTests, resetRateLimitsByPrefix } from "../hub-rate-limit";
+import { hubRateLimit, resetRateLimitsByPrefix } from "../hub-rate-limit";
 
 // All keys in this test file are prefixed to avoid collision with
 // other test files running in parallel in the same DB.
@@ -70,15 +70,6 @@ describe("hubRateLimit", () => {
       expect(spy).toHaveBeenCalledOnce();
       expect(spy).toHaveBeenCalledWith({ key: "delegated", windowSeconds: 30, max: 5 });
       expect(result.allowed).toBe(true);
-    });
-
-    it("_resetForTests delegates to resetRateLimits", async () => {
-      const dbModule = await import("../db-rate-limit");
-      const spy = vi.spyOn(dbModule, "resetRateLimits").mockResolvedValue();
-
-      await _resetForTests();
-
-      expect(spy).toHaveBeenCalledOnce();
     });
   });
 });

@@ -77,15 +77,12 @@ export async function checkRateLimit(args: RateLimitArgs): Promise<RateLimitResu
 }
 
 /**
- * Delete all HubRateLimit rows. Used in tests to reset state.
- */
-export async function resetRateLimits(): Promise<void> {
-  await prisma.hubRateLimit.deleteMany();
-}
-
-/**
  * Delete HubRateLimit rows whose key starts with the given prefix.
- * Useful in parallel test suites to avoid cross-file interference.
+ * Useful in parallel test suites to avoid cross-file interference: Vitest
+ * runs test files concurrently against one shared database, so an unscoped
+ * reset here would delete windows that other files are mid-use of. There is
+ * intentionally no unscoped "delete everything" helper — nothing legitimate
+ * needs one, and every caller should own (and only touch) its own keys.
  */
 export async function resetRateLimitsByPrefix(prefix: string): Promise<void> {
   await prisma.hubRateLimit.deleteMany({

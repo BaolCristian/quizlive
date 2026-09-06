@@ -1,18 +1,19 @@
-import { describe, it, expect, beforeAll, afterEach, afterAll } from "vitest";
+import { describe, it, expect, afterEach, afterAll } from "vitest";
 import { prisma } from "@/lib/db/client";
+
+// Keys and rows here must be scoped to what this file creates. Vitest runs
+// test files concurrently against one shared database, so an unscoped
+// deleteMany() over HubReport/HubRateLimit would race with (and silently
+// delete rows for) every other file touching those tables at the same time.
+const RATE_LIMIT_PREFIX = "hub-moderation-models-test:";
 
 describe("HubReport and HubRateLimit models", () => {
   const accountIds: string[] = [];
   const quizIds: string[] = [];
 
-  beforeAll(async () => {
-    await prisma.hubReport.deleteMany();
-    await prisma.hubRateLimit.deleteMany();
-  });
-
   afterEach(async () => {
-    await prisma.hubReport.deleteMany();
-    await prisma.hubRateLimit.deleteMany();
+    await prisma.hubReport.deleteMany({ where: { hubQuizId: { in: quizIds } } });
+    await prisma.hubRateLimit.deleteMany({ where: { key: { startsWith: RATE_LIMIT_PREFIX } } });
   });
 
   afterAll(async () => {
@@ -61,9 +62,10 @@ describe("HubReport and HubRateLimit models", () => {
 
   it("enforces unique (key, windowStart) on HubRateLimit", async () => {
     const now = new Date();
-    await prisma.hubRateLimit.create({ data: { key: "k", windowStart: now, count: 1 } });
+    const key = `${RATE_LIMIT_PREFIX}k`;
+    await prisma.hubRateLimit.create({ data: { key, windowStart: now, count: 1 } });
     await expect(
-      prisma.hubRateLimit.create({ data: { key: "k", windowStart: now, count: 1 } }),
+      prisma.hubRateLimit.create({ data: { key, windowStart: now, count: 1 } }),
     ).rejects.toThrow();
   });
 });

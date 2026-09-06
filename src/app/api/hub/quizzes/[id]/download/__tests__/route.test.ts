@@ -41,7 +41,7 @@ describe("GET /api/hub/quizzes/:id/download", () => {
   let publishOnlyToken: string;
 
   beforeAll(async () => {
-    _resetForTests();
+    await _resetForTests();
     const buf = await makeQlzBuffer();
     const hash = createHash("sha256").update(buf).digest("hex");
 
@@ -127,13 +127,13 @@ describe("GET /api/hub/quizzes/:id/download", () => {
   }
 
   it("401 without bearer token", async () => {
-    _resetForTests();
+    await _resetForTests();
     const res = await GET(makeReq(), { params: Promise.resolve({ id: hubQuizId }) });
     expect(res.status).toBe(401);
   });
 
   it("403 with publish-only scope", async () => {
-    _resetForTests();
+    await _resetForTests();
     const res = await GET(makeReq(publishOnlyToken), {
       params: Promise.resolve({ id: hubQuizId }),
     });
@@ -143,7 +143,7 @@ describe("GET /api/hub/quizzes/:id/download", () => {
   });
 
   it("200 returns qlzBase64 and increments downloadsCount", async () => {
-    _resetForTests();
+    await _resetForTests();
     const before = await prisma.hubQuiz.findUnique({ where: { id: hubQuizId } });
     const prevCount = before!.downloadsCount;
 

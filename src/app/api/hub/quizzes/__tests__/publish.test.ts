@@ -69,7 +69,7 @@ describe("POST /api/hub/quizzes", () => {
   let publishTokenRow: { id: string };
 
   beforeAll(async () => {
-    _resetForTests();
+    await _resetForTests();
     const clientId = `c-${Date.now()}-${Math.random()}`;
     const ha = await prisma.hubAccount.create({
       data: {
@@ -130,7 +130,7 @@ describe("POST /api/hub/quizzes", () => {
   });
 
   it("happy path: returns 201 with version 1 and creates HubQuizVersion", async () => {
-    _resetForTests();
+    await _resetForTests();
     const { b64, hash } = await makeQlz(2);
     const res = await POST(
       makeReq(publishToken, { metadata: VALID_META, qlzBase64: b64, payloadHash: hash }),
@@ -149,7 +149,7 @@ describe("POST /api/hub/quizzes", () => {
   });
 
   it("wrong scope returns 403", async () => {
-    _resetForTests();
+    await _resetForTests();
     const { b64, hash } = await makeQlz(2);
     const res = await POST(
       makeReq(cloneOnlyToken, { metadata: VALID_META, qlzBase64: b64, payloadHash: hash }),
@@ -160,7 +160,7 @@ describe("POST /api/hub/quizzes", () => {
   });
 
   it("invalid metadata returns 400", async () => {
-    _resetForTests();
+    await _resetForTests();
     const { b64, hash } = await makeQlz(2);
     const badMeta = { ...VALID_META, subject: "not-a-valid-subject" };
     const res = await POST(
@@ -172,7 +172,7 @@ describe("POST /api/hub/quizzes", () => {
   });
 
   it("payload hash mismatch returns 400", async () => {
-    _resetForTests();
+    await _resetForTests();
     const { b64 } = await makeQlz(2);
     const res = await POST(
       makeReq(publishToken, {
@@ -187,7 +187,7 @@ describe("POST /api/hub/quizzes", () => {
   });
 
   it("oversize payload returns 413", async () => {
-    _resetForTests();
+    await _resetForTests();
     // Create a buffer larger than 50MB
     const bigBuffer = Buffer.alloc(51 * 1024 * 1024, "x");
     const bigB64 = bigBuffer.toString("base64");
@@ -205,7 +205,7 @@ describe("POST /api/hub/quizzes", () => {
   });
 
   it("re-publish with If-Match returns 200 with version 2 and creates prior HubQuizVersion", async () => {
-    _resetForTests();
+    await _resetForTests();
     // First publish
     const { b64: b641, hash: hash1 } = await makeQlz(2);
     const res1 = await POST(
@@ -216,7 +216,7 @@ describe("POST /api/hub/quizzes", () => {
     const quizId = body1.hubQuizId;
 
     // Re-publish with If-Match
-    _resetForTests();
+    await _resetForTests();
     const { b64: b642, hash: hash2 } = await makeQlz(3);
     const res2 = await POST(
       makeReq(

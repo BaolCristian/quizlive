@@ -6,7 +6,7 @@
  * `HubRateLimit` table while KEEPING this exact function signature and module path.
  */
 
-import { checkRateLimit, resetRateLimits, resetRateLimitsByPrefix } from "./db-rate-limit";
+import { checkRateLimit, resetRateLimitsByPrefix } from "./db-rate-limit";
 import type { RateLimitArgs, RateLimitResult } from "./db-rate-limit";
 
 export { resetRateLimitsByPrefix };
@@ -24,10 +24,6 @@ export interface HubRateLimitResult {
 
 export async function hubRateLimit(args: HubRateLimitArgs): Promise<HubRateLimitResult> {
   return checkRateLimit(args as RateLimitArgs) as Promise<RateLimitResult>;
-}
-
-export async function _resetForTests(): Promise<void> {
-  await resetRateLimits();
 }
 
 // Limits from spec Section 9 (converted to windowSeconds + max).

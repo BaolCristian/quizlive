@@ -22,7 +22,7 @@ describe("POST /api/hub/practice/start", () => {
   let quizId: string;
 
   beforeAll(async () => {
-    _resetForTests();
+    await _resetForTests();
 
     const zip = new JSZip();
     zip.file(
@@ -81,8 +81,8 @@ describe("POST /api/hub/practice/start", () => {
     await prisma.hubAccount.delete({ where: { id: hubAccountId } });
   });
 
-  beforeEach(() => {
-    _resetForTests();
+  beforeEach(async () => {
+    await _resetForTests();
   });
 
   it("returns 201 with runId on valid quiz", async () => {

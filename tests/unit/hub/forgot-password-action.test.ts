@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { _resetForTests } from "@/lib/rate-limit/hub-rate-limit";
 
 const hub = vi.hoisted(() => ({ findUnique: vi.fn() }));
 const issueVerificationToken = vi.fn().mockResolvedValue({
@@ -13,6 +12,9 @@ vi.mock("@/lib/db/client", () => ({
     hubAccount: hub,
     hubRateLimit: {
       upsert: vi.fn().mockResolvedValue({ count: 1 }),
+      // checkRateLimit()'s probabilistic cleanup branch calls this
+      // unconditionally (10% chance per call); it must exist on the mock
+      // even though this file never asserts on it.
       deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
   },
@@ -24,7 +26,6 @@ vi.mock("next/headers", () => ({
 }));
 
 beforeEach(() => {
-  _resetForTests();
   hub.findUnique.mockReset();
   sendPasswordResetEmail.mockClear();
   issueVerificationToken.mockClear();
